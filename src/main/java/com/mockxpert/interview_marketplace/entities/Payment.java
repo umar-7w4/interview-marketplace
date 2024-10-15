@@ -56,6 +56,11 @@ public class Payment {
     @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus;  
     
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interview_id")
+    private Interview interview;
+
+    
     public enum PaymentStatus {
         PAID,
         FAILED,

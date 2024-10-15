@@ -55,7 +55,7 @@ public class Interviewer {
     @Column(nullable = false)
     private Status status;
 
-    @Column(name = "average_rating", columnDefinition = "Decimal(2,1) default '0.0'")
+    @Column(name = "average_rating")
     private Double averageRating;
 
     @Column(name = "profile_completion_status", nullable = false)
