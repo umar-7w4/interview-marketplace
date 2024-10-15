@@ -33,8 +33,8 @@ public class Interviewee {
     @Column(name = "language")
     private List<String> languagesSpoken;
 
-    @Column(name = "current_role")
-    private String currentRole;
+    @Column(name = "current_job_role")
+    private String currentJobRole;
 
     @Column(name = "field_of_interest")
     private String fieldOfInterest;

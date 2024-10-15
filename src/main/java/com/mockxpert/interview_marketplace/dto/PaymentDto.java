@@ -26,6 +26,9 @@ public class PaymentDto {
     @NotBlank(message = "Transaction ID is required")
     private String transactionId;
 
+    @NotNull(message = "Interview ID is required")
+    private Long interviewId;
+    
     @NotNull(message = "Payment date is required")
     private LocalDateTime paymentDate;
 
@@ -43,5 +46,5 @@ public class PaymentDto {
     private BigDecimal refundAmount;
 
     @NotBlank(message = "Payment status is required")
-    private String paymentStatus;  // Accepts values such as "PAID", "FAILED", "REFUNDED"
+    private String paymentStatus;  
 }

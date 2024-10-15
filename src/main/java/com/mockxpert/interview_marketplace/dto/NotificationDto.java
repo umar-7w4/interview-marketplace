@@ -18,9 +18,15 @@ public class NotificationDto {
 
     @NotNull(message = "User ID is required")
     private Long userId;
+    
+    @NotNull(message = "Booking ID is required")
+    private Long bookingId;
+    
+    @NotNull(message = "Interview ID is required")
+    private Long intervieweeId;
 
     @NotBlank(message = "Related entity type is required")
-    private String relatedEntityType;  // Accepts "BOOKING", "INTERVIEW", or "PAYMENT"
+    private String relatedEntityType; 
 
     @NotNull(message = "Related entity ID is required")
     private Long relatedEntityId;
@@ -29,10 +35,10 @@ public class NotificationDto {
     private String message;
 
     @NotBlank(message = "Notification type is required")
-    private String type;  // Accepts "EMAIL", "SMS", "APP_NOTIFICATION"
+    private String type; 
 
     @NotBlank(message = "Notification status is required")
-    private String status;  // Accepts "PENDING", "SENT", "FAILED"
+    private String status;
 
     private LocalDateTime createdAt;
 

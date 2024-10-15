@@ -59,6 +59,14 @@ public class Notification {
         this.createdAt = LocalDateTime.now();
     }
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interviewee_id")
+    private Interview interview;
+    
     public enum NotificationType {
         EMAIL,
         SMS,
