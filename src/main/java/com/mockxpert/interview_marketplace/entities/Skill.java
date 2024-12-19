@@ -1,18 +1,9 @@
 package com.mockxpert.interview_marketplace.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.List;
 
 import jakarta.persistence.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "skills")
 public class Skill {
@@ -33,4 +24,46 @@ public class Skill {
 
     @ManyToMany(mappedBy = "skills", fetch = FetchType.LAZY)
     private List<Interviewee> interviewees;
+
+	public Long getSkillId() {
+		return skillId;
+	}
+
+	public void setSkillId(Long skillId) {
+		this.skillId = skillId;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public List<Interviewer> getInterviewers() {
+		return interviewers;
+	}
+
+	public void setInterviewers(List<Interviewer> interviewers) {
+		this.interviewers = interviewers;
+	}
+
+	public List<Interviewee> getInterviewees() {
+		return interviewees;
+	}
+
+	public void setInterviewees(List<Interviewee> interviewees) {
+		this.interviewees = interviewees;
+	}
+    
+    
 }

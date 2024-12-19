@@ -1,18 +1,10 @@
 package com.mockxpert.interview_marketplace.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.util.List;
 
 import jakarta.persistence.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+
 @Entity
 @Table(name = "interviewees")
 public class Interviewee {
@@ -58,4 +50,94 @@ public class Interviewee {
         inverseJoinColumns = @JoinColumn(name = "skill_id")
     )
     private List<Skill> skills;
+
+	public Long getIntervieweeId() {
+		return intervieweeId;
+	}
+
+	public void setIntervieweeId(Long intervieweeId) {
+		this.intervieweeId = intervieweeId;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public String getEducationLevel() {
+		return educationLevel;
+	}
+
+	public void setEducationLevel(String educationLevel) {
+		this.educationLevel = educationLevel;
+	}
+
+	public List<String> getLanguagesSpoken() {
+		return languagesSpoken;
+	}
+
+	public void setLanguagesSpoken(List<String> languagesSpoken) {
+		this.languagesSpoken = languagesSpoken;
+	}
+
+	public String getCurrentJobRole() {
+		return currentJobRole;
+	}
+
+	public void setCurrentJobRole(String currentJobRole) {
+		this.currentJobRole = currentJobRole;
+	}
+
+	public String getFieldOfInterest() {
+		return fieldOfInterest;
+	}
+
+	public void setFieldOfInterest(String fieldOfInterest) {
+		this.fieldOfInterest = fieldOfInterest;
+	}
+
+	public String getResume() {
+		return resume;
+	}
+
+	public void setResume(String resume) {
+		this.resume = resume;
+	}
+
+	public String getTimezone() {
+		return timezone;
+	}
+
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
+	}
+
+	public List<Booking> getBookings() {
+		return bookings;
+	}
+
+	public void setBookings(List<Booking> bookings) {
+		this.bookings = bookings;
+	}
+
+	public List<Interview> getInterviews() {
+		return interviews;
+	}
+
+	public void setInterviews(List<Interview> interviews) {
+		this.interviews = interviews;
+	}
+
+	public List<Skill> getSkills() {
+		return skills;
+	}
+
+	public void setSkills(List<Skill> skills) {
+		this.skills = skills;
+	}
+    
+    
 }

@@ -1,9 +1,5 @@
 package com.mockxpert.interview_marketplace.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -13,10 +9,7 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+
 @Entity
 @Table(name = "interviews")
 public class Interview {
@@ -87,6 +80,136 @@ public class Interview {
         COMPLETED,
         CANCELLED
     }
+
+	public Long getInterviewId() {
+		return interviewId;
+	}
+
+	public void setInterviewId(Long interviewId) {
+		this.interviewId = interviewId;
+	}
+
+	public Interviewee getInterviewee() {
+		return interviewee;
+	}
+
+	public void setInterviewee(Interviewee interviewee) {
+		this.interviewee = interviewee;
+	}
+
+	public Interviewer getInterviewer() {
+		return interviewer;
+	}
+
+	public void setInterviewer(Interviewer interviewer) {
+		this.interviewer = interviewer;
+	}
+
+	public Booking getBooking() {
+		return booking;
+	}
+
+	public void setBooking(Booking booking) {
+		this.booking = booking;
+	}
+
+	public LocalDate getDate() {
+		return date;
+	}
+
+	public void setDate(LocalDate date) {
+		this.date = date;
+	}
+
+	public LocalTime getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(LocalTime startTime) {
+		this.startTime = startTime;
+	}
+
+	public Duration getDuration() {
+		return duration;
+	}
+
+	public void setDuration(Duration duration) {
+		this.duration = duration;
+	}
+
+	public String getInterviewLink() {
+		return interviewLink;
+	}
+
+	public void setInterviewLink(String interviewLink) {
+		this.interviewLink = interviewLink;
+	}
+
+	public InterviewStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(InterviewStatus status) {
+		this.status = status;
+	}
+
+	public LocalTime getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(LocalTime endTime) {
+		this.endTime = endTime;
+	}
+
+	public String getTimezone() {
+		return timezone;
+	}
+
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
+	}
+
+	public LocalDateTime getActualStartTime() {
+		return actualStartTime;
+	}
+
+	public void setActualStartTime(LocalDateTime actualStartTime) {
+		this.actualStartTime = actualStartTime;
+	}
+
+	public LocalDateTime getActualEndTime() {
+		return actualEndTime;
+	}
+
+	public void setActualEndTime(LocalDateTime actualEndTime) {
+		this.actualEndTime = actualEndTime;
+	}
+
+	public List<Feedback> getFeedbacks() {
+		return feedbacks;
+	}
+
+	public void setFeedbacks(List<Feedback> feedbacks) {
+		this.feedbacks = feedbacks;
+	}
+
+	public Payment getPayment() {
+		return payment;
+	}
+
+	public void setPayment(Payment payment) {
+		this.payment = payment;
+	}
+
+	public List<Notification> getNotifications() {
+		return notifications;
+	}
+
+	public void setNotifications(List<Notification> notifications) {
+		this.notifications = notifications;
+	}
+    
+    
 
 }
 

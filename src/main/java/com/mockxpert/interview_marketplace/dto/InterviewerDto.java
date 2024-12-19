@@ -1,18 +1,11 @@
 package com.mockxpert.interview_marketplace.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import jakarta.validation.constraints.*;
 
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+
 public class InterviewerDto {
 
     private Long interviewerId;
@@ -48,5 +41,118 @@ public class InterviewerDto {
     private Boolean isVerified;
 
     private List<Long> skillIds;
+
+	public Long getInterviewerId() {
+		return interviewerId;
+	}
+
+	public void setInterviewerId(Long interviewerId) {
+		this.interviewerId = interviewerId;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public String getBio() {
+		return bio;
+	}
+
+	public void setBio(String bio) {
+		this.bio = bio;
+	}
+
+	public String getCurrentCompany() {
+		return currentCompany;
+	}
+
+	public void setCurrentCompany(String currentCompany) {
+		this.currentCompany = currentCompany;
+	}
+
+	public Integer getYearsOfExperience() {
+		return yearsOfExperience;
+	}
+
+	public void setYearsOfExperience(Integer yearsOfExperience) {
+		this.yearsOfExperience = yearsOfExperience;
+	}
+
+	public List<String> getLanguagesSpoken() {
+		return languagesSpoken;
+	}
+
+	public void setLanguagesSpoken(List<String> languagesSpoken) {
+		this.languagesSpoken = languagesSpoken;
+	}
+
+	public List<String> getCertifications() {
+		return certifications;
+	}
+
+	public void setCertifications(List<String> certifications) {
+		this.certifications = certifications;
+	}
+
+	public Double getSessionRate() {
+		return sessionRate;
+	}
+
+	public void setSessionRate(Double sessionRate) {
+		this.sessionRate = sessionRate;
+	}
+
+	public String getTimezone() {
+		return timezone;
+	}
+
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Double getAverageRating() {
+		return averageRating;
+	}
+
+	public void setAverageRating(Double averageRating) {
+		this.averageRating = averageRating;
+	}
+
+	public Boolean getProfileCompletionStatus() {
+		return profileCompletionStatus;
+	}
+
+	public void setProfileCompletionStatus(Boolean profileCompletionStatus) {
+		this.profileCompletionStatus = profileCompletionStatus;
+	}
+
+	public Boolean getIsVerified() {
+		return isVerified;
+	}
+
+	public void setIsVerified(Boolean isVerified) {
+		this.isVerified = isVerified;
+	}
+
+	public List<Long> getSkillIds() {
+		return skillIds;
+	}
+
+	public void setSkillIds(List<Long> skillIds) {
+		this.skillIds = skillIds;
+	}
+    
 }
 
