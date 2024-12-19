@@ -1,16 +1,8 @@
 package com.mockxpert.interview_marketplace.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class SkillDto {
 
     private Long skillId;
@@ -19,4 +11,29 @@ public class SkillDto {
     private String name;
 
     private String description;
+
+	public Long getSkillId() {
+		return skillId;
+	}
+
+	public void setSkillId(Long skillId) {
+		this.skillId = skillId;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+    
 }

@@ -1,19 +1,10 @@
 package com.mockxpert.interview_marketplace.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import jakarta.validation.constraints.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class BookingDto {
 
     private Long bookingId;
@@ -36,4 +27,70 @@ public class BookingDto {
     private String cancellationReason;
 
     private String notes;
+
+	public Long getBookingId() {
+		return bookingId;
+	}
+
+	public void setBookingId(Long bookingId) {
+		this.bookingId = bookingId;
+	}
+
+	public Long getIntervieweeId() {
+		return intervieweeId;
+	}
+
+	public void setIntervieweeId(Long intervieweeId) {
+		this.intervieweeId = intervieweeId;
+	}
+
+	public Long getAvailabilityId() {
+		return availabilityId;
+	}
+
+	public void setAvailabilityId(Long availabilityId) {
+		this.availabilityId = availabilityId;
+	}
+
+	public LocalDate getBookingDate() {
+		return bookingDate;
+	}
+
+	public void setBookingDate(LocalDate bookingDate) {
+		this.bookingDate = bookingDate;
+	}
+
+	public BigDecimal getTotalPrice() {
+		return totalPrice;
+	}
+
+	public void setTotalPrice(BigDecimal totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+
+	public String getPaymentStatus() {
+		return paymentStatus;
+	}
+
+	public void setPaymentStatus(String paymentStatus) {
+		this.paymentStatus = paymentStatus;
+	}
+
+	public String getCancellationReason() {
+		return cancellationReason;
+	}
+
+	public void setCancellationReason(String cancellationReason) {
+		this.cancellationReason = cancellationReason;
+	}
+
+	public String getNotes() {
+		return notes;
+	}
+
+	public void setNotes(String notes) {
+		this.notes = notes;
+	}
+    
+    
 }

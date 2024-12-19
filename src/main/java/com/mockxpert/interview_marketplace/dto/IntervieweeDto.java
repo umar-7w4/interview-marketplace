@@ -1,19 +1,11 @@
 package com.mockxpert.interview_marketplace.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class IntervieweeDto {
 
     private Long intervieweeId;
@@ -35,4 +27,78 @@ public class IntervieweeDto {
     private String timezone;
 
     private List<Long> skillIds;
+
+	public Long getIntervieweeId() {
+		return intervieweeId;
+	}
+
+	public void setIntervieweeId(Long intervieweeId) {
+		this.intervieweeId = intervieweeId;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+
+	public String getEducationLevel() {
+		return educationLevel;
+	}
+
+	public void setEducationLevel(String educationLevel) {
+		this.educationLevel = educationLevel;
+	}
+
+	public List<String> getLanguagesSpoken() {
+		return languagesSpoken;
+	}
+
+	public void setLanguagesSpoken(List<String> languagesSpoken) {
+		this.languagesSpoken = languagesSpoken;
+	}
+
+	public String getCurrentRole() {
+		return currentRole;
+	}
+
+	public void setCurrentRole(String currentRole) {
+		this.currentRole = currentRole;
+	}
+
+	public String getFieldOfInterest() {
+		return fieldOfInterest;
+	}
+
+	public void setFieldOfInterest(String fieldOfInterest) {
+		this.fieldOfInterest = fieldOfInterest;
+	}
+
+	public String getResume() {
+		return resume;
+	}
+
+	public void setResume(String resume) {
+		this.resume = resume;
+	}
+
+	public String getTimezone() {
+		return timezone;
+	}
+
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
+	}
+
+	public List<Long> getSkillIds() {
+		return skillIds;
+	}
+
+	public void setSkillIds(List<Long> skillIds) {
+		this.skillIds = skillIds;
+	}
+    
+    
 }

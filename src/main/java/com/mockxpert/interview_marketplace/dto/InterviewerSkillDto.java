@@ -2,16 +2,8 @@ package com.mockxpert.interview_marketplace.dto;
 
 
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class InterviewerSkillDto {
 
     private Long interviewerSkillId;
@@ -30,4 +22,54 @@ public class InterviewerSkillDto {
 
     @NotNull(message = "Certification status is required")
     private Boolean certified;
+
+	public Long getInterviewerSkillId() {
+		return interviewerSkillId;
+	}
+
+	public void setInterviewerSkillId(Long interviewerSkillId) {
+		this.interviewerSkillId = interviewerSkillId;
+	}
+
+	public Long getInterviewerId() {
+		return interviewerId;
+	}
+
+	public void setInterviewerId(Long interviewerId) {
+		this.interviewerId = interviewerId;
+	}
+
+	public Long getSkillId() {
+		return skillId;
+	}
+
+	public void setSkillId(Long skillId) {
+		this.skillId = skillId;
+	}
+
+	public int getYearsOfExperience() {
+		return yearsOfExperience;
+	}
+
+	public void setYearsOfExperience(int yearsOfExperience) {
+		this.yearsOfExperience = yearsOfExperience;
+	}
+
+	public String getProficiencyLevel() {
+		return proficiencyLevel;
+	}
+
+	public void setProficiencyLevel(String proficiencyLevel) {
+		this.proficiencyLevel = proficiencyLevel;
+	}
+
+	public Boolean getCertified() {
+		return certified;
+	}
+
+	public void setCertified(Boolean certified) {
+		this.certified = certified;
+	}
+    
+    
 }

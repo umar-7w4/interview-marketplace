@@ -1,18 +1,10 @@
 package com.mockxpert.interview_marketplace.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 
 import jakarta.persistence.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+
 @Entity
 @Table(name = "interviewer_verifications")
 public class InterviewerVerification {
@@ -52,5 +44,79 @@ public class InterviewerVerification {
         APPROVED,
         REJECTED
     }
+
+	public Long getVerificationId() {
+		return verificationId;
+	}
+
+	public void setVerificationId(Long verificationId) {
+		this.verificationId = verificationId;
+	}
+
+	public Interviewer getInterviewer() {
+		return interviewer;
+	}
+
+	public void setInterviewer(Interviewer interviewer) {
+		this.interviewer = interviewer;
+	}
+
+	public String getDocumentUrl() {
+		return documentUrl;
+	}
+
+	public void setDocumentUrl(String documentUrl) {
+		this.documentUrl = documentUrl;
+	}
+
+	public String getDocumentType() {
+		return documentType;
+	}
+
+	public void setDocumentType(String documentType) {
+		this.documentType = documentType;
+	}
+
+	public LocalDate getUploadDate() {
+		return uploadDate;
+	}
+
+	public void setUploadDate(LocalDate uploadDate) {
+		this.uploadDate = uploadDate;
+	}
+
+	public VerificationStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(VerificationStatus status) {
+		this.status = status;
+	}
+
+	public String getVerifiedBy() {
+		return verifiedBy;
+	}
+
+	public void setVerifiedBy(String verifiedBy) {
+		this.verifiedBy = verifiedBy;
+	}
+
+	public LocalDate getVerificationDate() {
+		return verificationDate;
+	}
+
+	public void setVerificationDate(LocalDate verificationDate) {
+		this.verificationDate = verificationDate;
+	}
+
+	public String getVerificationComments() {
+		return verificationComments;
+	}
+
+	public void setVerificationComments(String verificationComments) {
+		this.verificationComments = verificationComments;
+	}
+    
+    
 
 }

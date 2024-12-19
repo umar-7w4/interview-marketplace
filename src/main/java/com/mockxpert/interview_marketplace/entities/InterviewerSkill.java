@@ -2,15 +2,7 @@ package com.mockxpert.interview_marketplace.entities;
 
 import jakarta.persistence.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "interviewer_skills")
 public class InterviewerSkill {
@@ -35,4 +27,54 @@ public class InterviewerSkill {
 
     @Column(name = "is_certified", nullable = false)
     private boolean certified;
+
+	public Long getInterviewerSkillId() {
+		return interviewerSkillId;
+	}
+
+	public void setInterviewerSkillId(Long interviewerSkillId) {
+		this.interviewerSkillId = interviewerSkillId;
+	}
+
+	public Interviewer getInterviewer() {
+		return interviewer;
+	}
+
+	public void setInterviewer(Interviewer interviewer) {
+		this.interviewer = interviewer;
+	}
+
+	public Skill getSkill() {
+		return skill;
+	}
+
+	public void setSkill(Skill skill) {
+		this.skill = skill;
+	}
+
+	public int getYearsOfExperience() {
+		return yearsOfExperience;
+	}
+
+	public void setYearsOfExperience(int yearsOfExperience) {
+		this.yearsOfExperience = yearsOfExperience;
+	}
+
+	public String getProficiencyLevel() {
+		return proficiencyLevel;
+	}
+
+	public void setProficiencyLevel(String proficiencyLevel) {
+		this.proficiencyLevel = proficiencyLevel;
+	}
+
+	public boolean isCertified() {
+		return certified;
+	}
+
+	public void setCertified(boolean certified) {
+		this.certified = certified;
+	}
+    
+    
 }

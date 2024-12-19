@@ -1,20 +1,11 @@
 package com.mockxpert.interview_marketplace.entities;
 
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+
 @Entity
 @Table(name = "payments")
 public class Payment {
@@ -43,7 +34,127 @@ public class Payment {
     @Column(nullable = false, length = 3)
     private String currency;
 
-    @Column(name = "payment_method", nullable = false)
+    public Long getPaymentId() {
+		return paymentId;
+	}
+
+
+	public void setPaymentId(Long paymentId) {
+		this.paymentId = paymentId;
+	}
+
+
+	public Booking getBooking() {
+		return booking;
+	}
+
+
+	public void setBooking(Booking booking) {
+		this.booking = booking;
+	}
+
+
+	public User getUser() {
+		return user;
+	}
+
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+
+	public String getTransactionId() {
+		return transactionId;
+	}
+
+
+	public void setTransactionId(String transactionId) {
+		this.transactionId = transactionId;
+	}
+
+
+	public LocalDateTime getPaymentDate() {
+		return paymentDate;
+	}
+
+
+	public void setPaymentDate(LocalDateTime paymentDate) {
+		this.paymentDate = paymentDate;
+	}
+
+
+	public BigDecimal getAmount() {
+		return amount;
+	}
+
+
+	public void setAmount(BigDecimal amount) {
+		this.amount = amount;
+	}
+
+
+	public String getCurrency() {
+		return currency;
+	}
+
+
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
+
+
+	public String getPaymentMethod() {
+		return paymentMethod;
+	}
+
+
+	public void setPaymentMethod(String paymentMethod) {
+		this.paymentMethod = paymentMethod;
+	}
+
+
+	public String getReceiptUrl() {
+		return receiptUrl;
+	}
+
+
+	public void setReceiptUrl(String receiptUrl) {
+		this.receiptUrl = receiptUrl;
+	}
+
+
+	public BigDecimal getRefundAmount() {
+		return refundAmount;
+	}
+
+
+	public void setRefundAmount(BigDecimal refundAmount) {
+		this.refundAmount = refundAmount;
+	}
+
+
+	public PaymentStatus getPaymentStatus() {
+		return paymentStatus;
+	}
+
+
+	public void setPaymentStatus(PaymentStatus paymentStatus) {
+		this.paymentStatus = paymentStatus;
+	}
+
+
+	public Interview getInterview() {
+		return interview;
+	}
+
+
+	public void setInterview(Interview interview) {
+		this.interview = interview;
+	}
+
+
+	@Column(name = "payment_method", nullable = false)
     private String paymentMethod;
 
     @Column(name = "receipt_url")
@@ -66,5 +177,7 @@ public class Payment {
         FAILED,
         REFUNDED
     }
+    
+    
     
 }

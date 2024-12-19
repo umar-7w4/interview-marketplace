@@ -1,19 +1,12 @@
 package com.mockxpert.interview_marketplace.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 import jakarta.persistence.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+
 @Entity
 @Table(name = "availabilities")
 public class Availability {
@@ -50,4 +43,70 @@ public class Availability {
         BOOKED,
         EXPIRED
     }
+
+	public Long getAvailabilityId() {
+		return availabilityId;
+	}
+
+	public void setAvailabilityId(Long availabilityId) {
+		this.availabilityId = availabilityId;
+	}
+
+	public Interviewer getInterviewer() {
+		return interviewer;
+	}
+
+	public void setInterviewer(Interviewer interviewer) {
+		this.interviewer = interviewer;
+	}
+
+	public LocalDate getDate() {
+		return date;
+	}
+
+	public void setDate(LocalDate date) {
+		this.date = date;
+	}
+
+	public LocalTime getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(LocalTime startTime) {
+		this.startTime = startTime;
+	}
+
+	public LocalTime getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(LocalTime endTime) {
+		this.endTime = endTime;
+	}
+
+	public AvailabilityStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(AvailabilityStatus status) {
+		this.status = status;
+	}
+
+	public String getTimezone() {
+		return timezone;
+	}
+
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
+	}
+
+	public Booking getBooking() {
+		return booking;
+	}
+
+	public void setBooking(Booking booking) {
+		this.booking = booking;
+	}
+    
+    
 }
