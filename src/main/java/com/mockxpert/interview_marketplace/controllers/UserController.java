@@ -1,5 +1,6 @@
 package com.mockxpert.interview_marketplace.controllers;
 
+import com.google.firebase.auth.FirebaseAuthException;
 import com.mockxpert.interview_marketplace.dto.UserDto;
 import com.mockxpert.interview_marketplace.exceptions.*;
 import com.mockxpert.interview_marketplace.services.UserService;
@@ -16,24 +17,35 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    
+    public UserController() {
+        System.out.println("UserController Initialized");
+    }
 
     /**
      * Register a new user using Firebase authentication.
      * @param firebaseToken the Firebase authentication token.
      * @param userDto the user data transfer object containing registration information.
      * @return the created UserDto.
+     * @throws FirebaseAuthException 
      */
     @PostMapping("/register")
-    public ResponseEntity<UserDto> registerUser(@RequestHeader("Authorization") String firebaseToken, @RequestBody @Valid UserDto userDto) {
+    public ResponseEntity<UserDto> registerUser(@RequestHeader("Authorization") String firebaseToken, @RequestBody @Valid UserDto userDto) throws FirebaseAuthException {
         try {
+            System.out.println("Received Firebase Token: " + firebaseToken);
+            System.out.println("Received User Data: " + userDto);
             UserDto savedUser = userService.registerUserUsingFirebaseToken(firebaseToken, userDto);
+            System.out.println("User Saved Successfully: " + savedUser);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         } catch (ConflictException e) {
+            System.err.println("Conflict Exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         } catch (UnauthorizedException e) {
+            System.err.println("Unauthorized Exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
+
 
     /**
      * Login user using Firebase token.
@@ -43,9 +55,19 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<UserDto> loginUser(@RequestHeader("Authorization") String firebaseToken) {
         try {
+            // Debug Log for Token
+            System.out.println("Raw Authorization Header: " + firebaseToken);
+
+            // Remove "Bearer " prefix
+            String token = firebaseToken.replace("Bearer ", "").trim();
+            System.out.println("Processed Token: " + token);
+
+            // Call Service Layer
             UserDto loggedInUser = userService.loginUserUsingFirebaseToken(firebaseToken);
+
             return ResponseEntity.ok(loggedInUser);
         } catch (UnauthorizedException e) {
+            System.err.println("Unauthorized: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }

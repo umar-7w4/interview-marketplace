@@ -12,3 +12,5 @@ public class InterviewMarketplaceApplication {
 	}
 
 }
+
+//(scanBasePackages = "com.mockxpert.interview_marketplace")

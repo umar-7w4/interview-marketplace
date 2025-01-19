@@ -29,24 +29,30 @@ public class UserService {
      * @param firebaseToken the Firebase token from the user.
      * @param userDto the user data transfer object containing registration information.
      * @return the saved UserDto.
+     * @throws FirebaseAuthException 
      */
     @Transactional
-    public UserDto registerUserUsingFirebaseToken(String firebaseToken, UserDto userDto) {
-        String firebaseUid = getFirebaseUid(firebaseToken);
+    public UserDto registerUserUsingFirebaseToken(String firebaseToken, UserDto userDto) throws FirebaseAuthException {
+        String token = firebaseToken.replace("Bearer ", "").trim();
+        System.out.println("Validating token: " + token); // Debug Log
 
-        // Validate if the user with Firebase UID already exists
+        // Validate Firebase Token
+        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
+        String firebaseUid = decodedToken.getUid();
+        System.out.println("Decoded Token UID: " + firebaseUid); // Debug Log
+
+        // Check if user already exists
         if (userRepository.findByFirebaseUid(firebaseUid).isPresent()) {
             throw new ConflictException("User with Firebase UID already exists.");
         }
 
-        // Set Firebase UID to the user DTO
         userDto.setFirebaseUid(firebaseUid);
-
-        return registerUser(userDto); // Use the existing registration logic
+        return registerUser(userDto);
     }
 
     /**
      * Register a new user.
+     *
      * @param userDto the user data transfer object containing registration information.
      * @return the saved UserDto.
      */
@@ -60,7 +66,10 @@ public class UserService {
         User user = UserMapper.toEntity(userDto);
         user.setCreatedAt(LocalDateTime.now());
         user.setStatus(User.Status.PENDING); // Set default status as PENDING
-        User savedUser = userRepository.save(user);
+
+        User savedUser = userRepository.saveAndFlush(user); // Use saveAndFlush to immediately persist data
+        System.out.println("Saved User ID: " + savedUser.getUserId());
+
         return UserMapper.toDto(savedUser);
     }
 
@@ -88,7 +97,7 @@ public class UserService {
         existingUser.setPreferredLanguage(userDto.getPreferredLanguage());
         existingUser.setTimezone(userDto.getTimezone());
 
-        User updatedUser = userRepository.save(existingUser);
+        User updatedUser = userRepository.saveAndFlush(existingUser);
         return UserMapper.toDto(updatedUser);
     }
 
@@ -109,12 +118,28 @@ public class UserService {
      * @return the UserDto of the logged-in user.
      */
     public UserDto loginUserUsingFirebaseToken(String firebaseToken) {
-        String firebaseUid = getFirebaseUid(firebaseToken);
+        try {
+            String token = firebaseToken.replace("Bearer ", "").trim();
+            System.out.println("Validating token: " + token); // Debug Log
 
-        // Retrieve user based on Firebase UID
-        return userRepository.findByFirebaseUid(firebaseUid)
-                .map(UserMapper::toDto)
-                .orElseThrow(() -> new UnauthorizedException("User not found for Firebase UID: " + firebaseUid));
+            // Validate Firebase Token
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
+            String firebaseUid = decodedToken.getUid();
+            System.out.println("Decoded Token UID: " + firebaseUid); // Debug Log
+
+            // Fetch user by Firebase UID
+            User user = userRepository.findByFirebaseUid(firebaseUid)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found for Firebase UID: " + firebaseUid));
+            
+            user.setLastLogin(LocalDateTime.now());
+            userRepository.saveAndFlush(user);
+            
+            return UserMapper.toDto(user);
+
+        } catch (FirebaseAuthException e) {
+            System.err.println("Firebase token validation failed: " + e.getMessage()); // Debug Log
+            throw new UnauthorizedException("Invalid Firebase token.", e);
+        }
     }
 
     /**
@@ -129,7 +154,7 @@ public class UserService {
                 throw new BadRequestException("User is already inactive.");
             }
             user.setStatus(User.Status.INACTIVE);
-            userRepository.save(user);
+            userRepository.saveAndFlush(user);
             return true;
         }).orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
     }
@@ -146,7 +171,7 @@ public class UserService {
                 throw new BadRequestException("User is already active.");
             }
             user.setStatus(User.Status.ACTIVE);
-            userRepository.save(user);
+            userRepository.saveAndFlush(user);
             return true;
         }).orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
     }
@@ -192,7 +217,7 @@ public class UserService {
         }
 
         user.setPasswordHash(newPassword); // Ensure password hashing is applied
-        userRepository.save(user);
+        userRepository.saveAndFlush(user);
     }
 
     /**

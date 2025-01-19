@@ -29,6 +29,7 @@ public class FirebaseConfig {
 
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
+                System.out.println("Firebase initialized successfully."); // Debug Log
             }
         } catch (IOException e) {
             throw new RuntimeException("Could not initialize Firebase", e);
