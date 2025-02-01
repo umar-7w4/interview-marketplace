@@ -17,7 +17,6 @@ public class PaymentDto {
     @NotBlank(message = "Transaction ID is required")
     private String transactionId;
 
-    @NotNull(message = "Interview ID is required")
     private Long interviewId;
     
     @NotNull(message = "Payment date is required")

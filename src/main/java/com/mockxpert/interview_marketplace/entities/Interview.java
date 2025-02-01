@@ -1,4 +1,4 @@
-package com.mockxpert.interview_marketplace.entities;
+ package com.mockxpert.interview_marketplace.entities;
 
 
 import java.time.LocalDate;

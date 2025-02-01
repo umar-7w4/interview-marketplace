@@ -3,6 +3,7 @@ package com.mockxpert.interview_marketplace.services;
 import com.mockxpert.interview_marketplace.dto.PaymentDto;
 import com.mockxpert.interview_marketplace.entities.Booking;
 import com.mockxpert.interview_marketplace.entities.Interview;
+import com.mockxpert.interview_marketplace.entities.Interview.InterviewStatus;
 import com.mockxpert.interview_marketplace.entities.Interviewer;
 import com.mockxpert.interview_marketplace.entities.Payment;
 import com.mockxpert.interview_marketplace.entities.User;
@@ -17,8 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,25 +51,41 @@ public class PaymentService {
     public PaymentDto createPayment(PaymentDto paymentDto) {
         Booking booking = bookingRepository.findById(paymentDto.getBookingId())
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + paymentDto.getBookingId()));
-        
-        long potentialUserId = booking.getInterviewee().getUser().getUserId();
-        
-        User user = userRepository.findById(potentialUserId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + potentialUserId));
-        
-        long potentialInterviewerId = booking.getAvailability().getInterviewer().getInterviewerId();
-        
-        Interviewer interviewer = interviewerRepository.findById(potentialInterviewerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found with ID: " + potentialInterviewerId));
 
-        Interview interview = interviewRepository.findById(paymentDto.getInterviewId())
-                .orElseThrow(() -> new IllegalArgumentException("Interview not found with ID: " + paymentDto.getInterviewId()));
+        long intervieweeUserId = booking.getInterviewee().getUser().getUserId();
+        User user = userRepository.findById(intervieweeUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + intervieweeUserId));
 
-        Payment payment = PaymentMapper.toEntity(paymentDto, booking, user, interview);
-        Payment saveAndFlushdPayment = paymentRepository.saveAndFlush(payment);
+        long interviewerId = booking.getAvailability().getInterviewer().getInterviewerId();
+        Interviewer interviewer = interviewerRepository.findById(interviewerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found with ID: " + interviewerId));
 
-        return PaymentMapper.toDto(saveAndFlushdPayment);
+        Payment payment = PaymentMapper.toEntity(paymentDto, booking, user, null);
+        Payment savedPayment = paymentRepository.saveAndFlush(payment);
+
+        if ("PAID".equalsIgnoreCase(paymentDto.getPaymentStatus())) {
+            Interview scheduledInterview = new Interview();
+            scheduledInterview.setBooking(booking);
+            scheduledInterview.setInterviewee(booking.getInterviewee());
+            scheduledInterview.setInterviewer(interviewer);
+            scheduledInterview.setDate(booking.getBookingDate());
+            scheduledInterview.setStartTime(booking.getAvailability().getStartTime());
+            scheduledInterview.setDuration(Duration.ofMinutes(60)); // Assuming 60 min default
+            scheduledInterview.setInterviewLink(generateMeetingLink(booking.getBookingId())); // Generate meeting link
+            scheduledInterview.setStatus(InterviewStatus.BOOKED);
+            scheduledInterview.setTimezone(booking.getAvailability().getTimezone());
+
+            Interview savedInterview = interviewRepository.saveAndFlush(scheduledInterview);
+
+            savedPayment.setInterview(savedInterview);
+            paymentRepository.save(savedPayment);
+
+            return PaymentMapper.toDto(savedPayment);
+        }
+
+        return PaymentMapper.toDto(savedPayment);
     }
+
 
     /**
      * Retrieve a payment by ID.
@@ -137,4 +156,15 @@ public class PaymentService {
                 .map(PaymentMapper::toDto)
                 .collect(Collectors.toList());
     }
+    
+
+    /**
+     * Generates random UUID.
+     * @return a id.
+     */
+    private String generateMeetingLink(Long bookingId) {
+        return "https://meet.example.com/" + UUID.randomUUID();
+    }
+
 }
+
