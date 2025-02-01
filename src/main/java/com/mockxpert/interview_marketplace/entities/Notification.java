@@ -11,6 +11,7 @@ public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "notification_id", nullable = false)
     private Long notificationId;
 
     @ManyToOne(fetch = FetchType.LAZY)

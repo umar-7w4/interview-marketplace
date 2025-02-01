@@ -3,11 +3,14 @@ package com.mockxpert.interview_marketplace.services;
 import com.mockxpert.interview_marketplace.dto.PaymentDto;
 import com.mockxpert.interview_marketplace.entities.Booking;
 import com.mockxpert.interview_marketplace.entities.Interview;
+import com.mockxpert.interview_marketplace.entities.Interviewer;
 import com.mockxpert.interview_marketplace.entities.Payment;
 import com.mockxpert.interview_marketplace.entities.User;
+import com.mockxpert.interview_marketplace.exceptions.ResourceNotFoundException;
 import com.mockxpert.interview_marketplace.mappers.PaymentMapper;
 import com.mockxpert.interview_marketplace.repositories.BookingRepository;
 import com.mockxpert.interview_marketplace.repositories.InterviewRepository;
+import com.mockxpert.interview_marketplace.repositories.InterviewerRepository;
 import com.mockxpert.interview_marketplace.repositories.PaymentRepository;
 import com.mockxpert.interview_marketplace.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,27 +35,37 @@ public class PaymentService {
 
     @Autowired
     private InterviewRepository interviewRepository;
+    
+    @Autowired
+    private InterviewerRepository interviewerRepository;
 
     /**
      * Create a new payment.
      * @param paymentDto the payment data transfer object.
-     * @return the saved PaymentDto.
+     * @return the saveAndFlushd PaymentDto.
      */
     @Transactional
     public PaymentDto createPayment(PaymentDto paymentDto) {
         Booking booking = bookingRepository.findById(paymentDto.getBookingId())
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + paymentDto.getBookingId()));
-
-        User user = userRepository.findById(paymentDto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + paymentDto.getUserId()));
+        
+        long potentialUserId = booking.getInterviewee().getUser().getUserId();
+        
+        User user = userRepository.findById(potentialUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + potentialUserId));
+        
+        long potentialInterviewerId = booking.getAvailability().getInterviewer().getInterviewerId();
+        
+        Interviewer interviewer = interviewerRepository.findById(potentialInterviewerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found with ID: " + potentialInterviewerId));
 
         Interview interview = interviewRepository.findById(paymentDto.getInterviewId())
                 .orElseThrow(() -> new IllegalArgumentException("Interview not found with ID: " + paymentDto.getInterviewId()));
 
         Payment payment = PaymentMapper.toEntity(paymentDto, booking, user, interview);
-        Payment savedPayment = paymentRepository.save(payment);
+        Payment saveAndFlushdPayment = paymentRepository.saveAndFlush(payment);
 
-        return PaymentMapper.toDto(savedPayment);
+        return PaymentMapper.toDto(saveAndFlushdPayment);
     }
 
     /**
@@ -88,7 +101,6 @@ public class PaymentService {
                 .orElseThrow(() -> new IllegalArgumentException("Interview not found with ID: " + paymentDto.getInterviewId()));
 
         existingPayment.setBooking(booking);
-        existingPayment.setUser(user);
         existingPayment.setTransactionId(paymentDto.getTransactionId());
         existingPayment.setPaymentDate(paymentDto.getPaymentDate());
         existingPayment.setAmount(paymentDto.getAmount());
@@ -99,7 +111,7 @@ public class PaymentService {
         existingPayment.setPaymentStatus(Payment.PaymentStatus.valueOf(paymentDto.getPaymentStatus()));
         existingPayment.setInterview(interview);
 
-        Payment updatedPayment = paymentRepository.save(existingPayment);
+        Payment updatedPayment = paymentRepository.saveAndFlush(existingPayment);
 
         return PaymentMapper.toDto(updatedPayment);
     }

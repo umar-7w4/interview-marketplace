@@ -34,7 +34,7 @@ public class NotificationService {
      * Create a new notification.
      *
      * @param notificationDto the notification DTO.
-     * @return the saved NotificationDto.
+     * @return the saveAndFlushd NotificationDto.
      */
     @Transactional
     public NotificationDto createNotification(NotificationDto notificationDto) {
@@ -48,9 +48,9 @@ public class NotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("Interview not found with ID: " + notificationDto.getIntervieweeId()));
 
         Notification notification = NotificationMapper.toEntity(notificationDto, user, booking, interview);
-        Notification savedNotification = notificationRepository.save(notification);
+        Notification saveAndFlushdNotification = notificationRepository.saveAndFlush(notification);
 
-        return NotificationMapper.toDto(savedNotification);
+        return NotificationMapper.toDto(saveAndFlushdNotification);
     }
 
     /**
@@ -99,7 +99,7 @@ public class NotificationService {
         existingNotification.setRead(notificationDto.isRead());
         existingNotification.setTimeBeforeInterview(notificationDto.getTimeBeforeInterview());
 
-        Notification updatedNotification = notificationRepository.save(existingNotification);
+        Notification updatedNotification = notificationRepository.saveAndFlush(existingNotification);
 
         return NotificationMapper.toDto(updatedNotification);
     }
@@ -140,6 +140,6 @@ public class NotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found with ID: " + notificationId));
 
         notification.setRead(true);
-        notificationRepository.save(notification);
+        notificationRepository.saveAndFlush(notification);
     }
 }

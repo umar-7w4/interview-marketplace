@@ -12,15 +12,12 @@ public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "payment_id", nullable = false)
     private Long paymentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
 
     @Column(name = "transaction_id", nullable = false, unique = true)
     private String transactionId;
@@ -33,7 +30,24 @@ public class Payment {
 
     @Column(nullable = false, length = 3)
     private String currency;
+    
+    @Column(name = "payment_method", nullable = false)
+    private String paymentMethod;
 
+    @Column(name = "receipt_url")
+    private String receiptUrl;
+
+    @Column(name = "refund_amount")
+    private BigDecimal refundAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
+    private PaymentStatus paymentStatus;  
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) // Automatically create an interview when linked
+    @JoinColumn(name = "interview_id", referencedColumnName = "interview_id", nullable = true)
+    private Interview interview;
+    
     public Long getPaymentId() {
 		return paymentId;
 	}
@@ -52,17 +66,6 @@ public class Payment {
 	public void setBooking(Booking booking) {
 		this.booking = booking;
 	}
-
-
-	public User getUser() {
-		return user;
-	}
-
-
-	public void setUser(User user) {
-		this.user = user;
-	}
-
 
 	public String getTransactionId() {
 		return transactionId;
@@ -152,24 +155,6 @@ public class Payment {
 	public void setInterview(Interview interview) {
 		this.interview = interview;
 	}
-
-
-	@Column(name = "payment_method", nullable = false)
-    private String paymentMethod;
-
-    @Column(name = "receipt_url")
-    private String receiptUrl;
-
-    @Column(name = "refund_amount")
-    private BigDecimal refundAmount;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status", nullable = false)
-    private PaymentStatus paymentStatus;  
-    
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "interview_id")
-    private Interview interview;
 
     
     public enum PaymentStatus {

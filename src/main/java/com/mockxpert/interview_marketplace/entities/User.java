@@ -10,6 +10,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(name = "first_name", nullable = false)
@@ -82,9 +83,6 @@ public class User {
 
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Feedback> feedbackReceived;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Payment> payments;
 
     @PrePersist
     protected void onCreate() {
@@ -251,13 +249,5 @@ public class User {
 
     public void setFeedbackReceived(List<Feedback> feedbackReceived) {
         this.feedbackReceived = feedbackReceived;
-    }
-
-    public List<Payment> getPayments() {
-        return payments;
-    }
-
-    public void setPayments(List<Payment> payments) {
-        this.payments = payments;
     }
 }

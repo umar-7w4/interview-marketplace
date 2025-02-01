@@ -12,7 +12,6 @@ public class PaymentDto {
     @NotNull(message = "Booking ID is required")
     private Long bookingId;
 
-    @NotNull(message = "User ID is required")
     private Long userId;
 
     @NotBlank(message = "Transaction ID is required")

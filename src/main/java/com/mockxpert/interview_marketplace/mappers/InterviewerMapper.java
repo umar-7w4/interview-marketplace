@@ -1,7 +1,13 @@
 package com.mockxpert.interview_marketplace.mappers;
 
 import com.mockxpert.interview_marketplace.dto.InterviewerDto;
+import com.mockxpert.interview_marketplace.dto.InterviewerSkillDto;
 import com.mockxpert.interview_marketplace.entities.Interviewer;
+import com.mockxpert.interview_marketplace.entities.InterviewerSkill;
+import com.mockxpert.interview_marketplace.entities.Skill;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class InterviewerMapper {
 
@@ -30,6 +36,9 @@ public class InterviewerMapper {
         dto.setAverageRating(interviewer.getAverageRating());
         dto.setProfileCompletionStatus(interviewer.getProfileCompletionStatus());
         dto.setIsVerified(interviewer.getIsVerified());
+        dto.setSkills(interviewer.getSkills().stream()
+                .map(InterviewerSkillMapper::toDto)
+                .collect(Collectors.toList()));
 
         return dto;
     }
@@ -79,5 +88,19 @@ public class InterviewerMapper {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid status value: " + status, e);
         }
+    }
+
+    /**
+     * Finds the corresponding InterviewerSkill entity for the given interviewer and skill.
+     *
+     * @param interviewer the Interviewer entity
+     * @param skill the Skill entity
+     * @return the corresponding InterviewerSkill entity
+     */
+    private static InterviewerSkill findInterviewerSkill(Interviewer interviewer, Skill skill) {
+        return interviewer.getSkills().stream()
+                .filter(interviewerSkill -> interviewerSkill.getSkill().equals(skill))
+                .findFirst()
+                .orElse(null);
     }
 }

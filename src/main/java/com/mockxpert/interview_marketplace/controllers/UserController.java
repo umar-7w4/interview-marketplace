@@ -30,7 +30,7 @@ public class UserController {
      * @throws FirebaseAuthException 
      */
     @PostMapping("/register")
-    public ResponseEntity<UserDto> registerUser(@RequestHeader("Authorization") String firebaseToken, @RequestBody @Valid UserDto userDto) throws FirebaseAuthException {
+    public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String firebaseToken, @RequestBody @Valid UserDto userDto) throws FirebaseAuthException {
         try {
             System.out.println("Received Firebase Token: " + firebaseToken);
             System.out.println("Received User Data: " + userDto);
@@ -39,10 +39,10 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         } catch (ConflictException e) {
             System.err.println("Conflict Exception: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (UnauthorizedException e) {
             System.err.println("Unauthorized Exception: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
@@ -53,7 +53,7 @@ public class UserController {
      * @return the UserDto of the logged-in user.
      */
     @PostMapping("/login")
-    public ResponseEntity<UserDto> loginUser(@RequestHeader("Authorization") String firebaseToken) {
+    public ResponseEntity<?> loginUser(@RequestHeader("Authorization") String firebaseToken) {
         try {
             // Debug Log for Token
             System.out.println("Raw Authorization Header: " + firebaseToken);
@@ -68,7 +68,7 @@ public class UserController {
             return ResponseEntity.ok(loggedInUser);
         } catch (UnauthorizedException e) {
             System.err.println("Unauthorized: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
@@ -79,14 +79,14 @@ public class UserController {
      * @return the updated UserDto.
      */
     @PutMapping("/{userId}")
-    public ResponseEntity<UserDto> updateUserProfile(@PathVariable Long userId, @RequestBody @Valid UserDto userDto) {
+    public ResponseEntity<?> updateUserProfile(@PathVariable Long userId, @RequestBody @Valid UserDto userDto) {
         try {
             UserDto updatedUser = userService.updateUserProfile(userId, userDto);
             return ResponseEntity.ok(updatedUser);
         } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (ConflictException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 
@@ -130,12 +130,12 @@ public class UserController {
      * @return the UserDto if found.
      */
     @GetMapping("/findByEmail")
-    public ResponseEntity<UserDto> findUserByEmail(@RequestParam String email) {
+    public ResponseEntity<?> findUserByEmail(@RequestParam String email) {
         try {
             UserDto user = userService.findUserByEmail(email);
             return ResponseEntity.ok(user);
         } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 

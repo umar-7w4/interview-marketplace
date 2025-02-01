@@ -9,6 +9,10 @@ import com.mockxpert.interview_marketplace.mappers.IntervieweeSkillMapper;
 import com.mockxpert.interview_marketplace.repositories.IntervieweeRepository;
 import com.mockxpert.interview_marketplace.repositories.IntervieweeSkillRepository;
 import com.mockxpert.interview_marketplace.repositories.SkillRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,10 +38,10 @@ public class IntervieweeSkillService {
 
         IntervieweeSkill entity = IntervieweeSkillMapper.toEntity(dto, interviewee, skill);
         try {
-            IntervieweeSkill savedEntity = intervieweeSkillRepository.save(entity);
-            return IntervieweeSkillMapper.toDto(savedEntity);
+            IntervieweeSkill saveAndFlushdEntity = intervieweeSkillRepository.saveAndFlush(entity);
+            return IntervieweeSkillMapper.toDto(saveAndFlushdEntity);
         } catch (Exception e) {
-            throw new InternalServerErrorException("Failed to save Interviewee Skill due to server error.");
+            throw new InternalServerErrorException("Failed to saveAndFlush Interviewee Skill due to server error.");
         }
     }
 
@@ -52,15 +56,53 @@ public class IntervieweeSkillService {
         if (dto.getProficiencyLevel() != null) {
             intervieweeSkill.setProficiencyLevel(dto.getProficiencyLevel());
         }
-        if (dto.getCertified() != null) {
-            intervieweeSkill.setCertified(dto.getCertified());
+        if (dto.isCertified() != null) {
+            intervieweeSkill.setCertified(dto.isCertified());
         }
 
         try {
-            IntervieweeSkill updatedEntity = intervieweeSkillRepository.save(intervieweeSkill);
+            IntervieweeSkill updatedEntity = intervieweeSkillRepository.saveAndFlush(intervieweeSkill);
             return IntervieweeSkillMapper.toDto(updatedEntity);
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to update Interviewee Skill due to server error.");
         }
     }
+    
+    /**
+     * Retrieve all skills for a specific interviewee.
+     * @param intervieweeId the ID of the interviewee.
+     * @return a list of IntervieweeSkillDto objects.
+     */
+    public List<IntervieweeSkillDto> getSkillsByInterviewee(Long intervieweeId) {
+        try {
+            List<IntervieweeSkill> skills = intervieweeSkillRepository.findByInterviewee_IntervieweeId(intervieweeId);
+            return skills.stream()
+                    .map(IntervieweeSkillMapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new InternalServerErrorException("Failed to retrieve skills for the interviewee due to server error.");
+        }
+    }
+    
+    /**
+     * Delete a skill for a specific interviewee.
+     * @param intervieweeSkillId the ID of the interviewee skill to delete.
+     * @return true if the skill was successfully deleted, false otherwise.
+     */
+    
+    @Transactional
+    public boolean deleteIntervieweeSkill(Long intervieweeSkillId) {
+        try {
+            IntervieweeSkill skill = intervieweeSkillRepository.findById(intervieweeSkillId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Interviewee skill not found with ID: " + intervieweeSkillId));
+            intervieweeSkillRepository.delete(skill);
+            return true;
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new InternalServerErrorException("Failed to delete the interviewee skill due to server error.");
+        }
+    }
+
+
 }

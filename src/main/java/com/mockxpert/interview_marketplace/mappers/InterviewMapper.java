@@ -22,7 +22,7 @@ public class InterviewMapper {
         dto.setStartTime(interview.getStartTime());
         dto.setDuration(interview.getDuration());
         dto.setInterviewLink(interview.getInterviewLink());
-        dto.setStatus(interview.getStatus() != null ? interview.getStatus().name() : null);
+        dto.setInterviewStatus(interview.getStatus() != null ? interview.getStatus().name() : null);
         dto.setEndTime(interview.getEndTime());
         dto.setTimezone(interview.getTimezone());
         dto.setActualStartTime(interview.getActualStartTime());
@@ -44,7 +44,7 @@ public class InterviewMapper {
         interview.setStartTime(dto.getStartTime());
         interview.setDuration(dto.getDuration());
         interview.setInterviewLink(dto.getInterviewLink());
-        interview.setStatus(dto.getStatus() != null ? Interview.InterviewStatus.valueOf(dto.getStatus()) : null);
+        interview.setStatus(dto.getInterviewStatus() != null ? Interview.InterviewStatus.valueOf(dto.getInterviewStatus()) : null);
         interview.setTimezone(dto.getTimezone());
         interview.setActualStartTime(dto.getActualStartTime());
         interview.setActualEndTime(dto.getActualEndTime());

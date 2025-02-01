@@ -44,7 +44,7 @@ public interface InterviewerRepository extends JpaRepository<Interviewer, Long> 
      * @param skillName the name of the skill to filter interviewers.
      * @return a list of interviewers having the specified skill.
      */
-    List<Interviewer> findBySkills_Name(String skillName);
+    //List<Interviewer> findBySkills_Name(String skillName);
 
     /**
      * Find interviewers who speak a specific language.

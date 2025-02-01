@@ -22,6 +22,12 @@ public class InterviewerSkillDto {
 
     @NotNull(message = "Certification status is required")
     private Boolean certified;
+    
+    public InterviewerSkillDto() {}
+
+	public InterviewerSkillDto(long l, int i, String string, boolean b) {
+		// TODO Auto-generated constructor stub
+	}
 
 	public Long getInterviewerSkillId() {
 		return interviewerSkillId;
@@ -63,7 +69,7 @@ public class InterviewerSkillDto {
 		this.proficiencyLevel = proficiencyLevel;
 	}
 
-	public Boolean getCertified() {
+	public Boolean isCertified() {
 		return certified;
 	}
 

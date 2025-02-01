@@ -12,6 +12,7 @@ public class Feedback {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "feedback_id", nullable = false)
     private Long feedbackId;
 
     @ManyToOne(fetch = FetchType.LAZY)

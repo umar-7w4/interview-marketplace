@@ -16,7 +16,6 @@ public class PaymentMapper {
         PaymentDto paymentDto = new PaymentDto();
         paymentDto.setPaymentId(payment.getPaymentId());
         paymentDto.setBookingId(payment.getBooking() != null ? payment.getBooking().getBookingId() : null);
-        paymentDto.setUserId(payment.getUser() != null ? payment.getUser().getUserId() : null);
         paymentDto.setTransactionId(payment.getTransactionId());
         paymentDto.setPaymentDate(payment.getPaymentDate());
         paymentDto.setAmount(payment.getAmount());
@@ -38,7 +37,6 @@ public class PaymentMapper {
         Payment payment = new Payment();
         payment.setPaymentId(paymentDto.getPaymentId());
         payment.setBooking(booking);
-        payment.setUser(user);
         payment.setTransactionId(paymentDto.getTransactionId());
         payment.setPaymentDate(paymentDto.getPaymentDate());
         payment.setAmount(paymentDto.getAmount());

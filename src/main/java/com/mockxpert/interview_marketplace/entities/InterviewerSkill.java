@@ -9,6 +9,7 @@ public class InterviewerSkill {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "interviewer_skill_id", nullable = false)
     private Long interviewerSkillId;
 
     @ManyToOne(fetch = FetchType.LAZY)

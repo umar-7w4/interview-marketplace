@@ -33,7 +33,7 @@ public class FeedbackService {
     /**
      * Register a new feedback.
      * @param feedbackDto the feedback data transfer object containing registration information.
-     * @return the saved FeedbackDto.
+     * @return the saveAndFlushd FeedbackDto.
      */
     @Transactional
     public FeedbackDto registerFeedback(FeedbackDto feedbackDto) {
@@ -52,10 +52,10 @@ public class FeedbackService {
 
         Feedback feedback = FeedbackMapper.toEntity(feedbackDto, interview, giver, receiver);
         try {
-            Feedback savedFeedback = feedbackRepository.save(feedback);
-            return FeedbackMapper.toDto(savedFeedback);
+            Feedback saveAndFlushdFeedback = feedbackRepository.saveAndFlush(feedback);
+            return FeedbackMapper.toDto(saveAndFlushdFeedback);
         } catch (Exception e) {
-            throw new InternalServerErrorException("Failed to save Feedback due to server error.");
+            throw new InternalServerErrorException("Failed to saveAndFlush Feedback due to server error.");
         }
     }
 
@@ -81,7 +81,7 @@ public class FeedbackService {
         feedback.setImprovements(feedbackDto.getImprovements());
 
         try {
-            Feedback updatedFeedback = feedbackRepository.save(feedback);
+            Feedback updatedFeedback = feedbackRepository.saveAndFlush(feedback);
             return FeedbackMapper.toDto(updatedFeedback);
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to update Feedback due to server error.");

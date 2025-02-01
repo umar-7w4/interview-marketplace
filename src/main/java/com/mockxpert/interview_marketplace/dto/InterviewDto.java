@@ -32,14 +32,15 @@ public class InterviewDto {
     @NotNull(message = "Duration is required")
     private Duration duration;
 
+    @NotNull(message = "End time is required")
+    private LocalTime endTime;
+
     @NotBlank(message = "Interview link is required")
     private String interviewLink;
 
-    private String status;  // Represented as String for flexibility in DTO
+    private String interviewStatus;  
 
     private String timezone;
-
-    private LocalTime endTime;
 
     private LocalDateTime actualStartTime;
 
@@ -109,12 +110,12 @@ public class InterviewDto {
 		this.interviewLink = interviewLink;
 	}
 
-	public String getStatus() {
-		return status;
+	public String getInterviewStatus() {
+		return interviewStatus;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setInterviewStatus(String interviewStatus) {
+		this.interviewStatus = interviewStatus;
 	}
 
 	public String getTimezone() {

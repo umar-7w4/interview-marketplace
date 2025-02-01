@@ -35,7 +35,7 @@ public class IntervieweeSkillMapper {
         entity.setSkill(skill);
         entity.setYearsOfExperience(dto.getYearsOfExperience());
         entity.setProficiencyLevel(dto.getProficiencyLevel());
-        entity.setCertified(dto.getCertified());
+        entity.setCertified(dto.isCertified());
 
         return entity;
     }

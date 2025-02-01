@@ -13,6 +13,7 @@ public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "booking_id", nullable = false)
     private Long bookingId;
 
     @ManyToOne(fetch = FetchType.LAZY)

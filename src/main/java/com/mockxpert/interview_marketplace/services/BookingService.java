@@ -31,7 +31,7 @@ public class BookingService {
     /**
      * Register a new booking.
      * @param bookingDto the booking data transfer object containing registration information.
-     * @return the saved BookingDto.
+     * @return the saveAndFlushd BookingDto.
      */
     @Transactional
     public BookingDto registerBooking(BookingDto bookingDto) {
@@ -43,7 +43,7 @@ public class BookingService {
 
         Booking booking = BookingMapper.toEntity(bookingDto, interviewee, availability);
         try {
-            Booking savedBooking = bookingRepository.save(booking);
+            Booking savedBooking = bookingRepository.saveAndFlush(booking);
             return BookingMapper.toDto(savedBooking);
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to save Booking due to server error.");
@@ -78,7 +78,7 @@ public class BookingService {
         }
 
         try {
-            Booking updatedBooking = bookingRepository.save(booking);
+            Booking updatedBooking = bookingRepository.saveAndFlush(booking);
             return BookingMapper.toDto(updatedBooking);
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to update Booking due to server error.");
@@ -111,7 +111,7 @@ public class BookingService {
         booking.setCancellationReason(reason);
 
         try {
-            Booking updatedBooking = bookingRepository.save(booking);
+            Booking updatedBooking = bookingRepository.saveAndFlush(booking);
             return BookingMapper.toDto(updatedBooking);
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to cancel Booking due to server error.");

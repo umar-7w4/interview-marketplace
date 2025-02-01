@@ -21,7 +21,7 @@ public class SkillService {
     /**
      * Register a new skill.
      * @param skillDto the skill data transfer object containing registration information.
-     * @return the saved Skill entity.
+     * @return the saveAndFlushd Skill entity.
      */
     @Transactional
     public SkillDto registerSkill(SkillDto skillDto) {
@@ -31,8 +31,8 @@ public class SkillService {
 
         Skill skill = SkillMapper.toEntity(skillDto);
         try {
-            Skill savedSkill = skillRepository.save(skill);
-            return SkillMapper.toDto(savedSkill);
+            Skill saveAndFlushdSkill = skillRepository.saveAndFlush(skill);
+            return SkillMapper.toDto(saveAndFlushdSkill);
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to register skill due to server error.");
         }
@@ -61,7 +61,7 @@ public class SkillService {
         }
 
         try {
-            Skill updatedSkill = skillRepository.save(skill);
+            Skill updatedSkill = skillRepository.saveAndFlush(skill);
             return SkillMapper.toDto(updatedSkill);
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to update skill due to server error.");

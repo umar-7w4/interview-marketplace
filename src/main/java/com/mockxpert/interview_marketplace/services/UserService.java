@@ -1,6 +1,7 @@
 package com.mockxpert.interview_marketplace.services;
 
 import com.mockxpert.interview_marketplace.dto.UserDto;
+import com.mockxpert.interview_marketplace.entities.Interviewee;
 import com.mockxpert.interview_marketplace.entities.User;
 import com.mockxpert.interview_marketplace.exceptions.*;
 import com.mockxpert.interview_marketplace.mappers.UserMapper;
@@ -23,6 +24,7 @@ public class UserService {
 
     @Autowired
     private FirebaseAuth firebaseAuth;
+    
 
     /**
      * Register a new user using Firebase Token.
@@ -65,7 +67,13 @@ public class UserService {
 
         User user = UserMapper.toEntity(userDto);
         user.setCreatedAt(LocalDateTime.now());
-        user.setStatus(User.Status.PENDING); // Set default status as PENDING
+        
+        if(user.getRole() == User.Role.INTERVIEWER) {
+        	user.setStatus(User.Status.PENDING); 
+        }
+        else {
+        	user.setStatus(User.Status.ACTIVE); 
+        }
 
         User savedUser = userRepository.saveAndFlush(user); // Use saveAndFlush to immediately persist data
         System.out.println("Saved User ID: " + savedUser.getUserId());

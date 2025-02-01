@@ -34,7 +34,7 @@ public class FirebaseConfig {
         } catch (IOException e) {
             throw new RuntimeException("Could not initialize Firebase", e);
         }
-    }
+    } 
 
     @Bean
     public FirebaseAuth firebaseAuth() {

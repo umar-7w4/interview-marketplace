@@ -1,20 +1,25 @@
 package com.mockxpert.interview_marketplace.services;
 
-import com.mockxpert.interview_marketplace.dto.InterviewerVerificationDto;
+import com.mockxpert.interview_marketplace.dto.AdminOverrideDto;
+import com.mockxpert.interview_marketplace.dto.VerificationResponseDto;
 import com.mockxpert.interview_marketplace.entities.Interviewer;
 import com.mockxpert.interview_marketplace.entities.InterviewerVerification;
-import com.mockxpert.interview_marketplace.exceptions.*;
+import com.mockxpert.interview_marketplace.entities.InterviewerVerification.VerificationStatus;
+import com.mockxpert.interview_marketplace.exceptions.BadRequestException;
+import com.mockxpert.interview_marketplace.exceptions.ResourceNotFoundException;
 import com.mockxpert.interview_marketplace.mappers.InterviewerVerificationMapper;
 import com.mockxpert.interview_marketplace.repositories.InterviewerRepository;
 import com.mockxpert.interview_marketplace.repositories.InterviewerVerificationRepository;
-
+import com.mockxpert.interview_marketplace.utils.TokenGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.Optional;
+import java.time.LocalDateTime;
 
+/**
+ * Service class for managing InterviewerVerification entities.
+ */
 @Service
 public class InterviewerVerificationService {
 
@@ -22,138 +27,138 @@ public class InterviewerVerificationService {
     private InterviewerVerificationRepository verificationRepository;
 
     @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private InterviewerService interviewerService;
+    
+    @Autowired
     private InterviewerRepository interviewerRepository;
 
     /**
-     * Register a new verification for an interviewer.
-     * @param dto the interviewer verification data transfer object containing registration information.
-     * @return the saved InterviewerVerification entity.
+     * Initiates the verification process by generating a token and sending a verification email.
+     *
+     * @param interviewer the interviewer to verify.
      */
     @Transactional
-    public InterviewerVerificationDto registerInterviewerVerification(InterviewerVerificationDto dto) {
-        Interviewer interviewer = interviewerRepository.findById(dto.getInterviewerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found with ID: " + dto.getInterviewerId()));
+    public void initiateVerification(long interviewerId) {
+    	
+        Interviewer interviewer = interviewerRepository.findById(interviewerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found with ID: " + interviewerId));
+        
+        // Generate a unique verification token
+        String token = TokenGenerator.generateToken();
+        
+        System.out.println(token);
 
-        if (verificationRepository.findByInterviewer_InterviewerId(dto.getInterviewerId()).isPresent()) {
-            throw new ConflictException("Verification already exists for interviewer with ID: " + dto.getInterviewerId());
-        }
+        // Set token expiry (e.g., 24 hours from now)
+        LocalDateTime expiryTime = LocalDateTime.now().plusHours(24);
 
-        InterviewerVerification verification = InterviewerVerificationMapper.toEntity(dto, interviewer);
+        // Create InterviewerVerification record
+        InterviewerVerification verification = new InterviewerVerification();
+        verification.setVerificationToken(token);
+        verification.setStatus(VerificationStatus.EMAIL_SENT);
+        verification.setInterviewer(interviewer);
+        verification.setTokenExpiry(expiryTime);
+        verification.setLastUpdated(LocalDateTime.now());
 
-        try {
-            InterviewerVerification savedVerification = verificationRepository.save(verification);
-            return InterviewerVerificationMapper.toDto(savedVerification);
-        } catch (Exception e) {
-            throw new InternalServerErrorException("Failed to register interviewer verification due to server error.");
-        }
+        // Save verification record
+        verificationRepository.save(verification);
+
+        // Send verification email
+        emailService.sendVerificationEmail(interviewer.getUser().getEmail(), token);
     }
 
     /**
-     * Update interviewer verification information.
-     * @param verificationId the ID of the verification to update.
-     * @param dto the interviewer verification data transfer object containing updated information.
-     * @return the updated InterviewerVerification entity.
+     * Verifies the interviewer's email based on the provided token.
+     *
+     * @param token the verification token.
+     * @return VerificationResponseDto indicating the result.
      */
     @Transactional
-    public InterviewerVerificationDto updateInterviewerVerification(Long verificationId, InterviewerVerificationDto dto) {
-        InterviewerVerification verification = verificationRepository.findById(verificationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Verification not found with ID: " + verificationId));
+    public VerificationResponseDto verifyEmail(String token) {
+        // Retrieve verification record by token
+        InterviewerVerification verification = verificationRepository.findByVerificationToken(token)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid verification token."));
 
-        if (verification.getStatus() == InterviewerVerification.VerificationStatus.APPROVED ||
-                verification.getStatus() == InterviewerVerification.VerificationStatus.REJECTED) {
-            throw new ForbiddenException("Cannot update verification that has already been approved or rejected.");
+        // Check if already verified
+        if (verification.getStatus() == VerificationStatus.VERIFIED) {
+            throw new BadRequestException("Email is already verified.");
         }
 
-        verification.setDocumentUrl(dto.getDocumentUrl());
-        verification.setDocumentType(dto.getDocumentType());
-        verification.setUploadDate(dto.getUploadDate());
-        verification.setVerificationComments(dto.getVerificationComments());
-
-        if (dto.getStatus() != null) {
-            try {
-                verification.setStatus(InterviewerVerification.VerificationStatus.valueOf(dto.getStatus()));
-            } catch (IllegalArgumentException e) {
-                throw new BadRequestException("Invalid verification status: " + dto.getStatus());
-            }
+        // Check if token is expired
+        if (verification.getTokenExpiry() != null && verification.getTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Verification token has expired.");
         }
 
-        verification.setVerifiedBy(dto.getVerifiedBy());
-        verification.setVerificationDate(dto.getVerificationDate());
+        // Update verification status to VERIFIED
+        verification.setStatus(VerificationStatus.VERIFIED);
+        verification.setLastUpdated(LocalDateTime.now());
 
-        try {
-            InterviewerVerification updatedVerification = verificationRepository.save(verification);
-            return InterviewerVerificationMapper.toDto(updatedVerification);
-        } catch (Exception e) {
-            throw new InternalServerErrorException("Failed to update interviewer verification due to server error.");
-        }
+        // Save updated verification record
+        verificationRepository.save(verification);
+
+        // Update interviewer's isVerified flag via InterviewerService
+        Interviewer interviewer = verification.getInterviewer();
+        interviewerService.updateInterviewerVerificationStatus(interviewer.getInterviewerId(), true);
+
+        // Map to VerificationResponseDto
+        return InterviewerVerificationMapper.toVerificationResponseDto(verification);
     }
 
     /**
-     * Find interviewer verification by interviewer ID.
-     * @param interviewerId the interviewer ID linked to the verification.
-     * @return an Optional containing the InterviewerVerificationDto if found, or empty otherwise.
+     * Admin overrides the verification status of an interviewer.
+     *
+     * @param adminOverrideDto the DTO containing override information.
+     * @return VerificationResponseDto indicating the override result.
      */
-    public Optional<InterviewerVerificationDto> findByInterviewerId(Long interviewerId) {
-        return verificationRepository.findByInterviewer_InterviewerId(interviewerId)
-                .map(InterviewerVerificationMapper::toDto)
-                .or(() -> {
-                    throw new ResourceNotFoundException("Verification not found for interviewer ID: " + interviewerId);
-                });
+    @Transactional
+    public VerificationResponseDto adminOverride(AdminOverrideDto adminOverrideDto) {
+        // Retrieve verification record by interviewer ID
+        InterviewerVerification verification = verificationRepository.findByInterviewer_InterviewerId(adminOverrideDto.getInterviewerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Verification not found for interviewer ID: " + adminOverrideDto.getInterviewerId()));
+
+        // Update verification entity based on AdminOverrideDto
+        InterviewerVerificationMapper.updateVerificationFromAdminOverride(verification, adminOverrideDto);
+
+        // Save updated verification record
+        verificationRepository.save(verification);
+
+        // Update interviewer's isVerified flag based on new status
+        boolean isVerified = (verification.getStatus() == VerificationStatus.VERIFIED);
+        interviewerService.updateInterviewerVerificationStatus(adminOverrideDto.getInterviewerId(), isVerified);
+
+        // Map to VerificationResponseDto
+        return InterviewerVerificationMapper.toVerificationResponseDtoAfterOverride(verification);
     }
 
     /**
-     * Approve the verification of an interviewer.
-     * @param verificationId the ID of the verification to approve.
-     * @param verifiedBy the name of the admin verifying the interviewer.
-     * @return the updated InterviewerVerification entity.
+     * Resends the verification email to the interviewer.
+     *
+     * @param interviewerId the ID of the interviewer.
      */
     @Transactional
-    public InterviewerVerificationDto approveVerification(Long verificationId, String verifiedBy) {
-        InterviewerVerification verification = verificationRepository.findById(verificationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Verification not found with ID: " + verificationId));
+    public void resendVerificationEmail(Long interviewerId) {
+        // Retrieve verification record by interviewer ID
+        InterviewerVerification verification = verificationRepository.findByInterviewer_InterviewerId(interviewerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Verification not found for interviewer ID: " + interviewerId));
 
-        if (verification.getStatus() != InterviewerVerification.VerificationStatus.PENDING) {
-            throw new ConflictException("Verification must be in pending status to approve.");
+        // Check if already verified
+        if (verification.getStatus() == VerificationStatus.VERIFIED) {
+            throw new BadRequestException("Interviewer is already verified.");
         }
 
-        verification.setStatus(InterviewerVerification.VerificationStatus.APPROVED);
-        verification.setVerifiedBy(verifiedBy);
-        verification.setVerificationDate(LocalDate.now());
+        // Generate a new verification token
+        String newToken = TokenGenerator.generateToken();
+        verification.setVerificationToken(newToken);
+        verification.setStatus(VerificationStatus.EMAIL_SENT);
+        verification.setTokenExpiry(LocalDateTime.now().plusHours(24));
+        verification.setLastUpdated(LocalDateTime.now());
 
-        try {
-            InterviewerVerification updatedVerification = verificationRepository.save(verification);
-            return InterviewerVerificationMapper.toDto(updatedVerification);
-        } catch (Exception e) {
-            throw new InternalServerErrorException("Failed to approve interviewer verification due to server error.");
-        }
-    }
+        // Save updated verification record
+        verificationRepository.save(verification);
 
-    /**
-     * Reject the verification of an interviewer.
-     * @param verificationId the ID of the verification to reject.
-     * @param verifiedBy the name of the admin rejecting the interviewer.
-     * @param comments comments on why the verification was rejected.
-     * @return the updated InterviewerVerification entity.
-     */
-    @Transactional
-    public InterviewerVerificationDto rejectVerification(Long verificationId, String verifiedBy, String comments) {
-        InterviewerVerification verification = verificationRepository.findById(verificationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Verification not found with ID: " + verificationId));
-
-        if (verification.getStatus() != InterviewerVerification.VerificationStatus.PENDING) {
-            throw new ConflictException("Verification must be in pending status to reject.");
-        }
-
-        verification.setStatus(InterviewerVerification.VerificationStatus.REJECTED);
-        verification.setVerifiedBy(verifiedBy);
-        verification.setVerificationDate(LocalDate.now());
-        verification.setVerificationComments(comments);
-
-        try {
-            InterviewerVerification updatedVerification = verificationRepository.save(verification);
-            return InterviewerVerificationMapper.toDto(updatedVerification);
-        } catch (Exception e) {
-            throw new InternalServerErrorException("Failed to reject interviewer verification due to server error.");
-        }
+        // Resend verification email
+        emailService.sendVerificationEmail(verification.getInterviewer().getUser().getEmail(), newToken);
     }
 }

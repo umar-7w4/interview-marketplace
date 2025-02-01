@@ -2,6 +2,7 @@ package com.mockxpert.interview_marketplace.entities;
 
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
@@ -13,6 +14,7 @@ public class Interviewer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "interviewer_id", nullable = false)
     private Long interviewerId;
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -66,15 +68,11 @@ public class Interviewer {
     @OneToOne(mappedBy = "interviewer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private InterviewerVerification interviewerVerification;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "interviewer_skills",
-        joinColumns = @JoinColumn(name = "interviewer_id"),
-        inverseJoinColumns = @JoinColumn(name = "skill_id")
-    )
-    private List<Skill> skills;
-    
-    public enum Status {
+    @OneToMany(mappedBy = "interviewer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InterviewerSkill> skills = new ArrayList<>();
+  
+
+	public enum Status {
         ACTIVE,
         INACTIVE,
         PENDING_VERIFICATION
@@ -207,15 +205,14 @@ public class Interviewer {
 	public void setInterviewerVerification(InterviewerVerification interviewerVerification) {
 		this.interviewerVerification = interviewerVerification;
 	}
-
-	public List<Skill> getSkills() {
+	
+    public List<InterviewerSkill> getSkills() {
 		return skills;
 	}
 
-	public void setSkills(List<Skill> skills) {
+	public void setSkills(List<InterviewerSkill> skills) {
 		this.skills = skills;
 	}
-    
     
 
 }

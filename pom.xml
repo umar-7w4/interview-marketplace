@@ -1,113 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
-	<groupId>com.mockxpert</groupId>
-	<artifactId>interview-marketplace</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>interview-marketplace</name>
-	<description>An end to end interview marketplace application which allows interviewees to book interviews with interviewers.</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
-	<properties>
-		<java.version>17</java.version>
-	</properties>
-	<dependencies>
-		<dependency>
-	        <groupId>org.postgresql</groupId>
-	        <artifactId>postgresql</artifactId>
-	    </dependency>
-	    <dependency>
-	        <groupId>org.springframework.boot</groupId>
-	        <artifactId>spring-boot-starter-data-jpa</artifactId>
-	    </dependency>
-	    <dependency>
-	        <groupId>org.springframework.boot</groupId>
-	        <artifactId>spring-boot-starter-web</artifactId>
-	    </dependency>
-	    <dependency>
-	        <groupId>org.springframework.boot</groupId>
-	        <artifactId>spring-boot-devtools</artifactId>
-	        <scope>runtime</scope>
-	        <optional>true</optional>
-	    </dependency>
+<project 
+    xmlns="http://maven.apache.org/POM/4.0.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://maven.apache.org/POM/4.0.0 
+        https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	    <dependency>
-	        <groupId>org.springframework.boot</groupId>
-	        <artifactId>spring-boot-starter-test</artifactId>
-	        <scope>test</scope>
-	    </dependency>
-	    <dependency>
-	        <groupId>org.springframework.boot</groupId>
-	        <artifactId>spring-boot-starter-validation</artifactId>
-	    </dependency>
-	    <dependency>
-	        <groupId>org.mapstruct</groupId>
-	        <artifactId>mapstruct</artifactId>
-	        <version>1.5.5.Final</version>
-	    </dependency>
-	    <dependency>
-	        <groupId>org.mapstruct</groupId>
-	        <artifactId>mapstruct-processor</artifactId>
-	        <version>1.5.5.Final</version>
-	        <scope>provided</scope>
-	    </dependency>
-	    <dependency>
-	        <groupId>com.google.firebase</groupId>
-	        <artifactId>firebase-admin</artifactId>
-	        <version>8.1.0</version> 
-	    </dependency>
-	    <dependency>
-	        <groupId>io.jsonwebtoken</groupId>
-	        <artifactId>jjwt</artifactId>
-	        <version>0.9.1</version>
-	    </dependency>
-	    <dependency>
-	        <groupId>jakarta.servlet</groupId>
-	        <artifactId>jakarta.servlet-api</artifactId>
-	        <version>5.0.0</version>
-	        <scope>provided</scope>
-	    </dependency>
+    <modelVersion>4.0.0</modelVersion>
+    
+    <!-- In case you're using the latest Spring Boot 3.x parent -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
 
-	</dependencies>
+    <groupId>com.mockxpert</groupId>
+    <artifactId>interview-marketplace</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>interview-marketplace</name>
+    <description>An end to end interview marketplace application.</description>
 
+    <properties>
+        <!-- Java 17 for Spring Boot 3.x -->
+        <java.version>17</java.version>
+    </properties>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-				</configuration>
-			</plugin>
-		</plugins>
-	    <resources>
-	        <resource>
-	            <directory>src/main/resources</directory>
-	            <includes>
-	                <include>**/*.json</include> <!-- Include JSON files -->
-	                <include>keys/**</include>  <!-- Include the keys folder -->
-	            </includes>
-	        </resource>
-	    </resources>
-	</build>
+    <dependencies>
+        <!-- PostgreSQL JDBC driver -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
 
+        <!-- Spring Data JPA -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Spring Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Devtools (optional) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Validation (Hibernate Validator for Bean Validation) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- JWT -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
+        <!-- For local/embedded web container (usually provided automatically by Boot) -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Firebase Admin SDK -->
+        <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>8.1.0</version>
+        </dependency>
+
+        <!-- Spring Boot Email starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- GreenMail for integration testing email sending 
+             IMPORTANT: use greenmail-junit5 for JUnit5's GreenMailExtension -->
+        <dependency>
+            <groupId>com.icegreen</groupId>
+            <artifactId>greenmail-junit5</artifactId>
+            <version>2.1.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Spring Boot Maven Plugin -->
+	        <plugin>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-maven-plugin</artifactId>
+	        </plugin>
+        </plugins>
+        <!-- Ensure JSON and keys folders are included in the packaged resources -->
+        <resources>
+		    <resource>
+		        <directory>src/main/resources</directory>
+		    </resource>
+        </resources>
+    </build>
 
 </project>

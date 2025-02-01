@@ -13,6 +13,7 @@ public class Availability {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "availability_id", nullable = false)
     private Long availabilityId;
 
     @ManyToOne(fetch = FetchType.LAZY)

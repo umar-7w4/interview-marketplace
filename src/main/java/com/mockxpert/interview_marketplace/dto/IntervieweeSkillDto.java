@@ -23,6 +23,8 @@ public class IntervieweeSkillDto {
 
     @NotNull(message = "Certification status is required")
     private Boolean certified;
+    
+    public IntervieweeSkillDto() {}
 
 	public Long getIntervieweeSkillId() {
 		return intervieweeSkillId;
@@ -64,7 +66,7 @@ public class IntervieweeSkillDto {
 		this.proficiencyLevel = proficiencyLevel;
 	}
 
-	public Boolean getCertified() {
+	public Boolean isCertified() {
 		return certified;
 	}
 

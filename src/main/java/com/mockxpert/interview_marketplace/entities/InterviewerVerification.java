@@ -1,88 +1,49 @@
 package com.mockxpert.interview_marketplace.entities;
 
-import java.time.LocalDate;
+import java.time.*;
 
 import jakarta.persistence.*;
-
 
 @Entity
 @Table(name = "interviewer_verifications")
 public class InterviewerVerification {
 
+    public enum VerificationStatus {
+        PENDING,
+        EMAIL_SENT,
+        VERIFIED,
+        REJECTED
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long verificationId;
+    @Column(name = "interviewer_verification_id", nullable = false)
+    private Long interviewerVerificationId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "interviewer_id", nullable = false)
-    private Interviewer interviewer;
-
-    @Column(name = "document_url", nullable = false)
-    private String documentUrl;
-
-    @Column(name = "document_type", nullable = false)
-    private String documentType;
-
-    @Column(name = "upload_date", nullable = false)
-    private LocalDate uploadDate;
+    @Column(name="verification_token", unique = true, nullable = false)
+    private String verificationToken;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private VerificationStatus status;
 
-    @Column(name = "verified_by")
-    private String verifiedBy;
+    @Column(name = "verification_notes")
+    private String verificationNotes;
 
-    @Column(name = "verification_date")
-    private LocalDate verificationDate;
-
-    @Column(name = "verification_comments", length = 500)
-    private String verificationComments;
-    
-    public enum VerificationStatus {
-        PENDING,
-        APPROVED,
-        REJECTED
-    }
-
-	public Long getVerificationId() {
-		return verificationId;
+    public Long getInterviewerVerificationId() {
+		return interviewerVerificationId;
 	}
 
-	public void setVerificationId(Long verificationId) {
-		this.verificationId = verificationId;
+	public void setInterviewerVerificationId(Long id) {
+		this.interviewerVerificationId = id;
 	}
 
-	public Interviewer getInterviewer() {
-		return interviewer;
+	public String getVerificationToken() {
+		return verificationToken;
 	}
 
-	public void setInterviewer(Interviewer interviewer) {
-		this.interviewer = interviewer;
-	}
-
-	public String getDocumentUrl() {
-		return documentUrl;
-	}
-
-	public void setDocumentUrl(String documentUrl) {
-		this.documentUrl = documentUrl;
-	}
-
-	public String getDocumentType() {
-		return documentType;
-	}
-
-	public void setDocumentType(String documentType) {
-		this.documentType = documentType;
-	}
-
-	public LocalDate getUploadDate() {
-		return uploadDate;
-	}
-
-	public void setUploadDate(LocalDate uploadDate) {
-		this.uploadDate = uploadDate;
+	public void setVerificationToken(String verificationToken) {
+		this.verificationToken = verificationToken;
 	}
 
 	public VerificationStatus getStatus() {
@@ -93,30 +54,58 @@ public class InterviewerVerification {
 		this.status = status;
 	}
 
-	public String getVerifiedBy() {
-		return verifiedBy;
+	public String getVerificationNotes() {
+		return verificationNotes;
 	}
 
-	public void setVerifiedBy(String verifiedBy) {
-		this.verifiedBy = verifiedBy;
+	public void setVerificationNotes(String verificationNotes) {
+		this.verificationNotes = verificationNotes;
 	}
 
-	public LocalDate getVerificationDate() {
-		return verificationDate;
+	public LocalDateTime getLastUpdated() {
+		return lastUpdated;
 	}
 
-	public void setVerificationDate(LocalDate verificationDate) {
-		this.verificationDate = verificationDate;
+	public void setLastUpdated(LocalDateTime lastUpdated) {
+		this.lastUpdated = lastUpdated;
 	}
 
-	public String getVerificationComments() {
-		return verificationComments;
+	public Interviewer getInterviewer() {
+		return interviewer;
 	}
 
-	public void setVerificationComments(String verificationComments) {
-		this.verificationComments = verificationComments;
+	public void setInterviewer(Interviewer interviewer) {
+		this.interviewer = interviewer;
 	}
+
+	public LocalDateTime getTokenExpiry() {
+		return tokenExpiry;
+	}
+
+	public void setTokenExpiry(LocalDateTime tokenExpiry) {
+		this.tokenExpiry = tokenExpiry;
+	}
+
+	@Column(name = "last_updated", nullable = false)
+    private LocalDateTime lastUpdated;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interviewer_id", nullable = false, unique = true)
+    private Interviewer interviewer;
+
+    @Column(name = "token_expiry")
+    private LocalDateTime tokenExpiry;
+
     
-    
+
+    @PrePersist
+    protected void onCreate() {
+        lastUpdated = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        lastUpdated = LocalDateTime.now();
+    }
 
 }

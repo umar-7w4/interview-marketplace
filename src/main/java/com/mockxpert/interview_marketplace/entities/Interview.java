@@ -16,6 +16,7 @@ public class Interview {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "interview_id", nullable = false)
     private Long interviewId;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -25,11 +25,9 @@ public class IntervieweeMapper {
         intervieweeDto.setFieldOfInterest(interviewee.getFieldOfInterest());
         intervieweeDto.setResume(interviewee.getResume());
         intervieweeDto.setTimezone(interviewee.getTimezone());
-        intervieweeDto.setSkillIds(
-                interviewee.getSkills() != null 
-                ? interviewee.getSkills().stream().map(Skill::getSkillId).collect(Collectors.toList()) 
-                : null
-        );
+        intervieweeDto.setSkills(interviewee.getSkills().stream()
+                .map(IntervieweeSkillMapper::toDto)
+                .collect(Collectors.toList()));
 
         return intervieweeDto;
     }
@@ -49,7 +47,6 @@ public class IntervieweeMapper {
         interviewee.setFieldOfInterest(intervieweeDto.getFieldOfInterest());
         interviewee.setResume(intervieweeDto.getResume());
         interviewee.setTimezone(intervieweeDto.getTimezone());
-        interviewee.setSkills(skills);
 
         return interviewee;
     }

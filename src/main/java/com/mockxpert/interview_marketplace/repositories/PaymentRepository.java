@@ -19,13 +19,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByBooking_BookingId(Long bookingId);
 
     /**
-     * Find payments by user ID.
-     * @param userId the ID of the user who made the payment.
-     * @return a list of payments made by the specified user.
-     */
-    List<Payment> findByUser_UserId(Long userId);
-
-    /**
      * Find payments by transaction ID.
      * @param transactionId the transaction ID from the payment gateway.
      * @return the payment associated with the given transaction ID.
@@ -82,14 +75,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
      * @return a list of payments for the specified booking ID and status.
      */
     List<Payment> findByBooking_BookingIdAndPaymentStatus(Long bookingId, String paymentStatus);
-
-    /**
-     * Find payments by user ID and payment status.
-     * @param userId the ID of the user who made the payment.
-     * @param paymentStatus the status of the payment.
-     * @return a list of payments made by the specified user with the given status.
-     */
-    List<Payment> findByUser_UserIdAndPaymentStatus(Long userId, String paymentStatus);
 
     /**
      * Find payments by refund amount greater than a specified value.

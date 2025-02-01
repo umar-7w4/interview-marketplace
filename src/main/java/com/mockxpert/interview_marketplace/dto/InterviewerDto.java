@@ -40,7 +40,7 @@ public class InterviewerDto {
     @NotNull(message = "Verification status is required")
     private Boolean isVerified;
 
-    private List<Long> skillIds;
+    private List<InterviewerSkillDto> skills;
 
 	public Long getInterviewerId() {
 		return interviewerId;
@@ -146,13 +146,14 @@ public class InterviewerDto {
 		this.isVerified = isVerified;
 	}
 
-	public List<Long> getSkillIds() {
-		return skillIds;
+	public List<InterviewerSkillDto> getSkills() {
+		return skills;
 	}
 
-	public void setSkillIds(List<Long> skillIds) {
-		this.skillIds = skillIds;
+	public void setSkills(List<InterviewerSkillDto> skills) {
+		this.skills = skills;
 	}
+
     
 }
 

@@ -26,7 +26,7 @@ public class IntervieweeDto {
     @NotBlank(message = "Timezone is required")
     private String timezone;
 
-    private List<Long> skillIds;
+    private List<IntervieweeSkillDto> skills;
 
 	public Long getIntervieweeId() {
 		return intervieweeId;
@@ -92,13 +92,14 @@ public class IntervieweeDto {
 		this.timezone = timezone;
 	}
 
-	public List<Long> getSkillIds() {
-		return skillIds;
+	public List<IntervieweeSkillDto> getSkills() {
+		return skills;
 	}
 
-	public void setSkillIds(List<Long> skillIds) {
-		this.skillIds = skillIds;
+	public void setSkills(List<IntervieweeSkillDto> skills) {
+		this.skills = skills;
 	}
+
     
     
 }

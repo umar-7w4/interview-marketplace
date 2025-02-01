@@ -1,17 +1,26 @@
 package com.mockxpert.interview_marketplace.services;
 
 import com.mockxpert.interview_marketplace.dto.InterviewerDto;
+import com.mockxpert.interview_marketplace.dto.InterviewerSkillDto;
 import com.mockxpert.interview_marketplace.entities.Interviewer;
+import com.mockxpert.interview_marketplace.entities.InterviewerSkill;
+import com.mockxpert.interview_marketplace.entities.Skill;
 import com.mockxpert.interview_marketplace.entities.User;
 import com.mockxpert.interview_marketplace.exceptions.*;
 import com.mockxpert.interview_marketplace.mappers.InterviewerMapper;
+import com.mockxpert.interview_marketplace.mappers.InterviewerSkillMapper;
 import com.mockxpert.interview_marketplace.repositories.InterviewerRepository;
+import com.mockxpert.interview_marketplace.repositories.InterviewerSkillRepository;
+import com.mockxpert.interview_marketplace.repositories.SkillRepository;
 import com.mockxpert.interview_marketplace.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class InterviewerService {
@@ -21,31 +30,57 @@ public class InterviewerService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private InterviewerSkillRepository interviewerSkillRepository;
+    
+    @Autowired
+    private SkillRepository skillRepository;
 
     /**
      * Register a new interviewer.
      * @param interviewerDto the interviewer data transfer object containing registration information.
-     * @return the saved Interviewer entity.
+     * @return the saveAndFlushd Interviewer entity.
      */
     @Transactional
     public InterviewerDto registerInterviewer(InterviewerDto interviewerDto) {
+        // Step 1: Fetch the User
         User user = userRepository.findById(interviewerDto.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + interviewerDto.getUserId()));
 
-        if (user.getRole() != User.Role.INTERVIEWER) {
-            throw new BadRequestException("User with ID " + interviewerDto.getUserId() + " is not eligible to be an interviewer.");
-        }
-
+        // Step 2: Convert DTO to Entity
         Interviewer interviewer = InterviewerMapper.toEntity(interviewerDto);
         interviewer.setUser(user);
 
-        try {
-            Interviewer savedInterviewer = interviewerRepository.save(interviewer);
-            return InterviewerMapper.toDto(savedInterviewer);
-        } catch (Exception e) {
-            throw new InternalServerErrorException("Failed to register interviewer due to server error.");
+        // Step 3: Handle Skills
+        List<InterviewerSkill> interviewerSkills = new ArrayList<>();
+        if (interviewerDto.getSkills() != null && !interviewerDto.getSkills().isEmpty()) {
+            for (InterviewerSkillDto skillDto : interviewerDto.getSkills()) {
+                // Fetch the Skill entity
+                Skill skill = skillRepository.findById(skillDto.getSkillId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Skill not found with ID: " + skillDto.getSkillId()));
+
+                // Map DTO to InterviewerSkill entity
+                InterviewerSkill interviewerSkill = InterviewerSkillMapper.toEntity(skillDto, interviewer, skill);
+                interviewerSkills.add(interviewerSkill);
+            }
         }
+
+        // Save the Interviewer first
+        Interviewer savedInterviewer = interviewerRepository.save(interviewer);
+
+        // Set and save InterviewerSkills
+        if (!interviewerSkills.isEmpty()) {
+            for (InterviewerSkill interviewerSkill : interviewerSkills) {
+                interviewerSkill.setInterviewer(savedInterviewer);
+            }
+            interviewerSkillRepository.saveAll(interviewerSkills);
+        }
+
+        return InterviewerMapper.toDto(savedInterviewer);
     }
+
+
 
     /**
      * Update interviewer profile information.
@@ -55,25 +90,77 @@ public class InterviewerService {
      */
     @Transactional
     public InterviewerDto updateInterviewerProfile(Long interviewerId, InterviewerDto interviewerDto) {
+        // Step 1: Fetch the Interviewer
         Interviewer interviewer = interviewerRepository.findById(interviewerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found with ID: " + interviewerId));
 
-        interviewer.setBio(interviewerDto.getBio());
-        interviewer.setCurrentCompany(interviewerDto.getCurrentCompany());
-        interviewer.setYearsOfExperience(interviewerDto.getYearsOfExperience());
-        interviewer.setLanguagesSpoken(interviewerDto.getLanguagesSpoken());
-        interviewer.setCertifications(interviewerDto.getCertifications());
-        interviewer.setSessionRate(interviewerDto.getSessionRate());
-        interviewer.setTimezone(interviewerDto.getTimezone());
-        interviewer.setProfileCompletionStatus(interviewerDto.getProfileCompletionStatus());
+        // Step 2: Update Simple Fields
+        if (interviewerDto.getBio() != null) {
+            interviewer.setBio(interviewerDto.getBio());
+        }
+        if (interviewerDto.getCurrentCompany() != null) {
+            interviewer.setCurrentCompany(interviewerDto.getCurrentCompany());
+        }
+        if (interviewerDto.getYearsOfExperience() != null) {
+            interviewer.setYearsOfExperience(interviewerDto.getYearsOfExperience());
+        }
+        if (interviewerDto.getLanguagesSpoken() != null) {
+            interviewer.setLanguagesSpoken(interviewerDto.getLanguagesSpoken());
+        }
+        if (interviewerDto.getCertifications() != null) {
+            interviewer.setCertifications(interviewerDto.getCertifications());
+        }
+        if (interviewerDto.getSessionRate() != null) {
+            interviewer.setSessionRate(interviewerDto.getSessionRate());
+        }
+        if (interviewerDto.getTimezone() != null) {
+            interviewer.setTimezone(interviewerDto.getTimezone());
+        }
+        if (interviewerDto.getProfileCompletionStatus() != null) {
+            interviewer.setProfileCompletionStatus(interviewerDto.getProfileCompletionStatus());
+        }
 
+        // Step 3: Handle Skills
+        if (interviewerDto.getSkills() != null && !interviewerDto.getSkills().isEmpty()) {
+            List<InterviewerSkill> updatedSkills = new ArrayList<>();
+            for (InterviewerSkillDto skillDto : interviewerDto.getSkills()) {
+                // Fetch the Skill entity by skillId
+                Skill skill = skillRepository.findById(skillDto.getSkillId())
+                        .orElseThrow(() -> new BadRequestException("Invalid skill ID: " + skillDto.getSkillId()));
+
+                // Check if the skill already exists for the interviewer
+                InterviewerSkill existingSkill = interviewer.getSkills().stream()
+                        .filter(s -> s.getSkill().getSkillId().equals(skillDto.getSkillId()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (existingSkill != null) {
+                    // Update existing skill
+                    existingSkill.setYearsOfExperience(skillDto.getYearsOfExperience());
+                    existingSkill.setProficiencyLevel(skillDto.getProficiencyLevel());
+                    existingSkill.setCertified(skillDto.isCertified());
+                    updatedSkills.add(existingSkill);
+                } else {
+                    // Add new skill
+                    InterviewerSkill newSkill = InterviewerSkillMapper.toEntity(skillDto, interviewer, skill);
+                    updatedSkills.add(newSkill);
+                }
+            }
+
+            // Replace the interviewer's skills with the updated list
+            interviewer.getSkills().clear();
+            interviewer.getSkills().addAll(updatedSkills);
+        }
+
+        // Step 4: Save the Interviewer and Skills
         try {
-            Interviewer updatedInterviewer = interviewerRepository.save(interviewer);
+            Interviewer updatedInterviewer = interviewerRepository.saveAndFlush(interviewer);
             return InterviewerMapper.toDto(updatedInterviewer);
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to update interviewer profile due to server error.");
         }
     }
+
 
     /**
      * Find interviewer by user ID.
@@ -106,11 +193,26 @@ public class InterviewerService {
         interviewer.setIsVerified(verified);
 
         try {
-            Interviewer updatedInterviewer = interviewerRepository.save(interviewer);
+            Interviewer updatedInterviewer = interviewerRepository.saveAndFlush(interviewer);
             return InterviewerMapper.toDto(updatedInterviewer);
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to update verification status due to server error.");
         }
+    }
+    
+    /**
+     * Updates the verification status of an interviewer.
+     *
+     * @param interviewerId the ID of the interviewer.
+     * @param isVerified    the new verification status.
+     */
+    @Transactional
+    public void updateInterviewerVerificationStatus(Long interviewerId, boolean isVerified) {
+        Interviewer interviewer = interviewerRepository.findById(interviewerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found with ID: " + interviewerId));
+
+        interviewer.setIsVerified(isVerified);
+        interviewerRepository.save(interviewer);
     }
 
     /**
@@ -130,7 +232,7 @@ public class InterviewerService {
         interviewer.setStatus(Interviewer.Status.INACTIVE);
 
         try {
-            Interviewer updatedInterviewer = interviewerRepository.save(interviewer);
+            Interviewer updatedInterviewer = interviewerRepository.saveAndFlush(interviewer);
             return InterviewerMapper.toDto(updatedInterviewer);
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to deactivate interviewer due to server error.");
@@ -154,10 +256,11 @@ public class InterviewerService {
         interviewer.setStatus(Interviewer.Status.ACTIVE);
 
         try {
-            Interviewer updatedInterviewer = interviewerRepository.save(interviewer);
+            Interviewer updatedInterviewer = interviewerRepository.saveAndFlush(interviewer);
             return InterviewerMapper.toDto(updatedInterviewer);
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to reactivate interviewer due to server error.");
         }
     }
+
 }

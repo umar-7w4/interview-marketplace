@@ -10,6 +10,7 @@ public class Skill {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "skill_id", nullable = false)
     private Long skillId;
 
     @Column(nullable = false, unique = true)
@@ -17,13 +18,6 @@ public class Skill {
 
     @Column(length = 255)
     private String description;
-
-    // Relationships
-    @ManyToMany(mappedBy = "skills", fetch = FetchType.LAZY)
-    private List<Interviewer> interviewers;
-
-    @ManyToMany(mappedBy = "skills", fetch = FetchType.LAZY)
-    private List<Interviewee> interviewees;
 
 	public Long getSkillId() {
 		return skillId;
@@ -48,22 +42,6 @@ public class Skill {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-
-	public List<Interviewer> getInterviewers() {
-		return interviewers;
-	}
-
-	public void setInterviewers(List<Interviewer> interviewers) {
-		this.interviewers = interviewers;
-	}
-
-	public List<Interviewee> getInterviewees() {
-		return interviewees;
-	}
-
-	public void setInterviewees(List<Interviewee> interviewees) {
-		this.interviewees = interviewees;
-	}
-    
-    
+	
+	
 }
