@@ -29,7 +29,7 @@ public class PaymentMapper {
         return paymentDto;
     }
 
-    public static Payment toEntity(PaymentDto paymentDto, Booking booking, User user, Interview interview) {
+    public static Payment toEntity(PaymentDto paymentDto, Booking booking, Interview interview) {
         if (paymentDto == null) {
             return null;
         }

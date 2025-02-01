@@ -52,15 +52,11 @@ public class PaymentService {
         Booking booking = bookingRepository.findById(paymentDto.getBookingId())
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + paymentDto.getBookingId()));
 
-        long intervieweeUserId = booking.getInterviewee().getUser().getUserId();
-        User user = userRepository.findById(intervieweeUserId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + intervieweeUserId));
-
         long interviewerId = booking.getAvailability().getInterviewer().getInterviewerId();
         Interviewer interviewer = interviewerRepository.findById(interviewerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found with ID: " + interviewerId));
 
-        Payment payment = PaymentMapper.toEntity(paymentDto, booking, user, null);
+        Payment payment = PaymentMapper.toEntity(paymentDto, booking, null);
         Payment savedPayment = paymentRepository.saveAndFlush(payment);
 
         if ("PAID".equalsIgnoreCase(paymentDto.getPaymentStatus())) {
@@ -113,9 +109,7 @@ public class PaymentService {
         Booking booking = bookingRepository.findById(paymentDto.getBookingId())
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + paymentDto.getBookingId()));
 
-        User user = userRepository.findById(paymentDto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + paymentDto.getUserId()));
-
+       
         Interview interview = interviewRepository.findById(paymentDto.getInterviewId())
                 .orElseThrow(() -> new IllegalArgumentException("Interview not found with ID: " + paymentDto.getInterviewId()));
 

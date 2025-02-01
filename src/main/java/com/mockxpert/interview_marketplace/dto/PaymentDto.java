@@ -11,9 +11,7 @@ public class PaymentDto {
 
     @NotNull(message = "Booking ID is required")
     private Long bookingId;
-
-    private Long userId;
-
+    
     @NotBlank(message = "Transaction ID is required")
     private String transactionId;
 
@@ -52,14 +50,6 @@ public class PaymentDto {
 
 	public void setBookingId(Long bookingId) {
 		this.bookingId = bookingId;
-	}
-
-	public Long getUserId() {
-		return userId;
-	}
-
-	public void setUserId(Long userId) {
-		this.userId = userId;
 	}
 
 	public String getTransactionId() {
