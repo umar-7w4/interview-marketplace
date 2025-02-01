@@ -50,11 +50,11 @@ public class Booking {
     private List<Notification> notifications;
     
     public enum PaymentStatus {
-        CONFIRMED,
-        PENDING,
-        CANCELLED
+        PAID,
+        FAILED,
+        REFUNDED
     }
-
+    
 	public Long getBookingId() {
 		return bookingId;
 	}

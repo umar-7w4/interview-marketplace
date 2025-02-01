@@ -2,6 +2,7 @@ package com.mockxpert.interview_marketplace.services;
 
 import com.mockxpert.interview_marketplace.dto.PaymentDto;
 import com.mockxpert.interview_marketplace.entities.Booking;
+import com.mockxpert.interview_marketplace.entities.Booking.PaymentStatus;
 import com.mockxpert.interview_marketplace.entities.Interview;
 import com.mockxpert.interview_marketplace.entities.Interview.InterviewStatus;
 import com.mockxpert.interview_marketplace.entities.Interviewer;
@@ -72,7 +73,8 @@ public class PaymentService {
             scheduledInterview.setTimezone(booking.getAvailability().getTimezone());
 
             Interview savedInterview = interviewRepository.saveAndFlush(scheduledInterview);
-
+            
+            booking.setPaymentStatus(PaymentStatus.PAID);
             savedPayment.setInterview(savedInterview);
             paymentRepository.save(savedPayment);
 

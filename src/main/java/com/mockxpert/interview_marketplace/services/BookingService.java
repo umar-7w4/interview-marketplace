@@ -107,7 +107,7 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
 
-        booking.setPaymentStatus(Booking.PaymentStatus.CANCELLED);
+        booking.setPaymentStatus(Booking.PaymentStatus.REFUNDED);
         booking.setCancellationReason(reason);
 
         try {
