@@ -8,20 +8,21 @@ import jakarta.persistence.*;
 
 
 @Entity
-@Table(name = "bookings")
+@Table(name = "bookings", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"availability_id"})
+})
 public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "booking_id", nullable = false)
     private Long bookingId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "interviewee_id", nullable = false)
     private Interviewee interviewee;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "availability_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "availability_id", nullable = false, unique = true)
     private Availability availability;
 
     @Column(name = "booking_date", nullable = false)
@@ -32,7 +33,7 @@ public class Booking {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false)
-    private PaymentStatus paymentStatus; 
+    private PaymentStatus paymentStatus;
 
     @Column(name = "cancellation_reason", length = 500)
     private String cancellationReason;
@@ -50,8 +51,11 @@ public class Booking {
     private List<Notification> notifications;
     
     public enum PaymentStatus {
+    	PENDING,
+    	CONFIRMED,
         PAID,
         FAILED,
+        CANCELLED,
         REFUNDED
     }
     

@@ -1,10 +1,14 @@
 package com.mockxpert.interview_marketplace.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
 import com.mockxpert.interview_marketplace.entities.Availability;
 
+import jakarta.persistence.LockModeType;
+
+import java.util.Optional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -12,6 +16,14 @@ import java.util.List;
 @Repository
 public interface AvailabilityRepository extends JpaRepository<Availability, Long> {
 
+    /**
+     * Find availability associated with the availability id by forcing optimistic locking at database level.
+     * @param availability id is the ID of the Availability.
+     * @return an optional availability for the specified availability ID.
+     */
+    @Lock(LockModeType.OPTIMISTIC)
+    Optional<Availability> findById(Long id);
+    
     /**
      * Find all availability slots for a specific interviewer.
      * @param interviewerId the ID of the interviewer.

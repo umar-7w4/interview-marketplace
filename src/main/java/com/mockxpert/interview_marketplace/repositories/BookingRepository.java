@@ -1,9 +1,13 @@
 package com.mockxpert.interview_marketplace.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
+import com.mockxpert.interview_marketplace.entities.Availability;
 import com.mockxpert.interview_marketplace.entities.Booking;
+
+import jakarta.persistence.LockModeType;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -11,6 +15,21 @@ import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+	
+    /**
+     * Checks if the availability exists or not.
+     * @param availability entity object.
+     * @return a boolean value that tells if availability exists or not.
+     */
+    boolean existsByAvailability(Availability availability);
+
+    /**
+     * Find booking associated with the booking id.
+     * @param booking id is the ID of the Booking.
+     * @return an optional booking for the specified booking ID.
+     */
+
+    Optional<Booking> findById(Long bookingId);
 
     /**
      * Find all bookings for a specific interviewee.

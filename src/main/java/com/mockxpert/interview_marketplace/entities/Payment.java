@@ -158,11 +158,13 @@ public class Payment {
 
     
     public enum PaymentStatus {
+    	PENDING,
+    	CONFIRMED,
         PAID,
         FAILED,
+        CANCELLED,
         REFUNDED
     }
-    
     
     
 }

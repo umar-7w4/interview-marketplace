@@ -39,6 +39,11 @@ public class Availability {
     @OneToOne(mappedBy = "availability", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Booking booking;
     
+    @Version
+    @Column(name = "version", nullable = false)
+    private int version = 0; 
+
+    
     public enum AvailabilityStatus {
         AVAILABLE,
         BOOKED,
@@ -107,6 +112,10 @@ public class Availability {
 
 	public void setBooking(Booking booking) {
 		this.booking = booking;
+	}
+
+	public int getVersion() {
+		return version;
 	}
     
     

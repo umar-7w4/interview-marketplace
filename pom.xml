@@ -103,6 +103,31 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        
+		<dependency>
+		    <groupId>com.google.api-client</groupId>
+		    <artifactId>google-api-client</artifactId>
+		    <version>1.32.1</version> <!-- Compatible with Calendar API -->
+		</dependency>
+		
+		<dependency>
+		    <groupId>com.google.oauth-client</groupId>
+		    <artifactId>google-oauth-client-java6</artifactId>
+		    <version>1.32.1</version> <!-- Ensure version compatibility -->
+		</dependency>
+		
+		<dependency>
+		    <groupId>com.google.oauth-client</groupId>
+		    <artifactId>google-oauth-client-jetty</artifactId>
+		    <version>1.32.1</version> <!-- Keep consistent version -->
+		</dependency>
+		
+		<dependency>
+		    <groupId>com.google.apis</groupId>
+		    <artifactId>google-api-services-calendar</artifactId>
+		    <version>v3-rev411-1.25.0</version>
+		</dependency>
+
     </dependencies>
 
     <build>
