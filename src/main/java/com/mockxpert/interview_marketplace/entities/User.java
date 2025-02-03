@@ -47,6 +47,10 @@ public class User {
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
     
+    @Column(name = "refresh_token", nullable = true)
+    private String refreshToken;
+    
+    
     @Column(name = "firebase_uid", unique = true, nullable = false)
     private String firebaseUid;
 
@@ -250,4 +254,14 @@ public class User {
     public void setFeedbackReceived(List<Feedback> feedbackReceived) {
         this.feedbackReceived = feedbackReceived;
     }
+
+	public String getRefreshToken() {
+		return refreshToken;
+	}
+
+	public void setRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
+	}
+    
+    
 }

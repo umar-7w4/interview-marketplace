@@ -30,11 +30,11 @@ public class UserController {
      * @throws FirebaseAuthException 
      */
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String firebaseToken, @RequestBody @Valid UserDto userDto) throws FirebaseAuthException {
+    public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String firebaseToken, @RequestHeader("Authorization") String refreshToken, @RequestBody @Valid UserDto userDto) throws FirebaseAuthException {
         try {
             System.out.println("Received Firebase Token: " + firebaseToken);
             System.out.println("Received User Data: " + userDto);
-            UserDto savedUser = userService.registerUserUsingFirebaseToken(firebaseToken, userDto);
+            UserDto savedUser = userService.registerUserUsingFirebaseToken(firebaseToken, refreshToken, userDto);
             System.out.println("User Saved Successfully: " + savedUser);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         } catch (ConflictException e) {

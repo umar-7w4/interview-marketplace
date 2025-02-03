@@ -35,7 +35,7 @@ public class IntervieweeService {
     @Autowired
     private SkillRepository skillRepository;
     
-    @Autowired
+    @Autowired 
     private IntervieweeSkillRepository intervieweeSkillRepository;
 
     /**

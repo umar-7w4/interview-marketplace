@@ -1,26 +1,14 @@
 package com.mockxpert.interview_marketplace.services;
 
 import com.mockxpert.interview_marketplace.dto.PaymentDto;
-import com.mockxpert.interview_marketplace.entities.Availability;
-import com.mockxpert.interview_marketplace.entities.Booking;
-import com.mockxpert.interview_marketplace.entities.Booking.PaymentStatus;
-import com.mockxpert.interview_marketplace.entities.Interview;
-import com.mockxpert.interview_marketplace.entities.Interview.InterviewStatus;
-import com.mockxpert.interview_marketplace.entities.Interviewer;
-import com.mockxpert.interview_marketplace.entities.Payment;
-import com.mockxpert.interview_marketplace.entities.User;
+import com.mockxpert.interview_marketplace.entities.*;
 import com.mockxpert.interview_marketplace.exceptions.ResourceNotFoundException;
 import com.mockxpert.interview_marketplace.mappers.PaymentMapper;
-import com.mockxpert.interview_marketplace.repositories.AvailabilityRepository;
-import com.mockxpert.interview_marketplace.repositories.BookingRepository;
-import com.mockxpert.interview_marketplace.repositories.InterviewRepository;
-import com.mockxpert.interview_marketplace.repositories.InterviewerRepository;
-import com.mockxpert.interview_marketplace.repositories.PaymentRepository;
-import com.mockxpert.interview_marketplace.repositories.UserRepository;
-
+import com.mockxpert.interview_marketplace.repositories.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,14 +16,18 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.time.LocalDateTime;
 
+/**
+ * Service for handling payment transactions and scheduling interviews after payment success.
+ */
 @Service
 public class PaymentService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PaymentService.class);
 
     @Autowired
     private PaymentRepository paymentRepository;
@@ -44,82 +36,140 @@ public class PaymentService {
     private BookingRepository bookingRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private InterviewRepository interviewRepository;
-    
-    @Autowired
-    private InterviewerRepository interviewerRepository;
-    
-    @Autowired
-    private EntityManager entityManager;
-    
-    @Autowired
-    private AvailabilityRepository availabilityRepository;
-
 
     @Autowired
     private GoogleCalendarService googleCalendarService;
 
+    @Autowired
+    private EntityManager entityManager;
+    
+    @Autowired
+    private GoogleOAuthService googleOAuthService;
+
     /**
-     * Process payment and schedule an interview with Google Meet link.
-     * @param paymentDto the payment details.
-     * @return the saved PaymentDto.
+     * Creates a new payment record in PENDING state when the user starts the Stripe checkout process.
+     *
+     * @param bookingId The ID of the booking.
+     * @param sessionId The Stripe session ID.
+     * @return The created PaymentDto.
      */
     @Transactional
-    public PaymentDto createPayment(PaymentDto paymentDto) {
-        Booking booking = bookingRepository.findById(paymentDto.getBookingId())
-                .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + paymentDto.getBookingId()));
+    public PaymentDto createPayment(Long bookingId, String sessionId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
 
-        Availability availability = booking.getAvailability();
-        Interviewer interviewer = interviewerRepository.findById(availability.getInterviewer().getInterviewerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found"));
-
-        Payment payment = PaymentMapper.toEntity(paymentDto, booking, null);
-        Payment savedPayment = paymentRepository.saveAndFlush(payment);
-
-        if ("PAID".equalsIgnoreCase(paymentDto.getPaymentStatus())) {
-            Interview interview = new Interview();
-            interview.setBooking(booking);
-            interview.setInterviewee(booking.getInterviewee());
-            interview.setInterviewer(interviewer);
-            interview.setDate(booking.getBookingDate());
-            interview.setStartTime(availability.getStartTime());
-            interview.setDuration(Duration.ofMinutes(60));
-            interview.setStatus(Interview.InterviewStatus.BOOKED);
-            interview.setTimezone(availability.getTimezone());
-
-            try {
-            	String intervieweeName = booking.getInterviewee().getUser().getFullName();
-            	String interviewerName = interviewer.getUser().getFullName();
-            	String intervieweeEmail = booking.getInterviewee().getUser().getEmail();
-            	String interviewerEmail =  interviewer.getUser().getEmail();
-            	
-            	LocalDateTime startTime = booking.getBookingDate().atTime(availability.getStartTime());
-            	LocalDateTime endTime = booking.getBookingDate().atTime(availability.getEndTime());
-
-            	String meetLink = googleCalendarService.createGoogleMeetEvent(
-            	        "Mock Interview",
-            	        "Scheduled interview between " + intervieweeName + " and " + interviewerName,
-            	        interviewerEmail,
-            	        intervieweeEmail,
-            	        startTime,
-            	        endTime
-            	);
-
-                interview.setInterviewLink(meetLink);
-            } catch (IOException | GeneralSecurityException e) {
-                throw new RuntimeException("Failed to schedule Google Meet event", e);
-            }
-
-            Interview savedInterview = interviewRepository.saveAndFlush(interview);
-            booking.setPaymentStatus(Booking.PaymentStatus.PAID);
-            savedPayment.setInterview(savedInterview);
-            paymentRepository.save(savedPayment);
+        // Check if a payment already exists for this session ID
+        Payment existingPayment = paymentRepository.findByTransactionId(sessionId);
+        if (existingPayment != null) {
+            throw new IllegalArgumentException("Payment already exists for session ID: " + sessionId);
         }
+
+        Payment payment = new Payment();
+        payment.setBooking(booking);
+        payment.setTransactionId(sessionId);
+        payment.setPaymentDate(LocalDateTime.now());
+        payment.setAmount(booking.getTotalPrice());
+        payment.setCurrency("USD");
+        payment.setPaymentMethod("Stripe");
+        payment.setPaymentStatus(Payment.PaymentStatus.PENDING);
+
+        Payment savedPayment = paymentRepository.save(payment);
+        logger.info("Payment record created with status PENDING for Booking ID: {}", bookingId);
+
         return PaymentMapper.toDto(savedPayment);
     }
+
+    /**
+     * Processes a successful payment event from Stripe webhook.
+     * Updates payment status, creates an interview, and schedules a Google Meet event.
+     *
+     * @param sessionId The Stripe session ID confirming the successful transaction.
+     * @return The updated PaymentDto after processing.
+     */
+    @Transactional
+    public PaymentDto processSuccessfulPayment(String sessionId) {
+        Payment payment = paymentRepository.findByTransactionId(sessionId);
+        if (payment == null) {
+            throw new ResourceNotFoundException("Payment not found for session ID: " + sessionId);
+        }
+
+        if (payment.getPaymentStatus() == Payment.PaymentStatus.PAID) {
+            logger.warn("Payment for session {} is already marked as PAID.", sessionId);
+            return PaymentMapper.toDto(payment);
+        }
+
+        // Mark payment as PAID
+        payment.setPaymentStatus(Payment.PaymentStatus.PAID);
+        paymentRepository.save(payment);
+
+        // Retrieve booking details
+        Booking booking = payment.getBooking();
+        
+        // Check if an interview already exists for this booking
+        if (interviewRepository.existsByBooking_BookingId(booking.getBookingId())) {
+            logger.warn("Interview already scheduled for Booking ID: {}", booking.getBookingId());
+            return PaymentMapper.toDto(payment);
+        }
+
+        // Retrieve interviewee's refresh token from the database
+        String refreshToken = booking.getInterviewee().getUser().getRefreshToken();
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            throw new RuntimeException("No refresh token found for interviewee.");
+        }
+
+        // Exchange refresh token for access token
+        String accessToken = googleOAuthService.getAccessTokenFromRefreshToken(refreshToken);
+
+        // Create interview record
+        Interview interview = new Interview();
+        interview.setBooking(booking);
+        interview.setInterviewee(booking.getInterviewee());
+        interview.setInterviewer(booking.getAvailability().getInterviewer());
+        interview.setDate(booking.getBookingDate());
+        interview.setStartTime(booking.getAvailability().getStartTime());
+        interview.setDuration(Duration.ofMinutes(60));
+        interview.setStatus(Interview.InterviewStatus.BOOKED);
+        interview.setTimezone(booking.getAvailability().getTimezone());
+
+        try {
+            // Retrieve email addresses
+            String intervieweeEmail = booking.getInterviewee().getUser().getEmail();
+            String interviewerEmail = booking.getAvailability().getInterviewer().getUser().getEmail();
+
+            // Calculate start and end times
+            LocalDateTime startTime = booking.getBookingDate().atTime(booking.getAvailability().getStartTime());
+            LocalDateTime endTime = booking.getBookingDate().atTime(booking.getAvailability().getEndTime());
+
+            // Schedule Google Meet event (Interviewee is the owner)
+            String meetLink = googleCalendarService.createGoogleMeetEvent(
+                    accessToken,
+                    "Mock Interview",
+                    "Scheduled interview",
+                    interviewerEmail,
+                    intervieweeEmail,
+                    startTime,
+                    endTime
+            );
+
+            interview.setInterviewLink(meetLink);
+        } catch (IOException | GeneralSecurityException e) {
+            logger.error("Failed to schedule Google Meet event for Booking ID: {}", booking.getBookingId(), e);
+            throw new RuntimeException("Google Meet scheduling failed", e);
+        }
+
+        // Save interview record
+        Interview savedInterview = interviewRepository.save(interview);
+        payment.setInterview(savedInterview);
+        paymentRepository.save(payment);
+
+        logger.info("Interview successfully scheduled for Booking ID: {} with Meet Link: {}",
+                    booking.getBookingId(), savedInterview.getInterviewLink());
+
+        return PaymentMapper.toDto(payment);
+    }
+
+
 
 
     /**
@@ -129,8 +179,7 @@ public class PaymentService {
      */
     public PaymentDto getPaymentById(Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("Payment not found with ID: " + paymentId));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with ID: " + paymentId));
         return PaymentMapper.toDto(payment);
     }
 
@@ -142,29 +191,29 @@ public class PaymentService {
      */
     @Transactional
     public PaymentDto updatePayment(Long paymentId, PaymentDto paymentDto) {
-        Payment existingPayment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("Payment not found with ID: " + paymentId));
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with ID: " + paymentId));
 
-        Booking booking = bookingRepository.findById(paymentDto.getBookingId())
-                .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + paymentDto.getBookingId()));
+        if (paymentDto.getTransactionId() != null) {
+            payment.setTransactionId(paymentDto.getTransactionId());
+        }
+        if (paymentDto.getPaymentDate() != null) {
+            payment.setPaymentDate(paymentDto.getPaymentDate());
+        }
+        if (paymentDto.getAmount() != null) {
+            payment.setAmount(paymentDto.getAmount());
+        }
+        if (paymentDto.getCurrency() != null) {
+            payment.setCurrency(paymentDto.getCurrency());
+        }
+        if (paymentDto.getPaymentMethod() != null) {
+            payment.setPaymentMethod(paymentDto.getPaymentMethod());
+        }
+        if (paymentDto.getPaymentStatus() != null) {
+            payment.setPaymentStatus(Payment.PaymentStatus.valueOf(paymentDto.getPaymentStatus()));
+        }
 
-       
-        Interview interview = interviewRepository.findById(paymentDto.getInterviewId())
-                .orElseThrow(() -> new IllegalArgumentException("Interview not found with ID: " + paymentDto.getInterviewId()));
-
-        existingPayment.setBooking(booking);
-        existingPayment.setTransactionId(paymentDto.getTransactionId());
-        existingPayment.setPaymentDate(paymentDto.getPaymentDate());
-        existingPayment.setAmount(paymentDto.getAmount());
-        existingPayment.setCurrency(paymentDto.getCurrency());
-        existingPayment.setPaymentMethod(paymentDto.getPaymentMethod());
-        existingPayment.setReceiptUrl(paymentDto.getReceiptUrl());
-        existingPayment.setRefundAmount(paymentDto.getRefundAmount());
-        existingPayment.setPaymentStatus(Payment.PaymentStatus.valueOf(paymentDto.getPaymentStatus()));
-        existingPayment.setInterview(interview);
-
-        Payment updatedPayment = paymentRepository.saveAndFlush(existingPayment);
-
+        Payment updatedPayment = paymentRepository.save(payment);
         return PaymentMapper.toDto(updatedPayment);
     }
 
@@ -175,8 +224,7 @@ public class PaymentService {
     @Transactional
     public void deletePayment(Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("Payment not found with ID: " + paymentId));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with ID: " + paymentId));
         paymentRepository.delete(payment);
     }
 
@@ -189,15 +237,4 @@ public class PaymentService {
                 .map(PaymentMapper::toDto)
                 .collect(Collectors.toList());
     }
-    
-
-    /**
-     * Generates random UUID.
-     * @return a id.
-     */
-    private String generateMeetingLink(Long bookingId) {
-        return "https://meet.example.com/" + UUID.randomUUID();
-    }
-
 }
-

@@ -34,7 +34,7 @@ public class UserService {
      * @throws FirebaseAuthException 
      */
     @Transactional
-    public UserDto registerUserUsingFirebaseToken(String firebaseToken, UserDto userDto) throws FirebaseAuthException {
+    public UserDto registerUserUsingFirebaseToken(String firebaseToken, String refreshToken, UserDto userDto) throws FirebaseAuthException {
         String token = firebaseToken.replace("Bearer ", "").trim();
         System.out.println("Validating token: " + token); // Debug Log
 
@@ -49,6 +49,7 @@ public class UserService {
         }
 
         userDto.setFirebaseUid(firebaseUid);
+        userDto.setRefreshToken(refreshToken);
         return registerUser(userDto);
     }
 

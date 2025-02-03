@@ -1,8 +1,11 @@
 package com.mockxpert.interview_marketplace.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.mockxpert.interview_marketplace.entities.Booking;
 import com.mockxpert.interview_marketplace.entities.Interview;
 
 import java.time.LocalDateTime;
@@ -11,7 +14,14 @@ import java.util.Optional;
 
 @Repository
 public interface InterviewRepository extends JpaRepository<Interview, Long> {
-
+	
+    /**
+     * Check if an interview exists for a given booking ID.
+     *
+     * @param bookingId The ID of the booking.
+     * @return true if an interview exists for the booking.
+     */
+    boolean existsByBooking_BookingId(Long bookingId);
     /**
      * Find interviews by interviewer ID.
      * @param interviewerId the ID of the interviewer

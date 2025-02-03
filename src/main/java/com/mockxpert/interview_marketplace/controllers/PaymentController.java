@@ -1,8 +1,11 @@
 package com.mockxpert.interview_marketplace.controllers;
 
 import com.mockxpert.interview_marketplace.dto.PaymentDto;
-import com.mockxpert.interview_marketplace.exceptions.*;
+import com.mockxpert.interview_marketplace.exceptions.ResourceNotFoundException;
 import com.mockxpert.interview_marketplace.services.PaymentService;
+import com.mockxpert.interview_marketplace.services.StripePaymentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,33 +14,70 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
+/**
+ * REST controller for handling payment transactions.
+ */
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
 
+    private static final Logger logger = LoggerFactory.getLogger(PaymentController.class);
+
     @Autowired
     private PaymentService paymentService;
 
+    @Autowired
+    private StripePaymentService stripePaymentService;
+
     public PaymentController() {
-        System.out.println("PaymentController Initialized");
+        logger.info("PaymentController Initialized");
     }
 
     /**
-     * Create a new payment.
-     * @param paymentDto the payment data transfer object containing information.
-     * @return the created PaymentDto.
+     * Create a new Stripe checkout session for a booking.
+     * @param bookingId the ID of the booking.
+     * @param amount the amount to be paid.
+     * @return Stripe checkout session URL.
      */
-    @PostMapping("/create")
-    public ResponseEntity<?> createPayment(@RequestBody @Valid PaymentDto paymentDto) {
+    @PostMapping("/create-checkout-session")
+    public ResponseEntity<?> createCheckoutSession(@RequestParam Long bookingId, @RequestParam double amount) {
         try {
-            PaymentDto savedPayment = paymentService.createPayment(paymentDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedPayment);
+            String checkoutUrl = stripePaymentService.createCheckoutSession(bookingId, amount);
+            logger.info("Stripe Checkout initiated for Booking ID: {} | Amount: {}", bookingId, amount);
+            return ResponseEntity.ok(checkoutUrl);
+        } catch (Exception e) {
+            logger.error("Failed to create Stripe checkout session for Booking ID: {}", bookingId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    } 
+
+    /**
+     * Handles successful payment and processes the interview creation.
+     * @param sessionId the Stripe session ID for the transaction.
+     * @return Confirmation message.
+     */
+    @GetMapping("/success")
+    public ResponseEntity<?> paymentSuccess(@RequestParam("session_id") String sessionId) {
+        try {
+            logger.info("Hitting the payment success");
+
+            // Process the payment and schedule the interview
+            PaymentDto payment = paymentService.processSuccessfulPayment(sessionId);
+
+            logger.info("Payment successful. Transaction ID: {} | Booking ID: {}", 
+                        payment.getTransactionId(), payment.getBookingId());
+
+            return ResponseEntity.ok("Payment Successful! Your interview has been scheduled.");
+
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            logger.error("Payment processing failed for Session ID: {}", sessionId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Payment successful but interview scheduling failed.");
         }
     }
+
 
     /**
      * Retrieve a payment by ID.
