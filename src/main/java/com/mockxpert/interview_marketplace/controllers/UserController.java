@@ -2,15 +2,19 @@ package com.mockxpert.interview_marketplace.controllers;
 
 import com.google.firebase.auth.FirebaseAuthException;
 import com.mockxpert.interview_marketplace.dto.UserDto;
+import com.mockxpert.interview_marketplace.dto.LoginRequest;
+import com.mockxpert.interview_marketplace.dto.LoginResponse;
 import com.mockxpert.interview_marketplace.exceptions.*;
 import com.mockxpert.interview_marketplace.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import jakarta.validation.Valid;
 
+/**
+ * REST Controller for user authentication and management.
+ */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -23,60 +27,68 @@ public class UserController {
     }
 
     /**
-     * Register a new user using Firebase authentication.
-     * @param firebaseToken the Firebase authentication token.
-     * @param userDto the user data transfer object containing registration information.
-     * @return the created UserDto.
-     * @throws FirebaseAuthException 
+     * Registers a new user.
+     * Backend automatically handles Firebase token validation and refresh token extraction.
+     * 
+     * @param userDto User registration details.
+     * @return The registered user details.
+     * @throws FirebaseAuthException If Firebase authentication fails.
      */
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestHeader("Authorization") String firebaseToken, @RequestHeader("Authorization") String refreshToken, @RequestBody @Valid UserDto userDto) throws FirebaseAuthException {
+    public ResponseEntity<?> registerUser(@RequestBody @Valid UserDto userDto) throws FirebaseAuthException {
         try {
-            System.out.println("Received Firebase Token: " + firebaseToken);
-            System.out.println("Received User Data: " + userDto);
-            UserDto savedUser = userService.registerUserUsingFirebaseToken(firebaseToken, refreshToken, userDto);
-            System.out.println("User Saved Successfully: " + savedUser);
+            System.out.println("Received User Data for Registration: " + userDto);
+            
+            UserDto savedUser = userService.registerUser(userDto);
+            
+            System.out.println("User Registered Successfully: " + savedUser);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         } catch (ConflictException e) {
-            System.err.println("Conflict Exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (UnauthorizedException e) {
-            System.err.println("Unauthorized Exception: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
-
     /**
-     * Login user using Firebase token.
-     * @param firebaseToken the Firebase authentication token.
-     * @return the UserDto of the logged-in user.
+     * Logs in a user using email and password.
+     * Backend retrieves Firebase authentication tokens and refresh token.
+     * 
+     * @param loginRequest Contains email and password.
+     * @return LoginResponse with authentication tokens and user details.
      */
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestHeader("Authorization") String firebaseToken) {
+    public ResponseEntity<?> loginUser(@RequestBody @Valid LoginRequest loginRequest) {
         try {
-            // Debug Log for Token
-            System.out.println("Raw Authorization Header: " + firebaseToken);
-
-            // Remove "Bearer " prefix
-            String token = firebaseToken.replace("Bearer ", "").trim();
-            System.out.println("Processed Token: " + token);
-
-            // Call Service Layer
-            UserDto loggedInUser = userService.loginUserUsingFirebaseToken(firebaseToken);
-
-            return ResponseEntity.ok(loggedInUser);
+            LoginResponse loginResponse = userService.loginUser(loginRequest);
+            return ResponseEntity.ok(loginResponse);
         } catch (UnauthorizedException e) {
-            System.err.println("Unauthorized: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
 
     /**
-     * Update user profile.
-     * @param userId the ID of the user to update.
-     * @param userDto the user data transfer object containing updated information.
-     * @return the updated UserDto.
+     * Fetch user details by email.
+     * 
+     * @param email User's email.
+     * @return User details.
+     */
+    @GetMapping("/findByEmail")
+    public ResponseEntity<?> findUserByEmail(@RequestParam String email) {
+        try {
+            UserDto user = userService.findUserByEmail(email);
+            return ResponseEntity.ok(user);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    /**
+     * Updates a user's profile.
+     * 
+     * @param userId User ID.
+     * @param userDto Updated user details.
+     * @return Updated user information.
      */
     @PutMapping("/{userId}")
     public ResponseEntity<?> updateUserProfile(@PathVariable Long userId, @RequestBody @Valid UserDto userDto) {
@@ -91,59 +103,43 @@ public class UserController {
     }
 
     /**
-     * Deactivate user.
-     * @param userId the ID of the user to deactivate.
-     * @return a response indicating whether the user was successfully deactivated.
+     * Deactivates a user.
+     * 
+     * @param userId User ID.
+     * @return Deactivation status.
      */
     @PutMapping("/{userId}/deactivate")
     public ResponseEntity<String> deactivateUser(@PathVariable Long userId) {
         try {
-            boolean success = userService.deactivateUser(userId);
+            userService.deactivateUser(userId);
             return ResponseEntity.ok("User deactivated successfully");
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (BadRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
     /**
-     * Reactivate user.
-     * @param userId the ID of the user to reactivate.
-     * @return a response indicating whether the user was successfully reactivated.
+     * Reactivates a user.
+     * 
+     * @param userId User ID.
+     * @return Reactivation status.
      */
     @PutMapping("/{userId}/reactivate")
     public ResponseEntity<String> reactivateUser(@PathVariable Long userId) {
         try {
-            boolean success = userService.reactivateUser(userId);
+            userService.reactivateUser(userId);
             return ResponseEntity.ok("User reactivated successfully");
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (BadRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
     /**
-     * Find user by email.
-     * @param email the email of the user to find.
-     * @return the UserDto if found.
-     */
-    @GetMapping("/findByEmail")
-    public ResponseEntity<?> findUserByEmail(@RequestParam String email) {
-        try {
-            UserDto user = userService.findUserByEmail(email);
-            return ResponseEntity.ok(user);
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-    }
-
-    /**
-     * Change user password.
-     * @param userId the ID of the user whose password is to be changed.
-     * @param newPassword the new password.
-     * @return a response indicating success.
+     * Changes the user's password.
+     * 
+     * @param userId User ID.
+     * @param newPassword New password.
+     * @return Password change status.
      */
     @PutMapping("/{userId}/changePassword")
     public ResponseEntity<String> changeUserPassword(@PathVariable Long userId, @RequestParam String newPassword) {
@@ -152,15 +148,14 @@ public class UserController {
             return ResponseEntity.ok("Password changed successfully");
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (ValidationException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
     /**
-     * Delete a user by ID.
-     * @param userId the ID of the user to delete.
-     * @return a response indicating success.
+     * Deletes a user account.
+     * 
+     * @param userId User ID.
+     * @return Deletion status.
      */
     @DeleteMapping("/{userId}")
     public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
@@ -169,8 +164,6 @@ public class UserController {
             return ResponseEntity.ok("User deleted successfully");
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (InternalServerErrorException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }

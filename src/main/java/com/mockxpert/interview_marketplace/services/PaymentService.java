@@ -4,12 +4,14 @@ import com.mockxpert.interview_marketplace.dto.PaymentDto;
 import com.mockxpert.interview_marketplace.entities.*;
 import com.mockxpert.interview_marketplace.exceptions.ResourceNotFoundException;
 import com.mockxpert.interview_marketplace.mappers.PaymentMapper;
-import com.mockxpert.interview_marketplace.repositories.*;
+import com.mockxpert.interview_marketplace.repositories.BookingRepository;
+import com.mockxpert.interview_marketplace.repositories.InterviewRepository;
+import com.mockxpert.interview_marketplace.repositories.PaymentRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,12 +20,8 @@ import java.security.GeneralSecurityException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Service for handling payment transactions and scheduling interviews after payment success.
- */
 @Service
 public class PaymentService {
 
@@ -47,6 +45,10 @@ public class PaymentService {
     @Autowired
     private GoogleOAuthService googleOAuthService;
 
+    // The dedicated meeting account's refresh token from application.properties.
+    @Value("${meeting.google.refresh.token}")
+    private String dedicatedGoogleRefreshToken;
+
     /**
      * Creates a new payment record in PENDING state when the user starts the Stripe checkout process.
      *
@@ -59,7 +61,6 @@ public class PaymentService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + bookingId));
 
-        // Check if a payment already exists for this session ID
         Payment existingPayment = paymentRepository.findByTransactionId(sessionId);
         if (existingPayment != null) {
             throw new IllegalArgumentException("Payment already exists for session ID: " + sessionId);
@@ -99,29 +100,25 @@ public class PaymentService {
             return PaymentMapper.toDto(payment);
         }
 
-        // Mark payment as PAID
+        // Mark payment as PAID.
         payment.setPaymentStatus(Payment.PaymentStatus.PAID);
         paymentRepository.save(payment);
 
-        // Retrieve booking details
         Booking booking = payment.getBooking();
         
-        // Check if an interview already exists for this booking
         if (interviewRepository.existsByBooking_BookingId(booking.getBookingId())) {
             logger.warn("Interview already scheduled for Booking ID: {}", booking.getBookingId());
             return PaymentMapper.toDto(payment);
         }
 
-        // Retrieve interviewee's refresh token from the database
-        String refreshToken = booking.getInterviewee().getUser().getRefreshToken();
-        if (refreshToken == null || refreshToken.isEmpty()) {
-            throw new RuntimeException("No refresh token found for interviewee.");
+        // Use the dedicated meeting account's refresh token to obtain an access token.
+        if (dedicatedGoogleRefreshToken == null || dedicatedGoogleRefreshToken.isEmpty()) {
+            throw new RuntimeException("Dedicated Google refresh token is not configured.");
         }
 
-        // Exchange refresh token for access token
-        String accessToken = googleOAuthService.getAccessTokenFromRefreshToken(refreshToken);
+        String accessToken = googleOAuthService.getAccessTokenFromRefreshToken(dedicatedGoogleRefreshToken);
 
-        // Create interview record
+        // Create the interview record.
         Interview interview = new Interview();
         interview.setBooking(booking);
         interview.setInterviewee(booking.getInterviewee());
@@ -133,15 +130,15 @@ public class PaymentService {
         interview.setTimezone(booking.getAvailability().getTimezone());
 
         try {
-            // Retrieve email addresses
+            // Retrieve email addresses.
             String intervieweeEmail = booking.getInterviewee().getUser().getEmail();
             String interviewerEmail = booking.getAvailability().getInterviewer().getUser().getEmail();
 
-            // Calculate start and end times
+            // Calculate start and end times.
             LocalDateTime startTime = booking.getBookingDate().atTime(booking.getAvailability().getStartTime());
             LocalDateTime endTime = booking.getBookingDate().atTime(booking.getAvailability().getEndTime());
 
-            // Schedule Google Meet event (Interviewee is the owner)
+            // Schedule the Google Meet event using the dedicated account.
             String meetLink = googleCalendarService.createGoogleMeetEvent(
                     accessToken,
                     "Mock Interview",
@@ -158,22 +155,19 @@ public class PaymentService {
             throw new RuntimeException("Google Meet scheduling failed", e);
         }
 
-        // Save interview record
         Interview savedInterview = interviewRepository.save(interview);
         payment.setInterview(savedInterview);
         paymentRepository.save(payment);
 
         logger.info("Interview successfully scheduled for Booking ID: {} with Meet Link: {}",
-                    booking.getBookingId(), savedInterview.getInterviewLink());
+                booking.getBookingId(), savedInterview.getInterviewLink());
 
         return PaymentMapper.toDto(payment);
     }
 
-
-
-
     /**
      * Retrieve a payment by ID.
+     *
      * @param paymentId the ID of the payment.
      * @return the PaymentDto.
      */
@@ -185,7 +179,8 @@ public class PaymentService {
 
     /**
      * Update an existing payment.
-     * @param paymentId the ID of the payment to update.
+     *
+     * @param paymentId  the ID of the payment to update.
      * @param paymentDto the updated payment data transfer object.
      * @return the updated PaymentDto.
      */
@@ -219,6 +214,7 @@ public class PaymentService {
 
     /**
      * Delete a payment by ID.
+     *
      * @param paymentId the ID of the payment to delete.
      */
     @Transactional
@@ -230,6 +226,7 @@ public class PaymentService {
 
     /**
      * Get all payments.
+     *
      * @return a list of PaymentDto.
      */
     public List<PaymentDto> getAllPayments() {

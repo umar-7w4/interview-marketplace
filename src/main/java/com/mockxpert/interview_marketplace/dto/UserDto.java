@@ -46,10 +46,8 @@ public class UserDto {
 
     private String lastLogin;
     
-    @NotNull(message = "Firebase UID is required")
     private String firebaseUid;
-    
-    @NotNull(message = "Refresh Token is required")
+
     private String refreshToken;
 
     public String getFirebaseUid() {
