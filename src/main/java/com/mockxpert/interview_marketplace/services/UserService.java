@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -39,6 +40,9 @@ public class UserService {
 
     @Autowired
     private FirebaseAuth firebaseAuth;
+    
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     // Inject the new FirebaseTokenService for refreshing tokens
     @Autowired
