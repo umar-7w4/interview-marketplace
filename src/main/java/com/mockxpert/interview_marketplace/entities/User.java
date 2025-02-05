@@ -23,7 +23,7 @@ public class User {
     private String email;
 
     @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+    private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
@@ -143,12 +143,12 @@ public class User {
         this.email = email;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public void setPasswordHash(String password) {
+        this.password = password;
     }
 
     public Role getRole() {
