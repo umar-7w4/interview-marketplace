@@ -24,6 +24,9 @@ public class User {
 
     @Column(name = "password_hash", nullable = false)
     private String password;
+    
+    @Column(name = "reset_token", nullable = true)
+    private String resetToken;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
@@ -125,7 +128,7 @@ public class User {
 
     public void setFirstName(String firstName) {
         this.firstName = firstName;
-    }
+    } 
 
     public String getLastName() {
         return lastName;
@@ -145,10 +148,6 @@ public class User {
 
     public String getPassword() {
         return password;
-    }
-
-    public void setPasswordHash(String password) {
-        this.password = password;
     }
 
     public Role getRole() {
@@ -261,6 +260,18 @@ public class User {
 
 	public void setRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
+	}
+
+	public String getResetToken() {
+		return resetToken;
+	}
+
+	public void setResetToken(String resetToken) {
+		this.resetToken = resetToken;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
     
     
