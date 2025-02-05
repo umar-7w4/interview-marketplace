@@ -17,69 +17,75 @@ import com.mockxpert.interview_marketplace.repositories.UserRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
-/**
- * Service class for managing user authentication and registration using Firebase Authentication.
- * This ensures full backend automation, eliminating manual user creation in Firebase.
- */
 @Service
 public class UserService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    
     @Autowired
     private UserRepository userRepository;
-
+    
     @Autowired
     private FirebaseAuth firebaseAuth;
     
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
-
-    // Inject the new FirebaseTokenService for refreshing tokens
-    @Autowired
     private FirebaseTokenService firebaseTokenService;
-
+    
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+    
     @Value("${firebase.api.key}")
-    private String firebaseApiKey; // Firebase API Key from application.properties
-
+    private String firebaseApiKey;
+    
     private static final String FIREBASE_LOGIN_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=";
 
     /**
-     * Registers a new user, creates an account in Firebase, and stores user details in the database.
+     * Registers a new user.
+     * Validates that the password and confirm password match, encrypts the password before storage,
+     * creates a user in Firebase Authentication, and stores user details in the local database.
      *
      * @param userDto User registration details.
-     * @return The registered user details.
+     * @return Registered user details.
      */
     @Transactional
     public UserDto registerUser(UserDto userDto) {
         if (userRepository.findByEmail(userDto.getEmail()).isPresent()) {
             throw new ConflictException("Email already exists: " + userDto.getEmail());
         }
-
-        // Create Firebase user
-        String firebaseUid = createFirebaseUser(userDto.getEmail(), userDto.getPasswordHash());
-
-        // Authenticate with Firebase to retrieve authentication tokens
-        FirebaseLoginResponse firebaseResponse = authenticateWithFirebase(userDto.getEmail(), userDto.getPasswordHash());
-
-        // Convert DTO to entity
-        User user = UserMapper.toEntity(userDto);
+        if (!userDto.getPasswordHash().equals(userDto.getConfirmPassword())) {
+            throw new ValidationException("Password and confirm password do not match.");
+        }
+        
+        // Create a new user in Firebase Authentication.
+        final String firebaseUid = createFirebaseUser(userDto.getEmail(), userDto.getPasswordHash());
+        
+        // Authenticate with Firebase to retrieve tokens.
+        final FirebaseLoginResponse firebaseResponse = authenticateWithFirebase(userDto.getEmail(), userDto.getPasswordHash());
+        
+        // Convert DTO to entity and update fields.
+        final User user = UserMapper.toEntity(userDto);
+        final String encryptedPassword = passwordEncoder.encode(userDto.getPasswordHash());
+        user.setPassword(encryptedPassword);
         user.setFirebaseUid(firebaseUid);
         user.setRefreshToken(firebaseResponse.getRefreshToken());
         user.setCreatedAt(LocalDateTime.now());
         user.setStatus(user.getRole() == User.Role.INTERVIEWER ? User.Status.PENDING : User.Status.ACTIVE);
-
-        // Save user in database
-        User savedUser = userRepository.saveAndFlush(user);
+        
+        final User savedUser = userRepository.saveAndFlush(user);
         return UserMapper.toDto(savedUser);
     }
 
@@ -98,17 +104,17 @@ public class UserService {
                     .setPassword(password)
                     .setEmailVerified(false)
                     .setDisabled(false);
-
             UserRecord userRecord = firebaseAuth.createUser(request);
             return userRecord.getUid();
         } catch (FirebaseAuthException e) {
+            logger.error("Error creating Firebase user for email: {}", email, e);
             throw new InternalServerErrorException("Failed to create user in Firebase: " + e.getMessage());
         }
     }
 
     /**
-     * Calls Firebase Authentication API to authenticate user credentials and retrieve authentication tokens.
-     * This method ensures that Firebase handles authentication without storing passwords in the backend.
+     * Authenticates a user with Firebase.
+     * Calls Firebase Authentication API to verify credentials and retrieve authentication tokens.
      *
      * @param email    User email.
      * @param password User password.
@@ -119,8 +125,6 @@ public class UserService {
         requestBody.put("email", email);
         requestBody.put("password", password);
         requestBody.put("returnSecureToken", true);
-
-        // Call Firebase Authentication API
         RestTemplate restTemplate = new RestTemplate();
         FirebaseLoginResponse firebaseResponse;
         try {
@@ -130,41 +134,36 @@ public class UserService {
                     FirebaseLoginResponse.class
             );
         } catch (Exception e) {
+            logger.error("Firebase authentication failed for email: {}", email, e);
             throw new UnauthorizedException("Invalid email or password.");
         }
-
         return firebaseResponse;
     }
 
     /**
      * Logs in a user using Firebase authentication.
-     * Retrieves Firebase UID, ID Token, and refresh token.
+     * Retrieves the Firebase UID, ID token, and refresh token.
      *
-     * @param loginRequest Login request containing email and password.
-     * @return LoginResponse containing authentication tokens and user details.
+     * @param loginRequest Contains user login credentials.
+     * @return LoginResponse with authentication tokens and user details.
      */
     @Transactional
     public LoginResponse loginUser(LoginRequest loginRequest) {
-        FirebaseLoginResponse firebaseResponse = authenticateWithFirebase(loginRequest.getEmail(), loginRequest.getPassword());
-
-        String firebaseUid = firebaseResponse.getLocalId();
-        String idToken = firebaseResponse.getIdToken();
-        String refreshToken = firebaseResponse.getRefreshToken();
-
-        User user = userRepository.findByEmail(loginRequest.getEmail())
+        final FirebaseLoginResponse firebaseResponse = authenticateWithFirebase(loginRequest.getEmail(), loginRequest.getPassword());
+        final String firebaseUid = firebaseResponse.getLocalId();
+        final String idToken = firebaseResponse.getIdToken();
+        final String refreshToken = firebaseResponse.getRefreshToken();
+        final User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found for email: " + loginRequest.getEmail()));
-
         user.setFirebaseUid(firebaseUid);
         user.setRefreshToken(refreshToken);
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
-
         return new LoginResponse(idToken, refreshToken, user.getRole(), user.getEmail());
     }
 
     /**
-     * Helper method to refresh a Firebase ID token using the stored Firebase refresh token.
-     * This method uses the FirebaseTokenService which calls the correct secure token endpoint.
+     * Refreshes a Firebase token using the stored refresh token.
      *
      * @param firebaseRefreshToken The Firebase refresh token.
      * @return FirebaseTokenResponse containing the new ID token and related fields.
@@ -177,7 +176,7 @@ public class UserService {
      * Retrieves user details by email.
      *
      * @param email User email.
-     * @return User details.
+     * @return UserDto containing user details.
      */
     public UserDto findUserByEmail(String email) {
         return userRepository.findByEmail(email)
@@ -186,67 +185,106 @@ public class UserService {
     }
 
     /**
-     * Updates user profile.
+     * Updates the user's profile information.
      *
      * @param userId  User ID.
      * @param userDto Updated user details.
-     * @return Updated user information.
+     * @return UserDto containing updated user information.
      */
     @Transactional
     public UserDto updateUserProfile(Long userId, UserDto userDto) {
-        User existingUser = userRepository.findById(userId)
+        final User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
-
         if (!existingUser.getEmail().equals(userDto.getEmail()) && userRepository.findByEmail(userDto.getEmail()).isPresent()) {
             throw new ConflictException("Email already exists: " + userDto.getEmail());
         }
-
         existingUser.setFirstName(userDto.getFirstName());
         existingUser.setLastName(userDto.getLastName());
         existingUser.setPhoneNumber(userDto.getPhoneNumber());
         existingUser.setProfilePictureUrl(userDto.getProfilePictureUrl());
         existingUser.setPreferredLanguage(userDto.getPreferredLanguage());
         existingUser.setTimezone(userDto.getTimezone());
-
         return UserMapper.toDto(userRepository.saveAndFlush(existingUser));
     }
 
     /**
-     * Deletes a user by ID.
+     * Changes the user's password.
+     * Validates that the new password and confirm password match, then encrypts the new password.
+     *
+     * @param userId          User ID.
+     * @param newPassword     New password.
+     * @param confirmPassword Confirmation of the new password.
+     */
+    @Transactional
+    public void changeUserPassword(Long userId, String newPassword, String confirmPassword) {
+        final User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new ValidationException("Password must be at least 8 characters long.");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            throw new ValidationException("Password and confirm password do not match.");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.saveAndFlush(user);
+    }
+
+    /**
+     * Generates and stores a reset token for forgot password functionality.
+     *
+     * @param email User email.
+     * @return The generated reset token.
+     */
+    @Transactional
+    public String generateResetToken(String email) {
+        final User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        final String resetToken = UUID.randomUUID().toString();
+        user.setResetToken(resetToken);
+        userRepository.saveAndFlush(user);
+        return resetToken;
+    }
+
+    /**
+     * Resets the user's password using a reset token.
+     * Validates that the new password and confirm password match, then encrypts the new password.
+     *
+     * @param resetToken      The reset token.
+     * @param newPassword     New password.
+     * @param confirmPassword Confirmation of the new password.
+     */
+    @Transactional
+    public void resetPassword(String resetToken, String newPassword, String confirmPassword) {
+        final User user = userRepository.findByResetToken(resetToken)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid or expired reset token."));
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new ValidationException("Password must be at least 8 characters long.");
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            throw new ValidationException("Password and confirm password do not match.");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetToken(null);
+        userRepository.saveAndFlush(user);
+    }
+
+    /**
+     * Deletes a user account.
      *
      * @param userId User ID.
      */
     @Transactional
     public void deleteUser(Long userId) {
-        User user = userRepository.findById(userId)
+        final User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
         userRepository.delete(user);
     }
 
     /**
-     * Changes user password.
-     *
-     * @param userId      User ID.
-     * @param newPassword New password.
-     */
-    @Transactional
-    public void changeUserPassword(Long userId, String newPassword) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
-
-        if (newPassword == null || newPassword.length() < 8) {
-            throw new ValidationException("Password must be at least 8 characters long.");
-        }
-
-        user.setPasswordHash(newPassword);
-        userRepository.saveAndFlush(user);
-    }
-
-    /**
      * Deactivates a user account.
      *
-     * @param userId The user ID.
-     * @return true if successfully deactivated.
+     * @param userId User ID.
+     * @return true if the user was successfully deactivated.
      */
     @Transactional
     public boolean deactivateUser(Long userId) {
@@ -263,8 +301,8 @@ public class UserService {
     /**
      * Reactivates a user account.
      *
-     * @param userId The user ID.
-     * @return true if successfully reactivated.
+     * @param userId User ID.
+     * @return true if the user was successfully reactivated.
      */
     @Transactional
     public boolean reactivateUser(Long userId) {
