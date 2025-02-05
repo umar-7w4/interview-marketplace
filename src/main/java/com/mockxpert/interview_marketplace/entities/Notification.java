@@ -1,9 +1,7 @@
 package com.mockxpert.interview_marketplace.entities;
 
-
-import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "notifications")
@@ -18,52 +16,59 @@ public class Notification {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "related_entity_type", nullable = false)
-    private String relatedEntityType;  // Could be an enum for "BOOKING", "INTERVIEW", or "PAYMENT"
+    @Enumerated(EnumType.STRING)
+    @Column(name = "notification_type", nullable = false)
+    private NotificationType type;
 
-    @Column(name = "related_entity_id", nullable = false)
-    private Long relatedEntityId;
+    @Column(name = "subject", nullable = false)
+    private String subject;
 
-    @Column(nullable = false, length = 1000)
+    @Column(name = "message", nullable = false, length = 2000)
     private String message;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private NotificationType type;  
+    @Column(name = "status", nullable = false)
+    private NotificationStatus status;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private NotificationStatus status; 
-    
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "sent_at")
+    private LocalDateTime sentAt;
+
+    @Column(name = "read_at")
+    private LocalDateTime readAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interview_id")
+    private Interview interview;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "feedback_id")
+    private Feedback feedback;
 
     @Column(name = "scheduled_send_time")
     private LocalDateTime scheduledSendTime;
 
     @Column(name = "is_read", nullable = false)
-    private boolean isRead;
+    private boolean isRead = false;
 
     @Column(name = "time_before_interview")
-    private Long timeBeforeInterview; 
-    
+    private Long timeBeforeInterview;  // Minutes before interview to send reminder
+
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.sentAt = LocalDateTime.now();
+        this.status = NotificationStatus.PENDING;
     }
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id")
-    private Booking booking;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "interviewee_id")
-    private Interview interview;
-    
+
     public enum NotificationType {
-        EMAIL,
-        SMS,
-        APP_NOTIFICATION
+        EMAIL
     }
 
     public enum NotificationStatus {
@@ -72,109 +77,124 @@ public class Notification {
         FAILED
     }
 
-	public Long getNotificationId() {
-		return notificationId;
-	}
+    // Getters and Setters
+    public Long getNotificationId() {
+        return notificationId;
+    }
 
-	public void setNotificationId(Long notificationId) {
-		this.notificationId = notificationId;
-	}
+    public void setNotificationId(Long notificationId) {
+        this.notificationId = notificationId;
+    }
 
-	public User getUser() {
-		return user;
-	}
+    public User getUser() {
+        return user;
+    }
 
-	public void setUser(User user) {
-		this.user = user;
-	}
+    public void setUser(User user) {
+        this.user = user;
+    }
 
-	public String getRelatedEntityType() {
-		return relatedEntityType;
-	}
+    public NotificationType getType() {
+        return type;
+    }
 
-	public void setRelatedEntityType(String relatedEntityType) {
-		this.relatedEntityType = relatedEntityType;
-	}
+    public void setType(NotificationType type) {
+        this.type = type;
+    }
 
-	public Long getRelatedEntityId() {
-		return relatedEntityId;
-	}
+    public String getSubject() {
+        return subject;
+    }
 
-	public void setRelatedEntityId(Long relatedEntityId) {
-		this.relatedEntityId = relatedEntityId;
-	}
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
 
-	public String getMessage() {
-		return message;
-	}
+    public String getMessage() {
+        return message;
+    }
 
-	public void setMessage(String message) {
-		this.message = message;
-	}
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
-	public NotificationType getType() {
-		return type;
-	}
+    public NotificationStatus getStatus() {
+        return status;
+    }
 
-	public void setType(NotificationType type) {
-		this.type = type;
-	}
+    public void setStatus(NotificationStatus status) {
+        this.status = status;
+    }
 
-	public NotificationStatus getStatus() {
-		return status;
-	}
+    public LocalDateTime getSentAt() {
+        return sentAt;
+    }
 
-	public void setStatus(NotificationStatus status) {
-		this.status = status;
-	}
+    public void setSentAt(LocalDateTime sentAt) {
+        this.sentAt = sentAt;
+    }
 
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
+    public LocalDateTime getReadAt() {
+        return readAt;
+    }
 
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
+    public void setReadAt(LocalDateTime readAt) {
+        this.readAt = readAt;
+    }
 
-	public LocalDateTime getScheduledSendTime() {
-		return scheduledSendTime;
-	}
+    public Booking getBooking() {
+        return booking;
+    }
 
-	public void setScheduledSendTime(LocalDateTime scheduledSendTime) {
-		this.scheduledSendTime = scheduledSendTime;
-	}
+    public void setBooking(Booking booking) {
+        this.booking = booking;
+    }
 
-	public boolean isRead() {
-		return isRead;
-	}
+    public Interview getInterview() {
+        return interview;
+    }
 
-	public void setRead(boolean isRead) {
-		this.isRead = isRead;
-	}
+    public void setInterview(Interview interview) {
+        this.interview = interview;
+    }
 
-	public Long getTimeBeforeInterview() {
-		return timeBeforeInterview;
-	}
+    public Payment getPayment() {
+        return payment;
+    }
 
-	public void setTimeBeforeInterview(Long timeBeforeInterview) {
-		this.timeBeforeInterview = timeBeforeInterview;
-	}
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
 
-	public Booking getBooking() {
-		return booking;
-	}
+    public Feedback getFeedback() {
+        return feedback;
+    }
 
-	public void setBooking(Booking booking) {
-		this.booking = booking;
-	}
+    public void setFeedback(Feedback feedback) {
+        this.feedback = feedback;
+    }
 
-	public Interview getInterview() {
-		return interview;
-	}
+    public LocalDateTime getScheduledSendTime() {
+        return scheduledSendTime;
+    }
 
-	public void setInterview(Interview interview) {
-		this.interview = interview;
-	}
-    
-    
+    public void setScheduledSendTime(LocalDateTime scheduledSendTime) {
+        this.scheduledSendTime = scheduledSendTime;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean isRead) {
+        this.isRead = isRead;
+    }
+
+    public Long getTimeBeforeInterview() {
+        return timeBeforeInterview;
+    }
+
+    public void setTimeBeforeInterview(Long timeBeforeInterview) {
+        this.timeBeforeInterview = timeBeforeInterview;
+    }
 }

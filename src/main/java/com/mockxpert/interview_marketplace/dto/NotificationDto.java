@@ -1,7 +1,6 @@
 package com.mockxpert.interview_marketplace.dto;
 
 import java.time.LocalDateTime;
-
 import jakarta.validation.constraints.*;
 
 public class NotificationDto {
@@ -10,29 +9,32 @@ public class NotificationDto {
 
     @NotNull(message = "User ID is required")
     private Long userId;
-    
-    @NotNull(message = "Booking ID is required")
+
     private Long bookingId;
-    
-    @NotNull(message = "Interview ID is required")
-    private Long intervieweeId;
 
-    @NotBlank(message = "Related entity type is required")
-    private String relatedEntityType; 
+    private Long interviewId;
 
-    @NotNull(message = "Related entity ID is required")
-    private Long relatedEntityId;
+    private Long paymentId;
+
+    private Long feedbackId;
+
+    @NotBlank(message = "Subject is required")
+    private String subject;
 
     @NotBlank(message = "Message content is required")
     private String message;
 
     @NotBlank(message = "Notification type is required")
-    private String type; 
+    private String type;
 
     @NotBlank(message = "Notification status is required")
     private String status;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime sentAt;
+
+    private LocalDateTime readAt;
 
     private LocalDateTime scheduledSendTime;
 
@@ -40,107 +42,132 @@ public class NotificationDto {
 
     private Long timeBeforeInterview;
 
-	public Long getNotificationId() {
-		return notificationId;
-	}
+    // Getters and Setters
+    public Long getNotificationId() {
+        return notificationId;
+    }
 
-	public void setNotificationId(Long notificationId) {
-		this.notificationId = notificationId;
-	}
+    public void setNotificationId(Long notificationId) {
+        this.notificationId = notificationId;
+    }
 
-	public Long getUserId() {
-		return userId;
-	}
+    public Long getUserId() {
+        return userId;
+    }
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
-	}
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
-	public Long getBookingId() {
-		return bookingId;
-	}
+    public Long getBookingId() {
+        return bookingId;
+    }
 
-	public void setBookingId(Long bookingId) {
-		this.bookingId = bookingId;
-	}
+    public void setBookingId(Long bookingId) {
+        this.bookingId = bookingId;
+    }
 
-	public Long getIntervieweeId() {
-		return intervieweeId;
-	}
+    public Long getInterviewId() {
+        return interviewId;
+    }
 
-	public void setIntervieweeId(Long intervieweeId) {
-		this.intervieweeId = intervieweeId;
-	}
+    public void setInterviewId(Long interviewId) {
+        this.interviewId = interviewId;
+    }
 
-	public String getRelatedEntityType() {
-		return relatedEntityType;
-	}
+    public Long getPaymentId() {
+        return paymentId;
+    }
 
-	public void setRelatedEntityType(String relatedEntityType) {
-		this.relatedEntityType = relatedEntityType;
-	}
+    public void setPaymentId(Long paymentId) {
+        this.paymentId = paymentId;
+    }
 
-	public Long getRelatedEntityId() {
-		return relatedEntityId;
-	}
+    public Long getFeedbackId() {
+        return feedbackId;
+    }
 
-	public void setRelatedEntityId(Long relatedEntityId) {
-		this.relatedEntityId = relatedEntityId;
-	}
+    public void setFeedbackId(Long feedbackId) {
+        this.feedbackId = feedbackId;
+    }
 
-	public String getMessage() {
-		return message;
-	}
+    public String getSubject() {
+        return subject;
+    }
 
-	public void setMessage(String message) {
-		this.message = message;
-	}
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public String getMessage() {
+        return message;
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
-	public String getStatus() {
-		return status;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
+    public String getStatus() {
+        return status;
+    }
 
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-	public LocalDateTime getScheduledSendTime() {
-		return scheduledSendTime;
-	}
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-	public void setScheduledSendTime(LocalDateTime scheduledSendTime) {
-		this.scheduledSendTime = scheduledSendTime;
-	}
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
-	public boolean isRead() {
-		return isRead;
-	}
+    public LocalDateTime getSentAt() {
+        return sentAt;
+    }
 
-	public void setRead(boolean isRead) {
-		this.isRead = isRead;
-	}
+    public void setSentAt(LocalDateTime sentAt) {
+        this.sentAt = sentAt;
+    }
 
-	public Long getTimeBeforeInterview() {
-		return timeBeforeInterview;
-	}
+    public LocalDateTime getReadAt() {
+        return readAt;
+    }
 
-	public void setTimeBeforeInterview(Long timeBeforeInterview) {
-		this.timeBeforeInterview = timeBeforeInterview;
-	}
+    public void setReadAt(LocalDateTime readAt) {
+        this.readAt = readAt;
+    }
+
+    public LocalDateTime getScheduledSendTime() {
+        return scheduledSendTime;
+    }
+
+    public void setScheduledSendTime(LocalDateTime scheduledSendTime) {
+        this.scheduledSendTime = scheduledSendTime;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean isRead) {
+        this.isRead = isRead;
+    }
+
+    public Long getTimeBeforeInterview() {
+        return timeBeforeInterview;
+    }
+
+    public void setTimeBeforeInterview(Long timeBeforeInterview) {
+        this.timeBeforeInterview = timeBeforeInterview;
+    }
 }
