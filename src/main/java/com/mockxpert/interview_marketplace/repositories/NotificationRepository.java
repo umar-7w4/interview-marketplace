@@ -2,9 +2,9 @@ package com.mockxpert.interview_marketplace.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
 import com.mockxpert.interview_marketplace.entities.Notification;
-
+import com.mockxpert.interview_marketplace.entities.Notification.NotificationStatus;
+import com.mockxpert.interview_marketplace.entities.Notification.NotificationType;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,25 +20,17 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Find all notifications by status.
-     * @param status the status of the notification (e.g., pending, sent, failed).
+     * @param status the status of the notification (e.g., PENDING, SENT, FAILED).
      * @return a list of notifications with the specified status.
      */
-    List<Notification> findByStatus(String status);
+    List<Notification> findByStatus(NotificationStatus status);
 
     /**
      * Find notifications by type.
-     * @param type the type of the notification (e.g., email, sms, app notification).
+     * @param type the type of the notification (e.g., EMAIL).
      * @return a list of notifications of the specified type.
      */
-    List<Notification> findByType(String type);
-
-    /**
-     * Find notifications by related entity type and related entity ID.
-     * @param relatedEntityType the type of the related entity (e.g., Booking, Interview, Payment).
-     * @param relatedEntityId the ID of the related entity.
-     * @return a list of notifications related to the specified entity.
-     */
-    List<Notification> findByRelatedEntityTypeAndRelatedEntityId(String relatedEntityType, Long relatedEntityId);
+    List<Notification> findByType(NotificationType type);
 
     /**
      * Find all unread notifications for a specific user.
@@ -61,7 +53,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @param status the status of the notifications.
      * @return the count of notifications for the specified user with the given status.
      */
-    Long countByUser_UserIdAndStatus(Long userId, String status);
+    Long countByUser_UserIdAndStatus(Long userId, NotificationStatus status);
 
     /**
      * Find notifications by user ID, type, and status.
@@ -70,13 +62,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @param status the status of the notification.
      * @return a list of notifications for the specified user, type, and status.
      */
-    List<Notification> findByUser_UserIdAndTypeAndStatus(Long userId, String type, String status);
-
-    /**
-     * Find notifications created within a specific date range.
-     * @param startDate the start date of the range.
-     * @param endDate the end date of the range.
-     * @return a list of notifications created within the specified date range.
-     */
-    List<Notification> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
+    List<Notification> findByUser_UserIdAndTypeAndStatus(Long userId, NotificationType type, NotificationStatus status);
 }

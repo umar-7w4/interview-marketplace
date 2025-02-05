@@ -2,6 +2,23 @@ package com.mockxpert.interview_marketplace.dto;
 
 import jakarta.validation.constraints.*;
 
+
+/*
+ 
+{
+    "firstName": "Usman",
+    "lastName": "Mohammad",
+    "email": "mohammedosman9028@gmail.com",
+    "passwordHash": "12345@Pass8", 
+    "confirmPassword": "12345@Pass8", 
+    "role": "INTERVIEWEE", 
+    "phoneNumber": "9704297838",  
+    "preferredLanguage": "EN",
+    "timezone": "America/New_York",
+    "status": "ACTIVE"
+}
+  
+ */
 public class UserDto {
 
     private Long userId;

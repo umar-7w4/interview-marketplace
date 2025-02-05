@@ -3,14 +3,12 @@ package com.mockxpert.interview_marketplace.services;
 import com.mockxpert.interview_marketplace.dto.NotificationDto;
 import com.mockxpert.interview_marketplace.entities.*;
 import com.mockxpert.interview_marketplace.mappers.NotificationMapper;
-import com.mockxpert.interview_marketplace.repositories.BookingRepository;
-import com.mockxpert.interview_marketplace.repositories.InterviewRepository;
-import com.mockxpert.interview_marketplace.repositories.NotificationRepository;
-import com.mockxpert.interview_marketplace.repositories.UserRepository;
+import com.mockxpert.interview_marketplace.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,27 +28,39 @@ public class NotificationService {
     @Autowired
     private InterviewRepository interviewRepository;
 
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private FeedbackRepository feedbackRepository;
+
     /**
      * Create a new notification.
      *
      * @param notificationDto the notification DTO.
-     * @return the saveAndFlushd NotificationDto.
+     * @return the saved NotificationDto.
      */
     @Transactional
     public NotificationDto createNotification(NotificationDto notificationDto) {
         User user = userRepository.findById(notificationDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + notificationDto.getUserId()));
 
-        Booking booking = bookingRepository.findById(notificationDto.getBookingId())
-                .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + notificationDto.getBookingId()));
+        Booking booking = notificationDto.getBookingId() != null ?
+                bookingRepository.findById(notificationDto.getBookingId()).orElse(null) : null;
 
-        Interview interview = interviewRepository.findById(notificationDto.getIntervieweeId())
-                .orElseThrow(() -> new IllegalArgumentException("Interview not found with ID: " + notificationDto.getIntervieweeId()));
+        Interview interview = notificationDto.getInterviewId() != null ?
+                interviewRepository.findById(notificationDto.getInterviewId()).orElse(null) : null;
 
-        Notification notification = NotificationMapper.toEntity(notificationDto, user, booking, interview);
-        Notification saveAndFlushdNotification = notificationRepository.saveAndFlush(notification);
+        Payment payment = notificationDto.getPaymentId() != null ?
+                paymentRepository.findById(notificationDto.getPaymentId()).orElse(null) : null;
 
-        return NotificationMapper.toDto(saveAndFlushdNotification);
+        Feedback feedback = notificationDto.getFeedbackId() != null ?
+                feedbackRepository.findById(notificationDto.getFeedbackId()).orElse(null) : null;
+
+        Notification notification = NotificationMapper.toEntity(notificationDto, user, booking, interview, payment, feedback);
+        Notification savedNotification = notificationRepository.save(notification);
+
+        return NotificationMapper.toDto(savedNotification);
     }
 
     /**
@@ -81,17 +91,24 @@ public class NotificationService {
         User user = userRepository.findById(notificationDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + notificationDto.getUserId()));
 
-        Booking booking = bookingRepository.findById(notificationDto.getBookingId())
-                .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + notificationDto.getBookingId()));
+        Booking booking = notificationDto.getBookingId() != null ?
+                bookingRepository.findById(notificationDto.getBookingId()).orElse(null) : null;
 
-        Interview interview = interviewRepository.findById(notificationDto.getIntervieweeId())
-                .orElseThrow(() -> new IllegalArgumentException("Interview not found with ID: " + notificationDto.getIntervieweeId()));
+        Interview interview = notificationDto.getInterviewId() != null ?
+                interviewRepository.findById(notificationDto.getInterviewId()).orElse(null) : null;
+
+        Payment payment = notificationDto.getPaymentId() != null ?
+                paymentRepository.findById(notificationDto.getPaymentId()).orElse(null) : null;
+
+        Feedback feedback = notificationDto.getFeedbackId() != null ?
+                feedbackRepository.findById(notificationDto.getFeedbackId()).orElse(null) : null;
 
         existingNotification.setUser(user);
         existingNotification.setBooking(booking);
         existingNotification.setInterview(interview);
-        existingNotification.setRelatedEntityType(notificationDto.getRelatedEntityType());
-        existingNotification.setRelatedEntityId(notificationDto.getRelatedEntityId());
+        existingNotification.setPayment(payment);
+        existingNotification.setFeedback(feedback);
+        existingNotification.setSubject(notificationDto.getSubject());
         existingNotification.setMessage(notificationDto.getMessage());
         existingNotification.setType(Notification.NotificationType.valueOf(notificationDto.getType()));
         existingNotification.setStatus(Notification.NotificationStatus.valueOf(notificationDto.getStatus()));
@@ -99,7 +116,7 @@ public class NotificationService {
         existingNotification.setRead(notificationDto.isRead());
         existingNotification.setTimeBeforeInterview(notificationDto.getTimeBeforeInterview());
 
-        Notification updatedNotification = notificationRepository.saveAndFlush(existingNotification);
+        Notification updatedNotification = notificationRepository.save(existingNotification);
 
         return NotificationMapper.toDto(updatedNotification);
     }
@@ -140,6 +157,7 @@ public class NotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found with ID: " + notificationId));
 
         notification.setRead(true);
-        notificationRepository.saveAndFlush(notification);
+        notification.setReadAt(LocalDateTime.now());
+        notificationRepository.save(notification);
     }
 }

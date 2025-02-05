@@ -1,7 +1,6 @@
 package com.mockxpert.interview_marketplace.controllers;
 
 import com.mockxpert.interview_marketplace.dto.NotificationDto;
-import com.mockxpert.interview_marketplace.exceptions.*;
 import com.mockxpert.interview_marketplace.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,10 +31,10 @@ public class NotificationController {
         try {
             NotificationDto savedNotification = notificationService.createNotification(notificationDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedNotification);
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create notification");
         }
     }
 
@@ -49,8 +48,10 @@ public class NotificationController {
         try {
             NotificationDto notification = notificationService.getNotificationById(notificationId);
             return ResponseEntity.ok(notification);
-        } catch (ResourceNotFoundException e) {
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to retrieve notification");
         }
     }
 
@@ -65,10 +66,10 @@ public class NotificationController {
         try {
             NotificationDto updatedNotification = notificationService.updateNotification(notificationId, notificationDto);
             return ResponseEntity.ok(updatedNotification);
-        } catch (ResourceNotFoundException e) {
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update notification");
         }
     }
 
@@ -82,7 +83,7 @@ public class NotificationController {
         try {
             notificationService.deleteNotification(notificationId);
             return ResponseEntity.ok("Notification deleted successfully");
-        } catch (ResourceNotFoundException e) {
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete notification");
@@ -100,7 +101,7 @@ public class NotificationController {
             List<NotificationDto> notifications = notificationService.getNotificationsByUser(userId);
             return ResponseEntity.ok(notifications);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to retrieve notifications");
         }
     }
 
@@ -114,7 +115,7 @@ public class NotificationController {
         try {
             notificationService.markAsRead(notificationId);
             return ResponseEntity.ok("Notification marked as read");
-        } catch (ResourceNotFoundException e) {
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to mark notification as read");
