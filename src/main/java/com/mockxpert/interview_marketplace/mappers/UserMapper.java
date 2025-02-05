@@ -53,7 +53,7 @@ public class UserMapper {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
-        user.setPasswordHash(userDto.getPasswordHash());
+        user.setPassword(userDto.getPasswordHash());
         user.setRole(userDto.getRole() != null ? User.Role.valueOf(userDto.getRole()) : null);
         user.setStatus(userDto.getStatus() != null ? User.Status.valueOf(userDto.getStatus()) : null);
         user.setPhoneNumber(userDto.getPhoneNumber());

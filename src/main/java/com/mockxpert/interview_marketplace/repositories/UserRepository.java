@@ -69,4 +69,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return an Optional of user with the specified firebase uid
      */
     Optional<User> findByFirebaseUid(String firebaseUid);
+    
+    /**
+     * Find user by reset token.
+     * @param reset token is generated during forgot password of the user
+     * @return an Optional of user with the specified reset token
+     */
+    Optional<User> findByResetToken(String resetToken);
 }

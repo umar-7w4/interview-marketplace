@@ -18,9 +18,14 @@ public class UserDto {
     @Email(message = "Email should be valid")
     private String email;
 
+    // Password and confirmPassword fields
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters")
     private String passwordHash;
+
+    @NotBlank(message = "Confirm password is required")
+    @Size(min = 8, message = "Confirm password must be at least 8 characters")
+    private String confirmPassword;
 
     @NotNull(message = "Role is required")
     private String role;
@@ -176,6 +181,14 @@ public class UserDto {
 
 	public void setRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
+	}
+
+	public String getConfirmPassword() {
+		return confirmPassword;
+	}
+
+	public void setConfirmPassword(String confirmPassword) {
+		this.confirmPassword = confirmPassword;
 	}
     
     
