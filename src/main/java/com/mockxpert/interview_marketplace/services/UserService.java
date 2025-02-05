@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -46,7 +46,7 @@ public class UserService {
     private FirebaseTokenService firebaseTokenService;
     
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
     
     @Value("${firebase.api.key}")
     private String firebaseApiKey;
@@ -263,9 +263,24 @@ public class UserService {
         if (!newPassword.equals(confirmPassword)) {
             throw new ValidationException("Password and confirm password do not match.");
         }
-        user.setPassword(passwordEncoder.encode(newPassword));
-        user.setResetToken(null);
-        userRepository.saveAndFlush(user);
+        
+        try {
+            // Update password in Firebase
+            UserRecord.UpdateRequest request = new UserRecord.UpdateRequest(user.getFirebaseUid())
+                    .setPassword(newPassword);
+            
+            firebaseAuth.updateUser(request);
+
+            // Force logout by revoking all Firebase tokens
+            firebaseAuth.revokeRefreshTokens(user.getFirebaseUid());
+
+            // Clear reset token after successful update
+            user.setResetToken(null);
+            userRepository.save(user);
+
+        } catch (FirebaseAuthException e) {
+            throw new InternalServerErrorException("Failed to update password in Firebase: " + e.getMessage());
+        }
     }
 
     /**
