@@ -33,6 +33,9 @@ public class NotificationService {
 
     @Autowired
     private FeedbackRepository feedbackRepository;
+    
+    @Autowired
+    private EmailService emailService;
 
     /**
      * Create a new notification.
@@ -57,8 +60,15 @@ public class NotificationService {
         Feedback feedback = notificationDto.getFeedbackId() != null ?
                 feedbackRepository.findById(notificationDto.getFeedbackId()).orElse(null) : null;
 
+        // Map DTO to Entity
         Notification notification = NotificationMapper.toEntity(notificationDto, user, booking, interview, payment, feedback);
         Notification savedNotification = notificationRepository.save(notification);
+
+        // Send Email Notification (if applicable)
+        if (notification.getType() == Notification.NotificationType.EMAIL) {
+            String emailContent = formatEmailContent(notificationDto.getSubject(), notificationDto.getMessage());
+            emailService.sendNotificationEmail(user.getEmail(), notificationDto.getSubject(), emailContent);
+        }
 
         return NotificationMapper.toDto(savedNotification);
     }
@@ -160,4 +170,19 @@ public class NotificationService {
         notification.setReadAt(LocalDateTime.now());
         notificationRepository.save(notification);
     }
+    
+    /**
+     * Formats notification content.
+     *
+     * @param subject and body of the email.
+     */
+    private String formatEmailContent(String subject, String message) {
+        return "<html>" +
+                "<body style='font-family: Arial, sans-serif;'>" +
+                "<h3 style='color: #007bff;'>" + subject + "</h3>" +
+                "<p>" + message + "</p>" +
+                "<br><p style='font-size: 12px; color: gray;'>MockXpert Team</p>" +
+                "</body></html>";
+    }
+
 }

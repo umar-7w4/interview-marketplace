@@ -1,11 +1,15 @@
 package com.mockxpert.interview_marketplace.services;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 /**
- * Service class for sending emails.
+ * Service class for sending email notifications.
  */
 @Service
 public class EmailService {
@@ -16,43 +20,104 @@ public class EmailService {
      * Base URL for verification links, configured in application.properties.
      * Example: https://yourdomain.com/api/verification/verify-email?token=
      */
-    private final String verificationUrl = "https://yourdomain.com/api/verification/verify-email?token=";
+    @Value("${app.verification.url}")
+    private String verificationUrl;
 
     /**
-     * Default "From" email address.
+     * Default "From" email address, configured in application.properties.
      */
-    private final String defaultFromEmail = "mohammadumar19996w4@gmail.com"; // Replace with your verified email
+    @Value("${spring.mail.username}")
+    private String defaultFromEmail;
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
 
     /**
-     * Sends a verification email to the specified work email with the provided token.
+     * Sends a verification email to an interviewer's work email.
      *
      * @param workEmail the interviewer's work email.
      * @param token     the verification token.
      */
     public void sendVerificationEmail(String workEmail, String token) {
         String verificationLink = verificationUrl + token;
+        String subject = "🔹 Verify Your Email for MockXpert";
+        String message = "<p>Dear Interviewer,</p>" +
+                "<p>Thank you for registering with <strong>MockXpert</strong>. Please verify your email address by clicking the link below:</p>" +
+                "<p><a href='" + verificationLink + "'>Verify Email</a></p>" +
+                "<p>If you did not request this, please ignore this email.</p>" +
+                "<p>Best regards,<br>MockXpert Team</p>";
 
-        String subject = "Email Verification for Your Interviewer Profile";
-        String message = String.format(
-                "Dear Interviewer,\n\n" +
-                "Thank you for registering with us. Please verify your email address by clicking the link below:\n" +
-                "%s\n\n" +
-                "If you did not initiate this request, please ignore this email.\n\n" +
-                "Best regards,\n" +
-                "Your Company Name",
-                verificationLink
-        );
+        sendHtmlEmail(workEmail, subject, message);
+    }
 
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(workEmail);
-        email.setFrom(defaultFromEmail); // Set the "From" header
-        email.setSubject(subject);
-        email.setText(message);
+    /**
+     * Sends a general email notification.
+     *
+     * @param to      The recipient's email.
+     * @param subject The subject of the email.
+     * @param message The content of the email (supports HTML).
+     */
+    public void sendNotificationEmail(String to, String subject, String message) {
+        sendHtmlEmail(to, subject, message);
+    }
 
-        mailSender.send(email);
+    /**
+     * Sends a plain text email.
+     *
+     * @param to      The recipient's email.
+     * @param subject The subject of the email.
+     * @param message The content of the email (plain text).
+     */
+    public void sendPlainTextEmail(String to, String subject, String message) {
+        try {
+            SimpleMailMessage email = new SimpleMailMessage();
+            email.setTo(to);
+            email.setFrom(defaultFromEmail);
+            email.setSubject(subject);
+            email.setText(message);
+            
+            mailSender.send(email);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send email to " + to, e);
+        }
+    }
+
+    /**
+     * Sends an HTML email.
+     *
+     * @param to      The recipient's email.
+     * @param subject The subject of the email.
+     * @param message The HTML content of the email.
+     */
+    private void sendHtmlEmail(String to, String subject, String message) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+
+            helper.setFrom(defaultFromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(formatEmailHtml(subject, message), true);
+
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Failed to send email to " + to, e);
+        }
+    }
+
+    /**
+     * Formats the email content with an HTML template.
+     *
+     * @param subject Email subject.
+     * @param message Email body.
+     * @return Formatted HTML email.
+     */
+    private String formatEmailHtml(String subject, String message) {
+        return "<html><body style='font-family: Arial, sans-serif;'>" +
+                "<h3 style='color: #007bff;'>" + subject + "</h3>" +
+                "<p>" + message + "</p>" +
+                "<br><p style='font-size: 12px; color: gray;'>MockXpert Team</p>" +
+                "</body></html>";
     }
 }

@@ -3,6 +3,7 @@ package com.mockxpert.interview_marketplace.services;
 import com.mockxpert.interview_marketplace.dto.UserDto;
 import com.mockxpert.interview_marketplace.dto.LoginRequest;
 import com.mockxpert.interview_marketplace.dto.LoginResponse;
+import com.mockxpert.interview_marketplace.dto.NotificationDto;
 import com.mockxpert.interview_marketplace.dto.FirebaseLoginResponse;
 import com.mockxpert.interview_marketplace.dto.FirebaseTokenResponse;
 import com.mockxpert.interview_marketplace.entities.User;
@@ -48,6 +49,9 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     
+    @Autowired
+    private NotificationService notificationService;
+    
     @Value("${firebase.api.key}")
     private String firebaseApiKey;
     
@@ -86,6 +90,18 @@ public class UserService {
         user.setStatus(user.getRole() == User.Role.INTERVIEWER ? User.Status.PENDING : User.Status.ACTIVE);
         
         final User savedUser = userRepository.saveAndFlush(user);
+        
+        sendUserNotification(
+        	    savedUser.getUserId(),
+        	    "Welcome to MockXpert - Your Interview Prep Partner!",
+        	    "Hi " + savedUser.getFirstName() + ",<br><br>" +
+        	    "Thank you for signing up with <strong>MockXpert</strong>. " +
+        	    "We're excited to help you ace your interviews!<br><br>" +
+        	    "You can start booking interview sessions now.<br><br>" +
+        	    "<a href='https://mockxpert.com/dashboard'>Go to Dashboard</a><br><br>" +
+        	    "Best Regards,<br>MockXpert Team"
+        	);
+
         return UserMapper.toDto(savedUser);
     }
 
@@ -204,6 +220,17 @@ public class UserService {
         existingUser.setProfilePictureUrl(userDto.getProfilePictureUrl());
         existingUser.setPreferredLanguage(userDto.getPreferredLanguage());
         existingUser.setTimezone(userDto.getTimezone());
+        
+        sendUserNotification(
+        	    userId,
+        	    "Profile Updated Successfully!",
+        	    "Hi " + existingUser.getFirstName() + ",<br><br>" +
+        	    "Your profile details have been successfully updated.<br><br>" +
+        	    "If you didn't make these changes, please contact support immediately.<br><br>" +
+        	    "<a href='https://mockxpert.com/settings'>Review Your Profile</a><br><br>" +
+        	    "Best Regards,<br>MockXpert Team"
+        	);
+        
         return UserMapper.toDto(userRepository.saveAndFlush(existingUser));
     }
 
@@ -226,6 +253,17 @@ public class UserService {
             throw new ValidationException("Password and confirm password do not match.");
         }
         user.setPassword(passwordEncoder.encode(newPassword));
+        
+        sendUserNotification(
+        	    userId,
+        	    "Your Password Has Been Changed",
+        	    "Hi " + user.getFirstName() + ",<br><br>" +
+        	    "Your password has been successfully updated. If this wasn't you, " +
+        	    "please reset your password immediately.<br><br>" +
+        	    "<a href='https://mockxpert.com/reset-password'>Reset Password</a><br><br>" +
+        	    "Best Regards,<br>MockXpert Team"
+        	);
+
         userRepository.saveAndFlush(user);
     }
 
@@ -242,6 +280,17 @@ public class UserService {
         final String resetToken = UUID.randomUUID().toString();
         user.setResetToken(resetToken);
         userRepository.saveAndFlush(user);
+        
+        sendUserNotification(
+        	    user.getUserId(),
+        	    "Password Reset Request",
+        	    "Hi " + user.getFirstName() + ",<br><br>" +
+        	    "We received a request to reset your password. Click the link below to reset it:<br><br>" +
+        	    "<a href='https://mockxpert.com/reset-password?token=" + resetToken + "'>Reset Your Password</a><br><br>" +
+        	    "If you did not request this, please ignore this email.<br><br>" +
+        	    "Best Regards,<br>MockXpert Team"
+        	);
+
         return resetToken;
     }
 
@@ -330,4 +379,23 @@ public class UserService {
             return true;
         }).orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
     }
+    
+    /**
+     * Helper method to create a user notification and trigger an email.
+     *
+     * @param userId  The user ID.
+     * @param subject The email subject.
+     * @param message The email content.
+     */
+    private void sendUserNotification(Long userId, String subject, String message) {
+        NotificationDto notificationDto = new NotificationDto();
+        notificationDto.setUserId(userId);
+        notificationDto.setSubject(subject);
+        notificationDto.setMessage(message);
+        notificationDto.setType("EMAIL");
+        notificationDto.setStatus("SENT");
+
+        notificationService.createNotification(notificationDto);
+    }
+
 }
