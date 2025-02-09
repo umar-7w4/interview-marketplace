@@ -76,16 +76,12 @@ public class UserService {
         
         // Create a new user in Firebase Authentication.
         final String firebaseUid = createFirebaseUser(userDto.getEmail(), userDto.getPasswordHash());
-        
-        // Authenticate with Firebase to retrieve tokens.
-        final FirebaseLoginResponse firebaseResponse = authenticateWithFirebase(userDto.getEmail(), userDto.getPasswordHash());
-        
+
         // Convert DTO to entity and update fields.
         final User user = UserMapper.toEntity(userDto);
         final String encryptedPassword = passwordEncoder.encode(userDto.getPasswordHash());
         user.setPassword(encryptedPassword);
         user.setFirebaseUid(firebaseUid);
-        user.setRefreshToken(firebaseResponse.getRefreshToken());
         user.setCreatedAt(LocalDateTime.now());
         user.setStatus(user.getRole() == User.Role.INTERVIEWER ? User.Status.PENDING : User.Status.ACTIVE);
         
@@ -171,10 +167,15 @@ public class UserService {
         final String refreshToken = firebaseResponse.getRefreshToken();
         final User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found for email: " + loginRequest.getEmail()));
-        user.setFirebaseUid(firebaseUid);
-        user.setRefreshToken(refreshToken);
+        
+        // Update Firebase UID if needed.
+        if (user.getFirebaseUid() == null || !user.getFirebaseUid().equals(firebaseUid)) {
+            user.setFirebaseUid(firebaseUid);
+        }
+        // Update last login time.
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
+        
         return new LoginResponse(idToken, refreshToken, user.getRole(), user.getEmail());
     }
 

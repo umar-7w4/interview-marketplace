@@ -31,11 +31,11 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Permit unauthenticated access to authentication endpoints
                 .requestMatchers(
-                        "/api/auth/login", 
-                        "/api/auth/register", 
-                        "/api/auth/forgot-password", 
-                        "/api/auth/change-password", 
-                        "/api/auth/reset-password"
+                        "/api/users/login", 
+                        "/api/users/register", 
+                        "/api/users/forgot-password", 
+                        "/api/users/change-password", 
+                        "/api/users/reset-password"
                 ).permitAll()
                 // All other endpoints require authentication
                 .anyRequest().authenticated()

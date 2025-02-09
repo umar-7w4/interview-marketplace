@@ -26,11 +26,11 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
         this.firebaseAuth = firebaseAuth;
         this.skipAuthMatchers = new ArrayList<>();
         // Adjust the paths and HTTP methods as needed
-        skipAuthMatchers.add(new AntPathRequestMatcher("/api/auth/login", "POST"));
-        skipAuthMatchers.add(new AntPathRequestMatcher("/api/auth/register", "POST"));
-        skipAuthMatchers.add(new AntPathRequestMatcher("/api/auth/forgot-password", "POST"));
-        skipAuthMatchers.add(new AntPathRequestMatcher("/api/auth/change-password", "POST"));
-        skipAuthMatchers.add(new AntPathRequestMatcher("/api/auth/reset-password", "POST"));
+        skipAuthMatchers.add(new AntPathRequestMatcher("/api/users/login", "POST"));
+        skipAuthMatchers.add(new AntPathRequestMatcher("/api/users/register", "POST"));
+        skipAuthMatchers.add(new AntPathRequestMatcher("/api/users/forgot-password", "POST"));
+        skipAuthMatchers.add(new AntPathRequestMatcher("/api/users/change-password", "POST"));
+        skipAuthMatchers.add(new AntPathRequestMatcher("/api/users/reset-password", "POST"));
     }
 
     @Override
