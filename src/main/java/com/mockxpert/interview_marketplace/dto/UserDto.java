@@ -73,8 +73,6 @@ public class UserDto {
     
     private String firebaseUid;
 
-    private String refreshToken;
-
     public String getFirebaseUid() {
 		return firebaseUid;
 	}
@@ -194,14 +192,6 @@ public class UserDto {
     public void setLastLogin(String lastLogin) {
         this.lastLogin = lastLogin;
     }
-
-	public String getRefreshToken() {
-		return refreshToken;
-	}
-
-	public void setRefreshToken(String refreshToken) {
-		this.refreshToken = refreshToken;
-	}
 
 	public String getConfirmPassword() {
 		return confirmPassword;

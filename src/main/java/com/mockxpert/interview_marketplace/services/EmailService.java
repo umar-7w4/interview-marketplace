@@ -59,13 +59,11 @@ public class EmailService {
      * @param workEmail the interviewer's work email.
      * @param token     the verification token.
      */
-    public void sendVerificationEmail(String workEmail, String token) {
-        String verificationLink = verificationUrl + token;
-        String subject = "🔹 Verify Your Email for MockXpert";
+    public void sendVerificationEmail(String workEmail) {
+        String subject = "Congragulations your profile got verified";
         String message = "<p>Dear Interviewer,</p>" +
-                "<p>Thank you for registering with <strong>MockXpert</strong>. Please verify your email address by clicking the link below:</p>" +
-                "<p><a href='" + verificationLink + "'>Verify Email</a></p>" +
-                "<p>If you did not request this, please ignore this email.</p>" +
+                "<p>Thank you for registering with <strong>MockXpert</strong>. We are happy to announce that your profile as Interviewer got verified.</p>" +
+                "<p>We wish you all the best and hope to serve you well.</p>" +
                 "<p>Best regards,<br>MockXpert Team</p>";
 
         sendHtmlEmail(workEmail, subject, message);

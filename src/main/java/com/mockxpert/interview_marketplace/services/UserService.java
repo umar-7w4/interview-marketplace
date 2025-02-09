@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -399,5 +401,28 @@ public class UserService {
 
         notificationService.createNotification(notificationDto);
     }
+    
+    /**
+     * 
+     * Helper method to get the current logged in users details.
+     * 
+     */
+    public UserDto getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            logger.warn("User is not authenticated or still anonymous.");
+            throw new UnauthorizedException("User is not authenticated.");
+        }
+
+        logger.info("Current Authenticated User: {}", auth.getPrincipal()); 
+
+        User user = userRepository.findByFirebaseUid(auth.getPrincipal().toString())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with firebaseUid: " + auth.getPrincipal()));
+
+        return UserMapper.toDto(user);  
+    }
+
+
 
 }

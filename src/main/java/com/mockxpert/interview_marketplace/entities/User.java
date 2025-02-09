@@ -49,9 +49,7 @@ public class User {
 
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
-    
-    @Column(name = "refresh_token", nullable = true)
-    private String refreshToken;
+  
     
     @Column(name = "work_email", nullable = true)
     private String workEmail;
@@ -258,13 +256,6 @@ public class User {
         this.feedbackReceived = feedbackReceived;
     }
 
-	public String getRefreshToken() {
-		return refreshToken;
-	}
-
-	public void setRefreshToken(String refreshToken) {
-		this.refreshToken = refreshToken;
-	}
 
 	public String getResetToken() {
 		return resetToken;

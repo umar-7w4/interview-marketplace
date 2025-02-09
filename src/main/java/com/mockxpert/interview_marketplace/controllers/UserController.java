@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import com.mockxpert.interview_marketplace.entities.User;
 
 @RestController
 @RequestMapping("/api/users")
@@ -201,6 +202,22 @@ public class UserController {
         try {
             userService.deleteUser(userId);
             return ResponseEntity.ok("User deleted successfully");
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+    
+    /**
+     * Deletes a user account.
+     *
+     * @param userId User ID.
+     * @return User deletion status message.
+     */
+    @GetMapping("/current-user")
+    public ResponseEntity<?> getCurrentUser() {
+        try {
+        	UserDto user = userService.getCurrentUser();
+            return ResponseEntity.ok(user);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }

@@ -157,6 +157,11 @@
 		</dependency>
 
 
+		<dependency>
+			<groupId>com.cg.mts</groupId>
+			<artifactId>OnlineCourierManagement</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
     </dependencies>
 
     <build>

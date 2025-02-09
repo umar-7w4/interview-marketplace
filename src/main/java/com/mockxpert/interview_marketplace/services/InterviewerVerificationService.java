@@ -97,6 +97,8 @@ public class InterviewerVerificationService {
         if (user != null) {
             user.setStatus(User.Status.ACTIVE);
         }
+        
+        emailService.sendVerificationEmail(user.getWorkEmail());
     }
 
     /**
