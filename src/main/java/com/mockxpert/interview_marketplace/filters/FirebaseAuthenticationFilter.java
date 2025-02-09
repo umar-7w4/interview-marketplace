@@ -31,6 +31,12 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
         skipAuthMatchers.add(new AntPathRequestMatcher("/api/users/forgot-password", "POST"));
         skipAuthMatchers.add(new AntPathRequestMatcher("/api/users/change-password", "POST"));
         skipAuthMatchers.add(new AntPathRequestMatcher("/api/users/reset-password", "POST"));
+        skipAuthMatchers.add(new AntPathRequestMatcher("/api/verification/sendOtp", "POST"));
+        skipAuthMatchers.add(new AntPathRequestMatcher("/api/verification/verifyOtp", "POST"));
+        skipAuthMatchers.add(new AntPathRequestMatcher("/api/verification/resendOtp", "POST"));
+        skipAuthMatchers.add(new AntPathRequestMatcher("/api/payments/success", "GET"));
+        skipAuthMatchers.add(new AntPathRequestMatcher("/api/payments/cancel", "GET"));
+
     }
 
     @Override
@@ -48,26 +54,35 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-        // Retrieve and validate the Authorization header.
+        
         String header = request.getHeader("Authorization");
+
         if (header == null || !header.startsWith("Bearer ")) {
+            System.err.println("Missing or invalid Authorization header.");
             response.sendError(HttpStatus.UNAUTHORIZED.value(), "Missing or invalid Authorization header");
             return;
         }
 
         String token = header.substring(7);
+        System.out.println("Received token: " + token);
+
         try {
-            // Verify the token with Firebase. This automatically checks the signature and expiry.
             FirebaseToken decodedToken = firebaseAuth.verifyIdToken(token);
-            // Set an Authentication object in the SecurityContext.
+            System.out.println("Decoded token UID: " + decodedToken.getUid());
+
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(decodedToken.getUid(), null, new ArrayList<>());
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            System.out.println("SecurityContextHolder updated with UID: " + decodedToken.getUid());
+
         } catch (FirebaseAuthException e) {
+            System.err.println("Token verification failed: " + e.getMessage());
             response.sendError(HttpStatus.UNAUTHORIZED.value(), "Invalid or expired token: " + e.getMessage());
             return;
         }
 
         filterChain.doFilter(request, response);
     }
+
 }

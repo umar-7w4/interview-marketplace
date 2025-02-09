@@ -40,12 +40,17 @@ public class EmailService {
      * @param otp            the OTP to be sent.
      */
     public void sendOtpEmail(String recipientEmail, String otp) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(recipientEmail);
-        message.setSubject("MockXpert Interviewer Verification Code");
-        message.setText("Your verification code is: " + otp + "\n\n This code will expire in 15 minutes.");
-
-        mailSender.send(message);
+    	try {
+	        SimpleMailMessage message = new SimpleMailMessage();
+	        message.setFrom(defaultFromEmail); // Replace with a valid email address
+	        message.setTo(recipientEmail);
+	        message.setSubject("MockXpert Interviewer Verification Code");
+	        message.setText("Your verification code is: " + otp + "\n\n This code will expire in 15 minutes.");
+	
+	        mailSender.send(message);
+	    } catch (Exception e) {
+	        throw new RuntimeException("Failed to send email to "+ e);
+	    }
     }
 
     /**

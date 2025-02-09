@@ -35,8 +35,14 @@ public class SecurityConfig {
                         "/api/users/register", 
                         "/api/users/forgot-password", 
                         "/api/users/change-password", 
-                        "/api/users/reset-password"
-                ).permitAll()
+                        "/api/users/reset-password",
+                        "/api/verification/sendOtp",
+                        "/api/users/verification/sendOtp",      
+                        "/api/users/verification/verifyOtp",   
+                        "/api/users/verification/resendOtp",
+                        "/api/payments/success",  
+                        "/api/payments/cancel"    
+                ).permitAll() 
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
