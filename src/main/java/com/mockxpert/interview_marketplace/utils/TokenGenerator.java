@@ -12,6 +12,16 @@ public class TokenGenerator {
     private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder().withoutPadding(); // Thread-safe
 
     /**
+     * Generates a 6-digit OTP.
+     *
+     * @return a randomly generated 6-digit OTP.
+     */
+    public static String generateOtp() {
+        int otp = 100000 + secureRandom.nextInt(900000);
+        return String.valueOf(otp);
+    }
+    
+    /**
      * Generates a secure, random token encoded in Base64.
      *
      * @return a URL-safe Base64 encoded token string.

@@ -1,6 +1,7 @@
 package com.mockxpert.interview_marketplace.services;
 
 import com.mockxpert.interview_marketplace.dto.AvailabilityDto;
+import com.mockxpert.interview_marketplace.dto.NotificationDto;
 import com.mockxpert.interview_marketplace.entities.Availability;
 import com.mockxpert.interview_marketplace.entities.Interviewer;
 import com.mockxpert.interview_marketplace.exceptions.ResourceNotFoundException;
@@ -13,12 +14,13 @@ import com.mockxpert.interview_marketplace.repositories.InterviewerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalTime;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service for managing interviewer availabilities and sending notifications.
+ */
 @Service
 public class AvailabilityService {
 
@@ -28,55 +30,63 @@ public class AvailabilityService {
     @Autowired
     private InterviewerRepository interviewerRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     /**
-     * Register a new availability.
-     * @param availabilityDto the availability data transfer object containing registration information.
-     * @return the saveAndFlushd AvailabilityDto.
+     * Register a new availability and notify the interviewer.
+     *
+     * @param availabilityDto Availability data.
+     * @return Created availability.
      */
     @Transactional
     public AvailabilityDto registerAvailability(AvailabilityDto availabilityDto) {
         Interviewer interviewer = interviewerRepository.findById(availabilityDto.getInterviewerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found with ID: " + availabilityDto.getInterviewerId()));
-        
+
         if (availabilityDto.getEndTime().isBefore(availabilityDto.getStartTime())) {
             throw new BadRequestException("End time cannot be before start time.");
         }
 
         List<Availability> existingAvailabilities = availabilityRepository
                 .findByInterviewer_InterviewerIdAndDate(availabilityDto.getInterviewerId(), availabilityDto.getDate());
-        
+
         for (Availability existing : existingAvailabilities) {
-            if (isOverlapping(availabilityDto.getStartTime(), availabilityDto.getEndTime(), 
-                              existing.getStartTime(), existing.getEndTime())) {
-            	System.out.print("Conflict" + availabilityDto.getStartTime() +" "+ availabilityDto.getEndTime()  +" "+ existing.getStartTime()  +" "+  existing.getEndTime());
+            if (isOverlapping(availabilityDto.getStartTime(), availabilityDto.getEndTime(),
+                    existing.getStartTime(), existing.getEndTime())) {
                 throw new ConflictException("Time slot conflict with existing availability: " +
                         existing.getStartTime() + " - " + existing.getEndTime());
             }
         }
-        
+
         Availability availability = AvailabilityMapper.toEntity(availabilityDto, interviewer);
         try {
             Availability savedAvailability = availabilityRepository.saveAndFlush(availability);
+
+            //  Notify the interviewer about successful availability creation
+            sendAvailabilityNotification(interviewer.getUser().getUserId(), " Availability Created",
+                    "Your availability for " + availability.getDate() + " from " +
+                            availability.getStartTime() + " to " + availability.getEndTime() + " has been successfully created.");
+
             return AvailabilityMapper.toDto(savedAvailability);
         } catch (Exception e) {
-        	System.out.println(e.getMessage());
             throw new InternalServerErrorException("Failed to save Availability due to server error.");
         }
     }
 
-
     /**
-     * Update availability information.
-     * @param availabilityId the ID of the availability to update.
-     * @param availabilityDto the availability data transfer object containing updated information.
-     * @return the updated AvailabilityDto.
+     * Update availability information and notify the interviewer.
+     *
+     * @param availabilityId  Availability ID.
+     * @param availabilityDto Updated availability details.
+     * @return Updated availability.
      */
     @Transactional
     public AvailabilityDto updateAvailability(Long availabilityId, AvailabilityDto availabilityDto) {
         Availability availability = availabilityRepository.findById(availabilityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Availability not found with ID: " + availabilityId));
 
-        if (availabilityDto.getEndTime() != null && availabilityDto.getStartTime() != null 
+        if (availabilityDto.getEndTime() != null && availabilityDto.getStartTime() != null
                 && availabilityDto.getEndTime().isBefore(availabilityDto.getStartTime())) {
             throw new BadRequestException("End time cannot be before start time.");
         }
@@ -89,9 +99,9 @@ public class AvailabilityService {
 
         for (Availability existing : existingAvailabilities) {
             if (isOverlapping(availabilityDto.getStartTime() != null ? availabilityDto.getStartTime() : availability.getStartTime(),
-                              availabilityDto.getEndTime() != null ? availabilityDto.getEndTime() : availability.getEndTime(),
-                              existing.getStartTime(), existing.getEndTime())) {
-   
+                    availabilityDto.getEndTime() != null ? availabilityDto.getEndTime() : availability.getEndTime(),
+                    existing.getStartTime(), existing.getEndTime())) {
+
                 throw new ConflictException("Time slot conflict with existing availability: " +
                         existing.getStartTime() + " - " + existing.getEndTime());
             }
@@ -121,18 +131,71 @@ public class AvailabilityService {
         }
     }
 
-
     /**
-     * Find availability by ID.
-     * @param availabilityId the ID of the availability to find.
-     * @return the found AvailabilityDto.
+     * Marks an availability as booked and notifies the interviewer.
+     *
+     * @param availabilityId Availability ID.
      */
-    public AvailabilityDto findAvailabilityById(Long availabilityId) {
+    @Transactional
+    public void bookAvailability(Long availabilityId) {
         Availability availability = availabilityRepository.findById(availabilityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Availability not found with ID: " + availabilityId));
-        return AvailabilityMapper.toDto(availability);
+
+        availability.setStatus(Availability.AvailabilityStatus.BOOKED);
+        availabilityRepository.save(availability);
+
+        //  Notify interviewer when slot is booked
+        sendAvailabilityNotification(availability.getInterviewer().getUser().getUserId(), "📅 Slot Booked",
+                "Your availability on " + availability.getDate() + " has been booked.");
     }
 
+    /**
+     * Cancels an availability and notifies the interviewer.
+     *
+     * @param availabilityId Availability ID.
+     */
+    @Transactional
+    public void cancelAvailability(Long availabilityId) {
+        Availability availability = availabilityRepository.findById(availabilityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Availability not found with ID: " + availabilityId));
+
+        availability.setStatus(Availability.AvailabilityStatus.EXPIRED);
+        availabilityRepository.save(availability);
+
+        //  Notify interviewer of cancellation
+        sendAvailabilityNotification(availability.getInterviewer().getUser().getUserId(), "❌ Availability Canceled",
+                "Your availability on " + availability.getDate() + " has been canceled.");
+    }
+
+    /**
+     * Helper method to send availability notifications.
+     *
+     * @param userId  The user ID of the interviewer.
+     * @param subject The subject of the notification.
+     * @param message The body of the notification.
+     */
+    private void sendAvailabilityNotification(Long userId, String subject, String message) {
+        NotificationDto notificationDto = new NotificationDto();
+        notificationDto.setUserId(userId);
+        notificationDto.setSubject(subject);
+        notificationDto.setMessage(message);
+        notificationDto.setType("EMAIL");
+        notificationDto.setStatus("SENT");
+
+        notificationService.createNotification(notificationDto);
+    }
+    
+    /**
+     * Get a list of all availabilities.
+     * @return a list of all Availability entities as DTOs.
+     */
+    public List<AvailabilityDto> findAllAvailabilities() {
+        List<Availability> availabilities = availabilityRepository.findAll();
+        return availabilities.stream()
+                .map(AvailabilityMapper::toDto)
+                .collect(Collectors.toList());
+    }
+    
     /**
      * Delete availability by ID.
      * @param availabilityId the ID of the availability to delete.
@@ -150,22 +213,21 @@ public class AvailabilityService {
             throw new InternalServerErrorException("Failed to delete Availability due to server error.");
         }
     }
-
+    
     /**
-     * Get a list of all availabilities.
-     * @return a list of all Availability entities as DTOs.
+     * Find availability by ID.
+     * @param availabilityId the ID of the availability to find.
+     * @return the found AvailabilityDto.
      */
-    public List<AvailabilityDto> findAllAvailabilities() {
-        List<Availability> availabilities = availabilityRepository.findAll();
-        return availabilities.stream()
-                .map(AvailabilityMapper::toDto)
-                .collect(Collectors.toList());
+    public AvailabilityDto findAvailabilityById(Long availabilityId) {
+        Availability availability = availabilityRepository.findById(availabilityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Availability not found with ID: " + availabilityId));
+        return AvailabilityMapper.toDto(availability);
     }
+
     
-    
-    
+
     private boolean isOverlapping(LocalTime newStart, LocalTime newEnd, LocalTime existingStart, LocalTime existingEnd) {
         return !newStart.isAfter(existingEnd) && !existingStart.isAfter(newEnd);
-
     }
 }

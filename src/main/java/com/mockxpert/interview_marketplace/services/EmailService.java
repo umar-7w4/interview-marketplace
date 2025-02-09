@@ -26,11 +26,26 @@ public class EmailService {
     /**
      * Default "From" email address, configured in application.properties.
      */
-    @Value("${spring.mail.username}")
+    @Value("${meeting.google.account.email}")
     private String defaultFromEmail;
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
+    }
+    
+    /**
+     * Sends an OTP verification email.
+     *
+     * @param recipientEmail the recipient's email address.
+     * @param otp            the OTP to be sent.
+     */
+    public void sendOtpEmail(String recipientEmail, String otp) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(recipientEmail);
+        message.setSubject("MockXpert Interviewer Verification Code");
+        message.setText("Your verification code is: " + otp + "\n\n This code will expire in 15 minutes.");
+
+        mailSender.send(message);
     }
 
     /**

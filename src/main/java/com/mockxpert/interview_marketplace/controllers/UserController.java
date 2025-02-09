@@ -165,7 +165,8 @@ public class UserController {
      */
     @PutMapping("/{userId}/deactivate")
     public ResponseEntity<String> deactivateUser(@PathVariable Long userId) {
-        try {
+    	System.out.println("Contoller API Request received to deactivate user: " + userId);
+    	try {
             userService.deactivateUser(userId);
             return ResponseEntity.ok("User deactivated successfully");
         } catch (ResourceNotFoundException e) {

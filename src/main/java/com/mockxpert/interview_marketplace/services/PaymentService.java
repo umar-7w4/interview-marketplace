@@ -1,5 +1,6 @@
 package com.mockxpert.interview_marketplace.services;
 
+import com.mockxpert.interview_marketplace.dto.NotificationDto;
 import com.mockxpert.interview_marketplace.dto.PaymentDto;
 import com.mockxpert.interview_marketplace.entities.*;
 import com.mockxpert.interview_marketplace.exceptions.ResourceNotFoundException;
@@ -38,6 +39,9 @@ public class PaymentService {
 
     @Autowired
     private GoogleCalendarService googleCalendarService;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     @Autowired
     private EntityManager entityManager;
@@ -105,6 +109,13 @@ public class PaymentService {
         paymentRepository.save(payment);
 
         Booking booking = payment.getBooking();
+        
+        sendPaymentNotification(booking.getInterviewee().getUser().getUserId(), "Payment Successful",
+                "Your payment for booking on " + booking.getBookingDate() + " has been received.");
+
+        sendPaymentNotification(booking.getAvailability().getInterviewer().getUser().getUserId(), "Booking Confirmed",
+                "Your interview session on " + booking.getBookingDate() + " has been confirmed after payment.");
+
         
         if (interviewRepository.existsByBooking_BookingId(booking.getBookingId())) {
             logger.warn("Interview already scheduled for Booking ID: {}", booking.getBookingId());
@@ -233,5 +244,35 @@ public class PaymentService {
         return paymentRepository.findAll().stream()
                 .map(PaymentMapper::toDto)
                 .collect(Collectors.toList());
+    }
+    
+
+    /**
+     * Handles payment refunds and notifies the interviewee.
+     *
+     * @param paymentId Payment ID.
+     */
+    @Transactional
+    public void processRefund(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with ID: " + paymentId));
+
+        payment.setPaymentStatus(Payment.PaymentStatus.REFUNDED);
+        paymentRepository.save(payment);
+
+        // Notify interviewee about the refund
+        sendPaymentNotification(payment.getBooking().getInterviewee().getUser().getUserId(), "Refund Processed",
+                "Your payment for booking on " + payment.getBooking().getBookingDate() + " has been refunded.");
+    }
+    
+    private void sendPaymentNotification(Long userId, String subject, String message) {
+        NotificationDto notificationDto = new NotificationDto();
+        notificationDto.setUserId(userId);
+        notificationDto.setSubject(subject);
+        notificationDto.setMessage(message);
+        notificationDto.setType("EMAIL");
+        notificationDto.setStatus("SENT");
+
+        notificationService.createNotification(notificationDto);
     }
 }

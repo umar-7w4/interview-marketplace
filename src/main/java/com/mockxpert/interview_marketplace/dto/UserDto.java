@@ -34,13 +34,16 @@ public class UserDto {
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     private String email;
+    
+    @NotNull(message = "Work email is required")
+    @Email(message = "Work email should be valid")
+    private String workEmail;
 
     // Password and confirmPassword fields
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters")
     private String passwordHash;
 
-    @NotBlank(message = "Confirm password is required")
     @Size(min = 8, message = "Confirm password must be at least 8 characters")
     private String confirmPassword;
 
@@ -207,6 +210,13 @@ public class UserDto {
 	public void setConfirmPassword(String confirmPassword) {
 		this.confirmPassword = confirmPassword;
 	}
-    
-    
+
+	public String getWorkEmail() {
+		return workEmail;
+	}
+
+	public void setWorkEmail(String workEmail) {
+		this.workEmail = workEmail;
+	}
+
 }

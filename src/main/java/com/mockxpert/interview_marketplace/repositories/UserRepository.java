@@ -14,6 +14,9 @@ import java.util.Optional;
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+	
+    // Finds the most recently logged-in user
+    Optional<User> findFirstByOrderByLastLoginDesc();
 
     /**
      * Find a user by their email address.

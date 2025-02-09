@@ -352,6 +352,7 @@ public class UserService {
      */
     @Transactional
     public boolean deactivateUser(Long userId) {
+    	System.out.println("Service API Request received to deactivate user: " + userId);
         return userRepository.findById(userId).map(user -> {
             if (user.getStatus() == User.Status.INACTIVE) {
                 throw new BadRequestException("User is already inactive.");

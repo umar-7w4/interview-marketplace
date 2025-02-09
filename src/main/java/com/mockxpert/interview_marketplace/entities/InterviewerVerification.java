@@ -29,6 +29,16 @@ public class InterviewerVerification {
 
     @Column(name = "verification_notes")
     private String verificationNotes;
+    
+	@Column(name = "last_updated", nullable = false)
+    private LocalDateTime lastUpdated;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interviewer_id", nullable = false, unique = true)
+    private Interviewer interviewer;
+
+    @Column(name = "token_expiry")
+    private LocalDateTime tokenExpiry;
 
     public Long getInterviewerVerificationId() {
 		return interviewerVerificationId;
@@ -86,17 +96,6 @@ public class InterviewerVerification {
 		this.tokenExpiry = tokenExpiry;
 	}
 
-	@Column(name = "last_updated", nullable = false)
-    private LocalDateTime lastUpdated;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "interviewer_id", nullable = false, unique = true)
-    private Interviewer interviewer;
-
-    @Column(name = "token_expiry")
-    private LocalDateTime tokenExpiry;
-
-    
 
     @PrePersist
     protected void onCreate() {

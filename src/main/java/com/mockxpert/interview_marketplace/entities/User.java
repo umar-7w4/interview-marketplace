@@ -53,6 +53,9 @@ public class User {
     @Column(name = "refresh_token", nullable = true)
     private String refreshToken;
     
+    @Column(name = "work_email", nullable = true)
+    private String workEmail;
+    
     
     @Column(name = "firebase_uid", unique = true, nullable = false)
     private String firebaseUid;
@@ -95,6 +98,7 @@ public class User {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+    
 
     public String getFullName() {
         return firstName + " " + lastName;
@@ -273,8 +277,13 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
-	
-    
+
+	public String getWorkEmail() {
+		return workEmail;
+	}
+
+	public void setWorkEmail(String workEmail) {
+		this.workEmail = workEmail;
+	}
     
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * Service class for managing InterviewerVerification entities.
@@ -160,5 +161,85 @@ public class InterviewerVerificationService {
 
         // Resend verification email
         emailService.sendVerificationEmail(verification.getInterviewer().getUser().getEmail(), newToken);
+    }
+    
+    /**
+     * Initiates the verification process by generating an OTP and sending an email.
+     *
+     * @param interviewerId the ID of the interviewer to verify.
+     */
+    @Transactional
+    public void sendVerificationOtp(Long interviewerId) {
+        Interviewer interviewer = interviewerRepository.findById(interviewerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found with ID: " + interviewerId));
+
+        String workEmail = interviewer.getUser().getEmail();
+        if (workEmail == null || !workEmail.contains("@")) {
+            throw new BadRequestException("Invalid work email provided.");
+        }
+
+        // Generate OTP (6-digit random number)
+        String otp = TokenGenerator.generateOtp();
+        LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(15);
+
+        // Check if an existing verification record exists
+        Optional<InterviewerVerification> existingVerification = verificationRepository.findByInterviewer_InterviewerId(interviewerId);
+        InterviewerVerification verification = existingVerification.orElse(new InterviewerVerification());
+
+        // Update verification details
+        verification.setInterviewer(interviewer);
+        verification.setVerificationToken(otp);
+        verification.setTokenExpiry(expiryTime);
+        verification.setStatus(VerificationStatus.EMAIL_SENT);
+        verification.setLastUpdated(LocalDateTime.now());
+
+        // Save verification record
+        verificationRepository.save(verification);
+
+        // Send OTP email
+        emailService.sendOtpEmail(workEmail, otp);
+    }
+
+    /**
+     * Verifies the OTP submitted by the interviewer.
+     *
+     * @param interviewerId the interviewer's ID.
+     * @param otp           the OTP provided by the interviewer.
+     */
+    @Transactional
+    public void verifyOtp(Long interviewerId, String otp) {
+        InterviewerVerification verification = verificationRepository.findByInterviewer_InterviewerId(interviewerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Verification not found for interviewer ID: " + interviewerId));
+
+        // Validate OTP
+        if (!verification.getVerificationToken().equals(otp)) {
+            throw new BadRequestException("Invalid OTP.");
+        }
+
+        // Check if OTP is expired
+        if (verification.getTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("OTP has expired. Please request a new one.");
+        }
+
+        // Mark verification as completed
+        verification.setStatus(VerificationStatus.VERIFIED);
+        verification.setLastUpdated(LocalDateTime.now());
+        verificationRepository.save(verification);
+
+        // Activate the interviewer
+        Interviewer interviewer = verification.getInterviewer();
+        interviewer.setStatus(Interviewer.Status.ACTIVE);
+        interviewer.setIsVerified(true);
+        interviewerRepository.save(interviewer);
+    }
+
+    /**
+     * Resends a new OTP to the interviewer's work email.
+     *
+     * @param interviewerId the ID of the interviewer.
+     */
+    @Transactional
+    public void resendOtp(Long interviewerId) {
+        sendVerificationOtp(interviewerId);
     }
 }
