@@ -8,6 +8,8 @@ import java.util.Optional;
 
 /**
  * Repository interface for InterviewerVerification entity.
+ * 
+ * @author Umar Mohammad
  */
 @Repository
 public interface InterviewerVerificationRepository extends JpaRepository<InterviewerVerification, Long> {

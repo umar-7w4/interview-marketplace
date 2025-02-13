@@ -13,6 +13,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+/**
+ * 
+ * Repository class thats reposible generating query methods related to availability.
+ * 
+ * @author Umar Mohammad
+ */
 @Repository
 public interface AvailabilityRepository extends JpaRepository<Availability, Long> {
 

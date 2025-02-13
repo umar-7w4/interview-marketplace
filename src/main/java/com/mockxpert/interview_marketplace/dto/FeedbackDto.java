@@ -1,9 +1,16 @@
 package com.mockxpert.interview_marketplace.dto;
 
 
+import com.mockxpert.interview_marketplace.entities.User;
 import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.*;
+
+/**
+ * Data Transfer Object for the feedback JSON object.
+ * 
+ * @author Umar Mohammad
+ */
 
 public class FeedbackDto {
 
@@ -12,25 +19,22 @@ public class FeedbackDto {
     @NotNull(message = "Interview ID is required")
     private Long interviewId;
 
-    @NotNull(message = "Giver ID is required")
-    private Long giverId;
+    @NotNull(message = "Feedback giver is required")
+    private User giver; // Changed from giverId
 
-    @NotNull(message = "Receiver ID is required")
-    private Long receiverId;
+    @NotNull(message = "Feedback receiver is required")
+    private User receiver; // Changed from receiverId
 
     @Min(value = 1, message = "Rating must be at least 1")
     @Max(value = 10, message = "Rating must not exceed 10")
     private int rating;
 
     private String comments;
-
     private String positives;
-
     private String negatives;
-
     private String improvements;
-
     private LocalDateTime createdAt;
+
 
 	public Long getFeedbackId() {
 		return feedbackId;
@@ -48,20 +52,20 @@ public class FeedbackDto {
 		this.interviewId = interviewId;
 	}
 
-	public Long getGiverId() {
-		return giverId;
+	public User getGiver() {
+		return giver;
 	}
 
-	public void setGiverId(Long giverId) {
-		this.giverId = giverId;
+	public void setGiver(User giver) {
+		this.giver = giver;
 	}
 
-	public Long getReceiverId() {
-		return receiverId;
+	public User getReceiver() {
+		return receiver;
 	}
 
-	public void setReceiverId(Long receiverId) {
-		this.receiverId = receiverId;
+	public void setReceiver(User receiver) {
+		this.receiver = receiver;
 	}
 
 	public int getRating() {

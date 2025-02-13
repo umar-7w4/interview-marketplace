@@ -16,12 +16,26 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 
+ * Filter class is responsible for filtering all the incoming requests and validating their authorization.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
 
     private final FirebaseAuth firebaseAuth;
     // Define endpoints that should not require authentication.
     private final List<AntPathRequestMatcher> skipAuthMatchers;
 
+    
+    /**
+     * 
+     * Prevents these apis from requiring authorization.
+     * 
+     * @param firebaseAuth
+     */
     public FirebaseAuthenticationFilter(FirebaseAuth firebaseAuth) {
         this.firebaseAuth = firebaseAuth;
         this.skipAuthMatchers = new ArrayList<>();
@@ -48,7 +62,13 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
         }
         return false;
     }
-
+    
+    /**
+     * 
+     * Filters all the incoming HTTP Requests through the autorization header.
+     * 
+     */
+    
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,

@@ -18,6 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service class for managing all the feedback related services.
+ * 
+ * @author Umar Mohammad
+ */
 @Service
 public class FeedbackService {
 
@@ -29,6 +34,9 @@ public class FeedbackService {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private EmailService emailService;
 
     /**
      * Register a new feedback.
@@ -37,27 +45,53 @@ public class FeedbackService {
      */
     @Transactional
     public FeedbackDto registerFeedback(FeedbackDto feedbackDto) {
-        Interview interview = interviewRepository.findById(feedbackDto.getInterviewId())
-                .orElseThrow(() -> new ResourceNotFoundException("Interview not found with ID: " + feedbackDto.getInterviewId()));
-
-        User giver = userRepository.findById(feedbackDto.getGiverId())
-                .orElseThrow(() -> new ResourceNotFoundException("Giver user not found with ID: " + feedbackDto.getGiverId()));
-
-        User receiver = userRepository.findById(feedbackDto.getReceiverId())
-                .orElseThrow(() -> new ResourceNotFoundException("Receiver user not found with ID: " + feedbackDto.getReceiverId()));
-
-        if (feedbackDto.getRating() < 1 || feedbackDto.getRating() > 10) {
-            throw new BadRequestException("Rating must be between 1 and 10.");
-        }
-
-        Feedback feedback = FeedbackMapper.toEntity(feedbackDto, interview, giver, receiver);
         try {
-            Feedback saveAndFlushdFeedback = feedbackRepository.saveAndFlush(feedback);
-            return FeedbackMapper.toDto(saveAndFlushdFeedback);
+            // Validate Interview Existence
+            Interview interview = interviewRepository.findById(feedbackDto.getInterviewId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Interview not found with ID: " + feedbackDto.getInterviewId()));
+
+            // Validate Giver and Receiver Users
+            if (feedbackDto.getGiver() == null || feedbackDto.getReceiver() == null) {
+                throw new BadRequestException("Both giver and receiver must be provided.");
+            }
+
+            long giverId = feedbackDto.getGiver().getUserId();
+            
+            long receiverId = feedbackDto.getReceiver().getUserId();
+            
+            User giver = userRepository.findById(giverId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Giver user not found with ID: " + giverId));
+
+            User receiver = userRepository.findById(receiverId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Receiver user not found with ID: " + receiverId));
+
+
+            // Validate Rating
+            if (feedbackDto.getRating() < 1 || feedbackDto.getRating() > 10) {
+                throw new BadRequestException("Rating must be between 1 and 10.");
+            }
+
+            // Convert DTO to Entity and Save Feedback
+            Feedback feedback = FeedbackMapper.toEntity(feedbackDto, interview, giver, receiver);
+            Feedback savedFeedback = feedbackRepository.saveAndFlush(feedback);
+
+            // Send Email Notification (Handled Separately)
+            try {
+                sendFeedbackNotification(receiver, giver, feedbackDto);
+            } catch (Exception e) {
+                // Log email failure but don't block feedback creation
+                System.err.println("Failed to send feedback email: " + e.getMessage());
+            }
+
+            return FeedbackMapper.toDto(savedFeedback);
+
+        } catch (ResourceNotFoundException | BadRequestException e) {
+            throw e; // Rethrow known exceptions for proper HTTP responses
         } catch (Exception e) {
-            throw new InternalServerErrorException("Failed to saveAndFlush Feedback due to server error.");
+            throw new InternalServerErrorException("An unexpected error occurred while registering feedback: " + e.getMessage());
         }
     }
+
 
     /**
      * Update feedback information.
@@ -127,4 +161,20 @@ public class FeedbackService {
                 .map(FeedbackMapper::toDto)
                 .collect(Collectors.toList());
     }
+    
+    private void sendFeedbackNotification(User receiver, User giver, FeedbackDto feedbackDto) {
+        String subject = "You've Received Interview Feedback!";
+        String message = "<p>Dear " + receiver.getFullName() + ",</p>" +
+                "<p>You have received feedback from <strong>" + giver.getFullName() + "</strong> regarding your interview.</p>" +
+                "<p><strong>Rating:</strong> " + feedbackDto.getRating() + "/10</p>" +
+                "<p><strong>Comments:</strong> " + feedbackDto.getComments() + "</p>" +
+                "<p><strong>Positives:</strong> " + feedbackDto.getPositives() + "</p>" +
+                "<p><strong>Negatives:</strong> " + feedbackDto.getNegatives() + "</p>" +
+                "<p><strong>Improvements:</strong> " + feedbackDto.getImprovements() + "</p>" +
+                "<br><p>Best regards,</p>" +
+                "<p><strong>MockXpert Team</strong></p>";
+
+        emailService.sendNotificationEmail(receiver.getEmail(), subject, message);
+    }
+
 }

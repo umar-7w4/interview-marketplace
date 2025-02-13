@@ -13,6 +13,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
+/**
+ * Service class for managing all notifications.
+ * 
+ * @author Umar Mohammad
+ */
 @Service
 public class NotificationService {
 

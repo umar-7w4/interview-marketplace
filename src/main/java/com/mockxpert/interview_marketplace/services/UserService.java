@@ -34,6 +34,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Service class for managing all user opertaions.
+ * 
+ * @author Umar Mohammad
+ */
 @Service
 public class UserService {
 

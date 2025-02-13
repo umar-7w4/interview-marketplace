@@ -3,6 +3,13 @@ package com.mockxpert.interview_marketplace.entities;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ *  
+ * Entity class thats responsible for table creation for notifications and its fields
+ * 
+ * @author Umar Mohammad
+ * 
+ */
 @Entity
 @Table(name = "notifications")
 public class Notification {

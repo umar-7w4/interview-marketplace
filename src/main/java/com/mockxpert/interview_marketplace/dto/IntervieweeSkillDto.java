@@ -4,7 +4,11 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-
+/**
+ * Data Transfer Object for the interviewee skill JSON object.
+ * 
+ * @author Umar Mohammad
+ */
 public class IntervieweeSkillDto {
 
     private Long intervieweeSkillId;

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 /**
  * Service class for sending email notifications.
+ * 
+ * @author Umar Mohammad
  */
 @Service
 public class EmailService {

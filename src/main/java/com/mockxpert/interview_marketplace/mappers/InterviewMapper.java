@@ -6,7 +6,20 @@ import com.mockxpert.interview_marketplace.entities.Booking;
 import com.mockxpert.interview_marketplace.entities.Interviewee;
 import com.mockxpert.interview_marketplace.entities.Interviewer;
 
+/**
+ * Mapper class that converts Data Transfer Object to interview entity object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class InterviewMapper {
+	
+	/**
+	 * Map DTO to Interview entity
+	 * 
+	 * @param interview
+	 * @return
+	 */
 
     public static InterviewDto toDto(Interview interview) {
         if (interview == null) {
@@ -30,6 +43,13 @@ public class InterviewMapper {
 
         return dto;
     }
+    
+	/**
+	 * Map entity to Interview DTO
+	 * 
+	 * @param interview
+	 * @return
+	 */
 
     public static Interview toEntity(InterviewDto dto, Interviewee interviewee, Interviewer interviewer, Booking booking) {
         if (dto == null || interviewee == null || interviewer == null || booking == null) {

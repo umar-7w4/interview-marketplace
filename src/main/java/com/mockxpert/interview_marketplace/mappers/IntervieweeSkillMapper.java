@@ -5,6 +5,12 @@ import com.mockxpert.interview_marketplace.entities.Interviewee;
 import com.mockxpert.interview_marketplace.entities.IntervieweeSkill;
 import com.mockxpert.interview_marketplace.entities.Skill;
 
+/**
+ * Mapper class that converts Data Transfer Object to interviewee skill entity object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class IntervieweeSkillMapper {
 
     // Map IntervieweeSkill entity to DTO

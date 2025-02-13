@@ -16,6 +16,11 @@ import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.UUID;
 
+/**
+ * Service class for managing all google calendar related services.
+ * 
+ * @author Umar Mohammad
+ */
 @Service
 public class GoogleCalendarService {
 

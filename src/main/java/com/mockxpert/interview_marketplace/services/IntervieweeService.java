@@ -23,6 +23,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
+/**
+ * Service class for geenrating google OAuth service.
+ * 
+ * @author Umar Mohammad
+ */
 @Service
 public class IntervieweeService {
 

@@ -7,6 +7,12 @@ import com.mockxpert.interview_marketplace.entities.Skill;
 
 import java.util.List;
 
+/**
+ * 
+ * Repository class thats reposible generating query methods related to skills.
+ * 
+ * @author Umar Mohammad
+ */
 @Repository
 public interface SkillRepository extends JpaRepository<Skill, Long> {
 

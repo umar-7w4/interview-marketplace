@@ -10,6 +10,12 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
+
+/**
+ * Rest controller responsible for handling all the HTTP API requests related to notification operations.
+ * 
+ * @author Umar Mohammad
+ */
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {

@@ -14,8 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
+
 /**
- * REST controller for handling payment transactions.
+ * Rest controller responsible for handling all the HTTP API requests related to payment operations.
+ * 
+ * @author Umar Mohammad
  */
 @RestController
 @RequestMapping("/api/payments")

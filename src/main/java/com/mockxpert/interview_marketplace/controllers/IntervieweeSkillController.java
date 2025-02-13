@@ -20,6 +20,12 @@ import com.mockxpert.interview_marketplace.services.IntervieweeSkillService;
 
 import jakarta.validation.Valid;
 
+
+/**
+ * REST controller responsible for handling all the HTTP API requests related to interviewee skills operations.
+ * 
+ * @author Umar Mohammad
+ */
 @RestController
 @RequestMapping("/api/interviewee-skills")
 public class IntervieweeSkillController {

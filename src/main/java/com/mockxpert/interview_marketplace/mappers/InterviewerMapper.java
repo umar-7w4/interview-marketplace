@@ -9,6 +9,12 @@ import com.mockxpert.interview_marketplace.entities.Skill;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Mapper class that converts Data Transfer Object to interviewer entity object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class InterviewerMapper {
 
     /**

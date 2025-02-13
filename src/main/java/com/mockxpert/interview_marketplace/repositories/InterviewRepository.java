@@ -12,6 +12,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 
+ * Repository class thats reposible generating query methods related to interview.
+ * 
+ * @author Umar Mohammad
+ */
 @Repository
 public interface InterviewRepository extends JpaRepository<Interview, Long> {
 	

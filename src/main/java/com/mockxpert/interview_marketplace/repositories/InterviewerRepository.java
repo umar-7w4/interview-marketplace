@@ -8,6 +8,12 @@ import com.mockxpert.interview_marketplace.entities.Interviewer;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 
+ * Repository class thats reposible generating query methods related to interviewer.
+ * 
+ * @author Umar Mohammad
+ */
 @Repository
 public interface InterviewerRepository extends JpaRepository<Interviewer, Long> {
 

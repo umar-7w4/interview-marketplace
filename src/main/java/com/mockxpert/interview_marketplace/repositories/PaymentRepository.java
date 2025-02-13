@@ -8,6 +8,12 @@ import com.mockxpert.interview_marketplace.entities.Payment;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 
+ * Repository class thats reposible generating query methods related to payments.
+ * 
+ * @author Umar Mohammad
+ */
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 

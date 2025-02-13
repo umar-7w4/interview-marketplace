@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.Optional;
 
+/**
+ * 
+ * REST controller responsible for handling all the HTTP API requests related to interviewee operations.
+ * 
+ * @author Umar Mohammad
+ */
 @RestController
 @RequestMapping("/api/interviewees")
 public class IntervieweeController {

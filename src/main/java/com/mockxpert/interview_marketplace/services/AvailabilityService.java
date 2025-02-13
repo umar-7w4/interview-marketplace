@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 
 /**
  * Service for managing interviewer availabilities and sending notifications.
+ * 
+ * @author Umar Mohammad
  */
 @Service
 public class AvailabilityService {
@@ -224,8 +226,17 @@ public class AvailabilityService {
                 .orElseThrow(() -> new ResourceNotFoundException("Availability not found with ID: " + availabilityId));
         return AvailabilityMapper.toDto(availability);
     }
-
     
+    /**
+     * 
+     * Handles time conflicts on availabilities.
+     * 
+     * @param newStart
+     * @param newEnd
+     * @param existingStart
+     * @param existingEnd
+     * @return
+     */
 
     private boolean isOverlapping(LocalTime newStart, LocalTime newEnd, LocalTime existingStart, LocalTime existingEnd) {
         return !newStart.isAfter(existingEnd) && !existingStart.isAfter(newEnd);

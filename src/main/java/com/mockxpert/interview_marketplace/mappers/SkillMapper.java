@@ -3,9 +3,20 @@ package com.mockxpert.interview_marketplace.mappers;
 import com.mockxpert.interview_marketplace.dto.SkillDto;
 import com.mockxpert.interview_marketplace.entities.Skill;
 
+/**
+ * Mapper class that converts Data Transfer Object to skill entity object.
+ * 
+ * @author Umar Mohammad
+ */
 public class SkillMapper {
+	
+	/**
+	 * Convert Skill Entity to SkillDto
+	 * 
+	 * @param skill
+	 * @return
+	 */
 
-    // Convert Skill Entity to SkillDto
     public static SkillDto toDto(Skill skill) {
         if (skill == null) {
             return null;
@@ -18,8 +29,14 @@ public class SkillMapper {
 
         return skillDto;
     }
+    
+    /**
+     * Convert SkillDto to Skill Entity
+     * 
+     * @param skillDto
+     * @return
+     */
 
-    // Convert SkillDto to Skill Entity
     public static Skill toEntity(SkillDto skillDto) {
         if (skillDto == null) {
             return null;

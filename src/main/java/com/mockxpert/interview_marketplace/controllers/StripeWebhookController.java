@@ -19,6 +19,8 @@ import java.util.Map;
 /**
  * REST controller for handling Stripe webhook events.
  * Webhooks ensure that payments are securely verified before processing interview bookings.
+ * 
+ * @author Umar Mohammad
  */
 @RestController
 @RequestMapping("/webhook")

@@ -13,6 +13,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 
+ * Repository class thats reposible generating query methods related to booking.
+ * 
+ * @author Umar Mohammad
+ */
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 	

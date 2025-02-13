@@ -3,7 +3,20 @@ package com.mockxpert.interview_marketplace.mappers;
 import com.mockxpert.interview_marketplace.dto.NotificationDto;
 import com.mockxpert.interview_marketplace.entities.*;
 
+/**
+ * Mapper class that converts Data Transfer Object to notification entity object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class NotificationMapper {
+	
+	/**
+	 * Map Notification DTO to entity.
+	 * 
+	 * @param notification
+	 * @return
+	 */
 
     public static NotificationDto toDto(Notification notification) {
         if (notification == null) {
@@ -30,6 +43,14 @@ public class NotificationMapper {
 
         return notificationDto;
     }
+    
+	
+	/**
+	 * Map Notification entity to DTO.
+	 * 
+	 * @param notification
+	 * @return
+	 */
 
     public static Notification toEntity(NotificationDto notificationDto, User user, Booking booking, Interview interview, Payment payment, Feedback feedback) {
         if (notificationDto == null) {

@@ -8,6 +8,12 @@ import com.mockxpert.interview_marketplace.entities.Notification.NotificationTyp
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 
+ * Repository class thats reposible generating query methods related to notifications.
+ * 
+ * @author Umar Mohammad
+ */
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 

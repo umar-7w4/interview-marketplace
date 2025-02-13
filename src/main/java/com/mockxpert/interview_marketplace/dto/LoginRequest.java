@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 /**
  * DTO for handling user login requests.
  * Ensures valid input data before authentication.
+ * 
+ * @author Umar Mohammad
  */
 public class LoginRequest {
 

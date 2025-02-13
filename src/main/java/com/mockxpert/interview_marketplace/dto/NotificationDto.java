@@ -3,6 +3,13 @@ package com.mockxpert.interview_marketplace.dto;
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.*;
 
+
+/**
+ * Data Transfer Object for the notification JSON object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class NotificationDto {
 
     private Long notificationId;

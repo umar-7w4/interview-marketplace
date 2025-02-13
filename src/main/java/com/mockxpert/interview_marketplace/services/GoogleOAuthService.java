@@ -10,6 +10,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
+
+/**
+ * Service class for generating google OAuth service.
+ * 
+ * @author Umar Mohammad
+ */
 @Service
 public class GoogleOAuthService {
 

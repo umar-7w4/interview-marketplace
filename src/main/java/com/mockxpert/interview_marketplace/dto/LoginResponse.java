@@ -5,6 +5,8 @@ import com.mockxpert.interview_marketplace.entities.User.Role;
 
 /**
  * DTO for user login response, including Firebase authentication tokens and role.
+ * 
+ * @author Umar Mohammad
  */
 
 public class LoginResponse {

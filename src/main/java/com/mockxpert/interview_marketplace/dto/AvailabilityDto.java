@@ -5,6 +5,11 @@ import java.time.LocalTime;
 
 import jakarta.validation.constraints.*;
 
+/**
+ * Data Transfer Object for the availability JSON object.
+ * 
+ * @author Umar Mohammad
+ */
 public class AvailabilityDto {
 
     private Long availabilityId;

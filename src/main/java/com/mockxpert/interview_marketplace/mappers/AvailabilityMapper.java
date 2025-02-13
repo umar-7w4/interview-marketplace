@@ -4,8 +4,21 @@ import com.mockxpert.interview_marketplace.dto.AvailabilityDto;
 import com.mockxpert.interview_marketplace.entities.Availability;
 import com.mockxpert.interview_marketplace.entities.Interviewer;
 
+
+/**
+ * Mapper class that converts Data Transfer Object to availability entity object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class AvailabilityMapper {
 
+	/**
+	 * Availability dto to entity. 
+	 * 
+	 * @param availability
+	 * @return
+	 */
     public static AvailabilityDto toDto(Availability availability) {
         if (availability == null) {
             return null;
@@ -22,6 +35,14 @@ public class AvailabilityMapper {
 
         return dto;
     }
+    
+    /**
+     * Availability entity to dto. 
+     * 
+     * @param dto
+     * @param interviewer
+     * @return
+     */
 
     public static Availability toEntity(AvailabilityDto dto, Interviewer interviewer) {
         if (dto == null || interviewer == null) {

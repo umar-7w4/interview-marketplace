@@ -1,5 +1,12 @@
 package com.mockxpert.interview_marketplace.dto;
 
+
+/**
+ * Data Transfer Object for the OTP verification JSON object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class VerifyOtpRequest {
     private String otp;
 

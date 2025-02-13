@@ -8,6 +8,12 @@ import com.mockxpert.interview_marketplace.entities.Feedback;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 
+ * Repository class thats reposible generating query methods related to feedback.
+ * 
+ * @author Umar Mohammad
+ */
 @Repository
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 

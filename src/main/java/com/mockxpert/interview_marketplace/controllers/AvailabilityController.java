@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
+/**
+ * REST controller responsible for handling all the HTTP API requests related to availability operations.
+ * 
+ * @author Umar Mohammad
+ */
 @RestController
 @RequestMapping("/api/availabilities")
 public class AvailabilityController {

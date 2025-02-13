@@ -8,6 +8,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
+/**
+ * 
+ * Filter that filters all the http requests and adds a initial log to the request.
+ * 
+ * @author Umar Mohammad
+ * 
+ */
+
 @Component
 public class LoggingFilter extends OncePerRequestFilter {
     @Override

@@ -5,6 +5,13 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
+/**
+ *  
+ * Entity class thats responsible for table creation for payments and its fields
+ * 
+ * @author Umar Mohammad
+ * 
+ */
 
 @Entity
 @Table(name = "payments")

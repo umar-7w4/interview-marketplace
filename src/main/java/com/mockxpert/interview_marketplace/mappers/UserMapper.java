@@ -6,11 +6,23 @@ import com.mockxpert.interview_marketplace.entities.User;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Mapper class that converts Data Transfer Object to user entity object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class UserMapper {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    
+    /**
+     * Map User Entity to UserDto.
+     * 
+     * @param user
+     * @return
+     */
 
-    // Map User Entity to UserDto
     public static UserDto toDto(User user) {
         if (user == null) {
             return null;
@@ -41,8 +53,14 @@ public class UserMapper {
 
         return userDto;
     }
+    
+    /**
+     * Map UserDto to User Entity
+     * 
+     * @param userDto
+     * @return
+     */
 
-    // Map UserDto to User Entity
     public static User toEntity(UserDto userDto) {
         if (userDto == null) {
             return null;

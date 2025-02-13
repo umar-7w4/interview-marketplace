@@ -5,6 +5,13 @@ import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.*;
 
+
+/**
+ * Data Transfer Object for the payment JSON object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class PaymentDto {
 
     private Long paymentId;

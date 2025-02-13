@@ -8,6 +8,8 @@ import com.mockxpert.interview_marketplace.entities.InterviewerVerification.Veri
 
 /**
  * Mapper class for converting between InterviewerVerification entities and DTOs.
+ * 
+ * @author Umar Mohammad
  */
 public class InterviewerVerificationMapper {
 

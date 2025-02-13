@@ -5,7 +5,20 @@ import com.mockxpert.interview_marketplace.entities.Availability;
 import com.mockxpert.interview_marketplace.entities.Booking;
 import com.mockxpert.interview_marketplace.entities.Interviewee;
 
+/**
+ * Mapper class that converts Data Transfer Object to booking entity object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class BookingMapper {
+	
+	/**
+	 * Booking dto to entity. 
+	 * 
+	 * @param booking
+	 * @return
+	 */
 
     public static BookingDto toDto(Booking booking) {
         if (booking == null) {
@@ -24,6 +37,15 @@ public class BookingMapper {
 
         return dto;
     }
+    
+    /**
+     * Booking entity to dto. 
+     *
+     * @param dto
+     * @param interviewee
+     * @param availability
+     * @return
+     */
 
     public static Booking toEntity(BookingDto dto, Interviewee interviewee, Availability availability) {
         if (dto == null || interviewee == null || availability == null) {

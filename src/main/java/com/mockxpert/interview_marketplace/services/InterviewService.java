@@ -14,6 +14,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
+/**
+ * Service class for managing all the interview related services.
+ * 
+ * @author Umar Mohammad
+ */
 @Service
 public class InterviewService {
 

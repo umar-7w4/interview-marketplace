@@ -4,6 +4,12 @@ import java.time.*;
 import jakarta.validation.constraints.*;
 
 
+/**
+ * Data Transfer Object for the interview verification JSON object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class InterviewerVerificationDto {
 	
     private Long verificationId;

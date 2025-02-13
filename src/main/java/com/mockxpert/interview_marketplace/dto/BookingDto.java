@@ -5,6 +5,11 @@ import java.time.LocalDate;
 
 import jakarta.validation.constraints.*;
 
+/**
+ * Data Transfer Object for the booking JSON object.
+ * 
+ * @author Umar Mohammad
+ */
 public class BookingDto {
 
     private Long bookingId;

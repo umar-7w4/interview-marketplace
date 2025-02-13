@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
+
+/**
+ * Rest controller responsible for handling all the HTTP API requests related to skill operations.
+ * 
+ * @author Umar Mohammad
+ */
 @RestController
 @RequestMapping("/api/skills")
 public class SkillController {

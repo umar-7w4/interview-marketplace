@@ -3,6 +3,11 @@ package com.mockxpert.interview_marketplace.dto;
 
 import jakarta.validation.constraints.*;
 
+/**
+ * Data Transfer Object for the interviewer skill JSON object.
+ * 
+ * @author Umar Mohammad
+ */
 
 public class InterviewerSkillDto {
 

@@ -12,6 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service class for managing all skills.
+ * 
+ * @author Umar Mohammad
+ */
 @Service
 public class SkillService {
 

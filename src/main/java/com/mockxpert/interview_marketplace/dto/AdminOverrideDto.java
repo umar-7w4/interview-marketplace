@@ -2,13 +2,18 @@ package com.mockxpert.interview_marketplace.dto;
 
 import jakarta.validation.constraints.*;
 
+/**
+ * Data Transfer Object for the admin JSON object.
+ * 
+ * @author Umar Mohammad
+ */
 public class AdminOverrideDto {
 
     @NotNull(message = "Interviewer ID is required")
     private Long interviewerId;
 
     @NotBlank(message = "Status is required")
-    private String status; // e.g., VERIFIED, REJECTED
+    private String status; 
 
     private String notes;
 

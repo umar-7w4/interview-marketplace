@@ -4,6 +4,13 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
+/**
+ *  
+ * Entity class thats responsible for table creation for skills and its fields
+ * 
+ * @author Umar Mohammad
+ * 
+ */
 @Entity
 @Table(name = "skills")
 public class Skill {

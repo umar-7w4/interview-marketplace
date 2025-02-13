@@ -15,6 +15,8 @@ import java.util.Arrays;
 /**
  * Service for handling Stripe payment integration.
  * This service is responsible for creating checkout sessions for interview bookings.
+ * 
+ * @author Umar Mohammad
  */
 @Service
 public class StripePaymentService {

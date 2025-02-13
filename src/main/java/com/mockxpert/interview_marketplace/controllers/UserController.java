@@ -16,6 +16,12 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import com.mockxpert.interview_marketplace.entities.User;
 
+
+/**
+ * Rest controller responsible for handling all the HTTP API requests related to user operations.
+ * 
+ * @author Umar Mohammad
+ */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {

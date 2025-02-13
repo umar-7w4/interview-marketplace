@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
+
+/**
+ * REST controller responsible for handling all the HTTP API requests related to interview operations.
+ * 
+ * @author Umar Mohammad
+ */
 @RestController
 @RequestMapping("/api/interviews")
 public class InterviewController {

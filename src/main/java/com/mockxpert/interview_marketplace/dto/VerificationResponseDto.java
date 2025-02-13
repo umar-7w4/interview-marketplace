@@ -2,6 +2,13 @@ package com.mockxpert.interview_marketplace.dto;
 
 import jakarta.validation.constraints.NotNull;
 
+
+/**
+ * Data Transfer Object for the interviewer verification JSON object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class VerificationResponseDto {
 	
     @NotNull(message = "Interviewer ID is required")

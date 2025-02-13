@@ -4,6 +4,13 @@ import java.time.*;
 
 import jakarta.persistence.*;
 
+/**
+ *  
+ * Entity class thats responsible for table creation for interviewer verifications and its fields
+ * 
+ * @author Umar Mohammad
+ * 
+ */
 @Entity
 @Table(name = "interviewer_verifications")
 public class InterviewerVerification {

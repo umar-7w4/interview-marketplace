@@ -22,6 +22,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Service class for managing all the interviewers.
+ * 
+ * @author Umar Mohammad
+ */
 @Service
 public class InterviewerService {
 

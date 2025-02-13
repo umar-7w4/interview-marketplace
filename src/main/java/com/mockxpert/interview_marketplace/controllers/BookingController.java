@@ -10,6 +10,12 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+/**
+ * 
+ * REST controller responsible for handling all the HTTP API requests related to bookings operations.
+ * 
+ * @author Umar Mohammad
+ */
 @RestController
 @RequestMapping("/api/bookings")
 public class BookingController {

@@ -5,7 +5,20 @@ import com.mockxpert.interview_marketplace.entities.Feedback;
 import com.mockxpert.interview_marketplace.entities.Interview;
 import com.mockxpert.interview_marketplace.entities.User;
 
+/**
+ * Mapper class that converts Data Transfer Object to feedback entity object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class FeedbackMapper {
+	
+	/**
+	 * Feedback dto to entity. 
+	 * 
+	 * @param feedback
+	 * @return
+	 */
 
     public static FeedbackDto toDto(Feedback feedback) {
         if (feedback == null) {
@@ -15,8 +28,8 @@ public class FeedbackMapper {
         FeedbackDto dto = new FeedbackDto();
         dto.setFeedbackId(feedback.getFeedbackId());
         dto.setInterviewId(feedback.getInterview().getInterviewId());
-        dto.setGiverId(feedback.getGiver().getUserId());
-        dto.setReceiverId(feedback.getReceiver().getUserId());
+        dto.setGiver(feedback.getGiver());
+        dto.setReceiver(feedback.getReceiver());
         dto.setRating(feedback.getRating());
         dto.setComments(feedback.getComments());
         dto.setPositives(feedback.getPositives());
@@ -26,6 +39,16 @@ public class FeedbackMapper {
 
         return dto;
     }
+    
+    /**
+     * Feedback entity to dto. 
+     *
+     * @param dto
+     * @param interview
+     * @param giver
+     * @param receiver
+     * @return
+     */
 
     public static Feedback toEntity(FeedbackDto dto, Interview interview, User giver, User receiver) {
         if (dto == null || interview == null || giver == null || receiver == null) {

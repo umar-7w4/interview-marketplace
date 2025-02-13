@@ -2,6 +2,13 @@ package com.mockxpert.interview_marketplace.entities;
 
 import jakarta.persistence.*;
 
+/**
+ *  
+ * Entity class thats responsible for table creation for interviewer skills and its fields
+ * 
+ * @author Umar Mohammad
+ * 
+ */
 
 @Entity
 @Table(name = "interviewer_skills")

@@ -4,6 +4,13 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ *  
+ * Entity class thats responsible for table creation for users and its fields
+ * 
+ * @author Umar Mohammad
+ * 
+ */
 @Entity
 @Table(name = "users")
 public class User {

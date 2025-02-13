@@ -2,6 +2,11 @@ package com.mockxpert.interview_marketplace.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Data Transfer Object for the firebase token response JSON object.
+ * 
+ * @author Umar Mohammad
+ */
 public class FirebaseTokenResponse {
 
     // Firebase returns several fields. You may not need all of them.

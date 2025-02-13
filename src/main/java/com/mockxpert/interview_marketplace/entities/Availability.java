@@ -6,6 +6,13 @@ import java.time.LocalTime;
 
 import jakarta.persistence.*;
 
+/**
+ *  
+ * Entity class thats responsible for table creation for availabilities and its fields
+ * 
+ * @author Umar Mohammad
+ * 
+ */
 
 @Entity
 @Table(name = "availabilities")

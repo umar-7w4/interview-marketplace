@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
+
+/**
+ * REST controller responsible for handling all the HTTP API requests related to interviewer skills operations.
+ * 
+ * @author Umar Mohammad
+ */
 @RestController
 @RequestMapping("/api/interviewer-skills")
 public class InterviewerSkillController {

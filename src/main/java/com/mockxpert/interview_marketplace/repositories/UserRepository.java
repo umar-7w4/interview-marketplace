@@ -11,6 +11,8 @@ import java.util.Optional;
 /**
  * Repository interface for User entity.
  * Handles all CRUD operations related to User data.
+ * 
+ * @author Umar Mohammad
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {

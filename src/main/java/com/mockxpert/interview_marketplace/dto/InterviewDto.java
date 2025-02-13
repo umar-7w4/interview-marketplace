@@ -9,6 +9,11 @@ import jakarta.validation.constraints.*;
 
 import java.time.Duration;
 
+/**
+ * Data Transfer Object for the interview JSON object.
+ * 
+ * @author Umar Mohammad
+ */
 
 public class InterviewDto {
 

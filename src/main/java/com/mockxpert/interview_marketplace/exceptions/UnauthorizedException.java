@@ -1,5 +1,10 @@
 package com.mockxpert.interview_marketplace.exceptions;
 
+/**
+ * Exception class for managing all unauthorized exceptions.
+ * 
+ * @author Umar Mohammad
+ */
 public class UnauthorizedException extends RuntimeException {
     public UnauthorizedException(String message) {
         super(message);

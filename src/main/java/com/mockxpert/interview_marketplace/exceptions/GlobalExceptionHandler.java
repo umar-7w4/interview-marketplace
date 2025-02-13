@@ -10,6 +10,11 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Globally handling all different types of exceptions.
+ * 
+ * @author Umar Mohammad
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 

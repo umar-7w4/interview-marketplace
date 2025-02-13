@@ -8,9 +8,21 @@ import com.mockxpert.interview_marketplace.entities.User;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class IntervieweeMapper {
+/**
+ * Mapper class that converts Data Transfer Object to interviewee entity object.
+ * 
+ * @author Umar Mohammad
+ */
 
-    // Convert Interviewee Entity to IntervieweeDto
+public class IntervieweeMapper {
+	
+	/**
+	 * Convert Interviewee Entity to IntervieweeDto
+	 * 
+	 * @param interviewee
+	 * @return
+	 */
+
     public static IntervieweeDto toDto(Interviewee interviewee) {
         if (interviewee == null) {
             return null;
@@ -31,8 +43,14 @@ public class IntervieweeMapper {
 
         return intervieweeDto;
     }
+    
+	/**
+	 * Convert IntervieweeDto to Interviewee Entity
+	 * 
+	 * @param interviewee
+	 * @return
+	 */
 
-    // Convert IntervieweeDto to Interviewee Entity
     public static Interviewee toEntity(IntervieweeDto intervieweeDto, User user, List<Skill> skills) {
         if (intervieweeDto == null) {
             return null;

@@ -7,6 +7,13 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
+/**
+ *  
+ * Entity class thats responsible for table creation for interviewers and its fields
+ * 
+ * @author Umar Mohammad
+ * 
+ */
 
 @Entity
 @Table(name = "interviewers")

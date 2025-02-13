@@ -5,6 +5,11 @@ import jakarta.validation.constraints.*;
 
 import java.util.List;
 
+/**
+ * Data Transfer Object for the interviewer JSON object.
+ * 
+ * @author Umar Mohammad
+ */
 
 public class InterviewerDto {
 

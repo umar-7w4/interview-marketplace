@@ -6,7 +6,19 @@ import com.mockxpert.interview_marketplace.entities.Interview;
 import com.mockxpert.interview_marketplace.entities.Payment;
 import com.mockxpert.interview_marketplace.entities.User;
 
+/**
+ * Mapper class that converts Data Transfer Object to payment entity object.
+ * 
+ * @author Umar Mohammad
+ */
 public class PaymentMapper {
+	
+	/**
+	 * Mapper converting Payment entity to DTO.
+	 * 
+	 * @param payment
+	 * @return
+	 */
 
     public static PaymentDto toDto(Payment payment) {
         if (payment == null) {
@@ -28,6 +40,15 @@ public class PaymentMapper {
 
         return paymentDto;
     }
+    
+    /**
+     * Mapper converting Payment DTO to entity.
+     * 
+     * @param paymentDto
+     * @param booking
+     * @param interview
+     * @return
+     */
 
     public static Payment toEntity(PaymentDto paymentDto, Booking booking, Interview interview) {
         if (paymentDto == null) {

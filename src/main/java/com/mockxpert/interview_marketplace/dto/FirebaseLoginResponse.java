@@ -1,6 +1,12 @@
 package com.mockxpert.interview_marketplace.dto;
 
 
+/**
+ * Data Transfer Object for the firebase login response JSON object.
+ * 
+ * @author Umar Mohammad
+ */
+
 public class FirebaseLoginResponse {
     private String idToken;
     private String refreshToken;
