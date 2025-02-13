@@ -41,7 +41,8 @@ public class SecurityConfig {
                         "/api/users/verification/verifyOtp",   
                         "/api/users/verification/resendOtp",
                         "/api/payments/success",  
-                        "/api/payments/cancel"    
+                        "/api/payments/cancel",
+                        "/webhook/stripe"
                 ).permitAll() 
                 // All other endpoints require authentication
                 .anyRequest().authenticated()

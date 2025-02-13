@@ -50,6 +50,8 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
         skipAuthMatchers.add(new AntPathRequestMatcher("/api/verification/resendOtp", "POST"));
         skipAuthMatchers.add(new AntPathRequestMatcher("/api/payments/success", "GET"));
         skipAuthMatchers.add(new AntPathRequestMatcher("/api/payments/cancel", "GET"));
+        skipAuthMatchers.add(new AntPathRequestMatcher("/webhook/stripe", "POST"));
+   
 
     }
 
