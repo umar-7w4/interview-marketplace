@@ -25,7 +25,6 @@ public class UserDto {
     @Email(message = "Email should be valid")
     private String email;
     
-    @NotNull(message = "Work email is required")
     @Email(message = "Work email should be valid")
     private String workEmail;
 
