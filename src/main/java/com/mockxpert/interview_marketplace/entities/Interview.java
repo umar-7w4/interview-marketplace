@@ -59,6 +59,9 @@ public class Interview {
 
     @Column(nullable = false)
     private String timezone;
+    
+    @Column(nullable = true)
+    private String title;
 
     @Column(name = "actual_start_time")
     private LocalDateTime actualStartTime;
@@ -216,6 +219,16 @@ public class Interview {
 	public void setNotifications(List<Notification> notifications) {
 		this.notifications = notifications;
 	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	
+	
     
     
 

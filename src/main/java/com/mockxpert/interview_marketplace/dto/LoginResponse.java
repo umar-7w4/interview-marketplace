@@ -11,16 +11,41 @@ import com.mockxpert.interview_marketplace.entities.User.Role;
 
 public class LoginResponse {
 
-	private String idToken;
-    private String refreshToken;
-    private User.Role role;  // Updated to use the Role enum
+	private String firstName;
+    private String lastName;
+    private String fullName;
     private String email;
-    
-    public LoginResponse(String idToken, String refreshToken, Role role, String email) {
+    private String workEmail;
+    private String phoneNumber;
+    private String profilePictureUrl;
+    private String preferredLanguage;
+    private String timezone;
+    private String createdAt;
+    private String lastLogin;
+    private User.Role role;
+    private User.Status status;
+    private String idToken; 
+    private String refreshToken;
+
+	public LoginResponse(String firstName, String lastName, String fullName, String email, String workEmail,
+			String phoneNumber, String profilePictureUrl, String preferredLanguage, String timezone, String createdAt,
+			String lastLogin, User.Role role, User.Status status, String idToken, String refreshToken) {
+		super();
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.fullName = fullName;
+		this.email = email;
+		this.workEmail = workEmail;
+		this.phoneNumber = phoneNumber;
+		this.profilePictureUrl = profilePictureUrl;
+		this.preferredLanguage = preferredLanguage;
+		this.timezone = timezone;
+		this.createdAt = createdAt;
+		this.lastLogin = lastLogin;
+		this.role = role;
+		this.status = status;
 		this.idToken = idToken;
 		this.refreshToken = refreshToken;
-		this.role = role;
-		this.email = email;
 	}
 
 	public String getIdToken() {
@@ -54,6 +79,96 @@ public class LoginResponse {
 	public void setEmail(String email) {
 		this.email = email;
 	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getFullName() {
+		return fullName;
+	}
+
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+
+	public String getWorkEmail() {
+		return workEmail;
+	}
+
+	public void setWorkEmail(String workEmail) {
+		this.workEmail = workEmail;
+	}
+
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public String getProfilePictureUrl() {
+		return profilePictureUrl;
+	}
+
+	public void setProfilePictureUrl(String profilePictureUrl) {
+		this.profilePictureUrl = profilePictureUrl;
+	}
+
+	public String getPreferredLanguage() {
+		return preferredLanguage;
+	}
+
+	public void setPreferredLanguage(String preferredLanguage) {
+		this.preferredLanguage = preferredLanguage;
+	}
+
+	public String getTimezone() {
+		return timezone;
+	}
+
+	public void setTimezone(String timezone) {
+		this.timezone = timezone;
+	}
+
+	public String getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(String createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public String getLastLogin() {
+		return lastLogin;
+	}
+
+	public void setLastLogin(String lastLogin) {
+		this.lastLogin = lastLogin;
+	}
+
+	public User.Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(User.Status status) {
+		this.status = status;
+	}
+	
+	
     
     
 }

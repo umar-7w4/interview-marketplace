@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -144,5 +146,30 @@ public class PaymentController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
+    }
+    
+    /**
+     * Get total earnings for an interviewer.
+     *
+     * @param interviewerId the ID of the interviewer.
+     * @return total earnings amount.
+     */
+    @GetMapping("/interviewer/{userId}/earnings")
+    public ResponseEntity<?> getTotalEarnings(@PathVariable Long userId) {
+        BigDecimal totalEarnings = paymentService.getTotalEarningsForInterviewer(userId);
+        return ResponseEntity.ok(totalEarnings);
+    }
+    
+    /**
+     * Fetch all payment transactions for a specific user.
+     * The user may be either the payer (interviewee) or the receiver (interviewer).
+     *
+     * @param userId the ID of the user.
+     * @return List of PaymentDto objects.
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<PaymentDto>> getUserPayments(@PathVariable Long userId) {
+        List<PaymentDto> payments = paymentService.getPaymentsForUser(userId);
+        return ResponseEntity.ok(payments);
     }
 }

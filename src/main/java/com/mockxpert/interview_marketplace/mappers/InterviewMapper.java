@@ -40,6 +40,7 @@ public class InterviewMapper {
         dto.setTimezone(interview.getTimezone());
         dto.setActualStartTime(interview.getActualStartTime());
         dto.setActualEndTime(interview.getActualEndTime());
+        dto.setTitle(interview.getTitle());
 
         return dto;
     }
@@ -68,6 +69,7 @@ public class InterviewMapper {
         interview.setTimezone(dto.getTimezone());
         interview.setActualStartTime(dto.getActualStartTime());
         interview.setActualEndTime(dto.getActualEndTime());
+        interview.setTitle(dto.getTitle());
 
         return interview;
     }

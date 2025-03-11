@@ -100,4 +100,23 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
      * @return the total number of interviews attended by the specified interviewee
      */
     Long countByInterviewee_IntervieweeId(Long intervieweeId);
+    
+    /**
+     * Count scheduled interviews for a given interviewer.
+     *
+     * @param interviewerId the ID of the interviewer.
+     * @param status        the interview status (e.g., BOOKED).
+     * @return the count of scheduled interviews.
+     */
+    long countByInterviewer_InterviewerIdAndStatus(Long interviewerId, Interview.InterviewStatus status);
+
+    /**
+     * Find all upcoming interviews for an interviewer, sorted by date.
+     *
+     * @param interviewerId the ID of the interviewer.
+     * @param status        the interview status (e.g., BOOKED).
+     * @return a list of upcoming interviews sorted by date.
+     */
+    List<Interview> findByInterviewer_InterviewerIdAndStatusOrderByDateAsc(Long interviewerId, Interview.InterviewStatus status);
+ 
 }

@@ -7,7 +7,8 @@ import com.mockxpert.interview_marketplace.entities.Feedback;
 
 import java.time.LocalDate;
 import java.util.List;
-
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 /**
  * 
  * Repository class thats reposible generating query methods related to feedback.
@@ -110,4 +111,11 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
      * @return a list of feedback received by the specified user for the specified interview.
      */
     List<Feedback> findByReceiver_UserIdAndInterview_InterviewId(Long userId, Long interviewId);
+    
+    /**
+     * Fetch all feedback received by a user (i.e., user is the 'receiver').
+     * Ordered by createdAt DESC for newest first.
+     */
+    @Query("SELECT f FROM Feedback f WHERE f.receiver.userId = :userId ORDER BY f.createdAt DESC")
+    List<Feedback> findFeedbackByReceiver(@Param("userId") Long userId);
 }

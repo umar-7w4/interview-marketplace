@@ -7,6 +7,7 @@ import com.mockxpert.interview_marketplace.exceptions.ResourceNotFoundException;
 import com.mockxpert.interview_marketplace.mappers.PaymentMapper;
 import com.mockxpert.interview_marketplace.repositories.BookingRepository;
 import com.mockxpert.interview_marketplace.repositories.InterviewRepository;
+import com.mockxpert.interview_marketplace.repositories.InterviewerRepository;
 import com.mockxpert.interview_marketplace.repositories.PaymentRepository;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
@@ -22,7 +23,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Service class for managing all payment operations.
@@ -42,6 +44,9 @@ public class PaymentService {
 
     @Autowired
     private InterviewRepository interviewRepository;
+    
+    @Autowired
+    private InterviewerRepository interviewerRepository;
 
     @Autowired
     private GoogleCalendarService googleCalendarService;
@@ -281,4 +286,37 @@ public class PaymentService {
 
         notificationService.createNotification(notificationDto);
     }
+    
+    /**
+     * Get the total earnings for an interviewer.
+     *
+     * @param interviewerId the ID of the interviewer.
+     * @return total earnings amount as BigDecimal.
+     */
+    public BigDecimal getTotalEarningsForInterviewer(Long userId) {
+    	long interviewerId = interviewerRepository.findByUser_UserId(userId).get().getInterviewerId();
+        return paymentRepository.findAll().stream()
+            .filter(payment -> payment.getPaymentStatus() == Payment.PaymentStatus.PAID)
+            .filter(payment -> payment.getBooking().getAvailability().getInterviewer().getInterviewerId().equals(interviewerId))
+            .map(Payment::getAmount) 
+            .reduce(BigDecimal.ZERO, BigDecimal::add); 
+    }
+    
+    /**
+     * Retrieve all payments for a given user.
+     * This fetches payments where the user is either the interviewee (payer) or the interviewer (receiver).
+     *
+     * @param userId the ID of the user.
+     * @return List of PaymentDto objects.
+     */
+    public List<PaymentDto> getPaymentsForUser(Long userId) {
+        List<Payment> payments = paymentRepository.findPaymentsByUserId(userId);
+        if (payments == null || payments.isEmpty()) {
+            throw new ResourceNotFoundException("No payments found for user with ID: " + userId);
+        }
+        return payments.stream()
+                .map(PaymentMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
 }

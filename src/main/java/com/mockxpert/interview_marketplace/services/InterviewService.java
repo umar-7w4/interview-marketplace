@@ -52,6 +52,7 @@ public class InterviewService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with ID: " + interviewDto.getBookingId()));
 
         Interview interview = InterviewMapper.toEntity(interviewDto, interviewee, interviewer, booking);
+        interview.setTitle("Mock Interview between"+interviewee.getUser().getFirstName()+" and "+interviewer.getUser().getFirstName());
         try {
             Interview saveAndFlushdInterview = interviewRepository.saveAndFlush(interview);
             return InterviewMapper.toDto(saveAndFlushdInterview);
@@ -153,6 +154,33 @@ public class InterviewService {
             throw new InternalServerErrorException("Failed to retrieve interviews due to server error.");
         }
     }
+    
+    /**
+     * Get the count of scheduled interviews for an interviewer.
+     *
+     * @param interviewerId the ID of the interviewer.
+     * @return number of scheduled interviews.
+     */
+    public long countScheduledInterviewsForInterviewer(Long userId) {
+    	long interviewerId = interviewerRepository.findByUser_UserId(userId).get().getInterviewerId();
+        return interviewRepository.countByInterviewer_InterviewerIdAndStatus(interviewerId, Interview.InterviewStatus.BOOKED);
+    }
+    
+    /**
+     * Get all upcoming interviews for an interviewer.
+     *
+     * @param interviewerId the ID of the interviewer.
+     * @return list of InterviewDto objects.
+     */
+    public List<InterviewDto> getUpcomingInterviewsForInterviewer(Long userId) {
+    	long interviewerId = interviewerRepository.findByUser_UserId(userId).get().getInterviewerId();
+        return interviewRepository.findByInterviewer_InterviewerIdAndStatusOrderByDateAsc(interviewerId, Interview.InterviewStatus.BOOKED)
+                .stream()
+                .map(InterviewMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+
     
     
 }

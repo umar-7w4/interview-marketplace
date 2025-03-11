@@ -7,7 +7,8 @@ import com.mockxpert.interview_marketplace.entities.Payment;
 
 import java.time.LocalDate;
 import java.util.List;
-
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 /**
  * 
  * Repository class thats reposible generating query methods related to payments.
@@ -88,4 +89,14 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
      * @return a list of payments where the refund amount is greater than the specified value.
      */
     List<Payment> findByRefundAmountGreaterThan(Double refundAmount);
+    
+    /**
+     * Fetch all payments related to a specific user.
+     * Includes payments where the user is either the interviewer or interviewee.
+     *
+     * @param userId the ID of the user.
+     * @return List of payments.
+     */
+    @Query("SELECT p FROM Payment p WHERE p.booking.interviewee.user.userId = :userId OR p.booking.availability.interviewer.user.userId = :userId")
+    List<Payment> findPaymentsByUserId(@Param("userId") Long userId);
 }

@@ -109,4 +109,29 @@ public class InterviewController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+    
+    /**
+     * Get scheduled interviews count for an interviewer.
+     *
+     * @param interviewerId the ID of the interviewer.
+     * @return count of scheduled interviews.
+     */
+    @GetMapping("/interviewer/{userId}/count")
+    public ResponseEntity<Long> getScheduledInterviewsCount(@PathVariable Long userId) {
+        long count = interviewService.countScheduledInterviewsForInterviewer(userId);
+        return ResponseEntity.ok(count);
+    }
+
+    /**
+     * Get upcoming interviews for an interviewer.
+     *
+     * @param interviewerId the ID of the interviewer.
+     * @return list of InterviewDto.
+     */
+    @GetMapping("/interviewer/{userId}/upcoming")
+    public ResponseEntity<List<InterviewDto>> getUpcomingInterviews(@PathVariable Long userId) {
+        List<InterviewDto> interviews = interviewService.getUpcomingInterviewsForInterviewer(userId);
+        return ResponseEntity.ok(interviews);
+    }
+
 }

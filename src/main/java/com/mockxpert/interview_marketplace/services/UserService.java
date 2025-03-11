@@ -168,22 +168,43 @@ public class UserService {
      */
     @Transactional
     public LoginResponse loginUser(LoginRequest loginRequest) {
+        // Authenticate with Firebase
         final FirebaseLoginResponse firebaseResponse = authenticateWithFirebase(loginRequest.getEmail(), loginRequest.getPassword());
         final String firebaseUid = firebaseResponse.getLocalId();
         final String idToken = firebaseResponse.getIdToken();
         final String refreshToken = firebaseResponse.getRefreshToken();
+
+        // Fetch user details from database
         final User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found for email: " + loginRequest.getEmail()));
-        
-        // Update Firebase UID if needed.
+
+        // Update Firebase UID if missing or different
         if (user.getFirebaseUid() == null || !user.getFirebaseUid().equals(firebaseUid)) {
             user.setFirebaseUid(firebaseUid);
         }
-        // Update last login time.
+
+        // Update last login timestamp
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
-        
-        return new LoginResponse(idToken, refreshToken, user.getRole(), user.getEmail());
+
+        // Return full user details
+        return new LoginResponse(
+            user.getFirstName(),
+            user.getLastName(),
+            user.getFullName(),
+            user.getEmail(),
+            user.getWorkEmail(),
+            user.getPhoneNumber(),
+            user.getProfilePictureUrl(),
+            user.getPreferredLanguage(),
+            user.getTimezone(),
+            user.getCreatedAt().toString(),
+            user.getLastLogin() != null ? user.getLastLogin().toString() : null,
+            user.getRole(),
+            user.getStatus(),
+            idToken,
+            refreshToken
+        );
     }
 
     /**
@@ -294,7 +315,7 @@ public class UserService {
         	    "Password Reset Request",
         	    "Hi " + user.getFirstName() + ",<br><br>" +
         	    "We received a request to reset your password. Click the link below to reset it:<br><br>" +
-        	    "<a href='https://mockxpert.com/reset-password?token=" + resetToken + "'>Reset Your Password</a><br><br>" +
+        	    "<a href='http://localhost:3000/auth/reset-password?token=" + resetToken + "'>Reset Your Password</a><br><br>" +
         	    "If you did not request this, please ignore this email.<br><br>" +
         	    "Best Regards,<br>MockXpert Team"
         	);

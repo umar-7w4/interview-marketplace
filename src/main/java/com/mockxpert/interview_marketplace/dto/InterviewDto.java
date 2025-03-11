@@ -42,6 +42,8 @@ public class InterviewDto {
 
     @NotBlank(message = "Interview link is required")
     private String interviewLink;
+    
+    private String title;
 
     private String interviewStatus;  
 
@@ -154,6 +156,16 @@ public class InterviewDto {
 	public void setActualEndTime(LocalDateTime actualEndTime) {
 		this.actualEndTime = actualEndTime;
 	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	
+	
     
     
 }

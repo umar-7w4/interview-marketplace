@@ -39,8 +39,8 @@ public class InterviewerDto {
 
     private Double averageRating;
 
-    @NotNull(message = "Profile completion status is required")
     private Boolean profileCompletionStatus;
+    
 
     @NotNull(message = "Verification status is required")
     private Boolean isVerified;

@@ -107,6 +107,7 @@ public class SkillController {
     public ResponseEntity<?> getAllSkills() {
         try {
             List<SkillDto> skills = skillService.findAllSkills();
+            System.out.println(skills);
             return ResponseEntity.ok(skills);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

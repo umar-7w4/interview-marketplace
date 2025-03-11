@@ -177,5 +177,34 @@ public class FeedbackService {
 
         emailService.sendNotificationEmail(receiver.getEmail(), subject, message);
     }
+    
+    /**
+     * Get the average rating for an interviewer based on received feedback.
+     *
+     * @param interviewerId the ID of the interviewer.
+     * @return average rating (or 0 if no feedback).
+     */
+    public double getAverageRatingForInterviewer(Long interviewerId) {
+        List<Feedback> feedbackList = feedbackRepository.findByReceiver_UserId(interviewerId);
+        if (feedbackList.isEmpty()) return 0.0;
+
+        return feedbackList.stream()
+                .mapToDouble(Feedback::getRating)
+                .average()
+                .orElse(0.0);
+    }
+    
+    /**
+     * Get all feedback received by the user with the given userId.
+     */
+    @Transactional(readOnly = true)
+    public List<FeedbackDto> getFeedbackForUser(Long userId) {
+        List<Feedback> feedbackList = feedbackRepository.findFeedbackByReceiver(userId);
+
+        return feedbackList.stream()
+                .map(FeedbackMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
 
 }

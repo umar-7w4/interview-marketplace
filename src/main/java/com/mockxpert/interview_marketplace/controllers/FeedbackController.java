@@ -114,4 +114,26 @@ public class FeedbackController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+    
+    /**
+     * Get average rating for an interviewer.
+     *
+     * @param interviewerId the ID of the interviewer.
+     * @return average rating.
+     */
+    @GetMapping("/interviewer/{interviewerId}/rating")
+    public ResponseEntity<Double> getAverageRating(@PathVariable Long interviewerId) {
+        double rating = feedbackService.getAverageRatingForInterviewer(interviewerId);
+        return ResponseEntity.ok(rating);
+    }
+    
+    /**
+     * Get all feedback for a specific user (where user is the receiver).
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<FeedbackDto>> getFeedbackForUser(@PathVariable Long userId) {
+        List<FeedbackDto> feedbackList = feedbackService.getFeedbackForUser(userId);
+        return ResponseEntity.ok(feedbackList);
+    }
+
 }
