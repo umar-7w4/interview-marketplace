@@ -2,9 +2,11 @@ package com.mockxpert.interview_marketplace.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.mockxpert.interview_marketplace.entities.Availability;
+import com.mockxpert.interview_marketplace.entities.Availability.AvailabilityStatus;
 
 import jakarta.persistence.LockModeType;
 
@@ -109,4 +111,24 @@ public interface AvailabilityRepository extends JpaRepository<Availability, Long
      * @return a list of availability slots for the specified interviewer with the given status.
      */
     List<Availability> findByInterviewer_InterviewerIdAndStatus(Long interviewerId, Availability.AvailabilityStatus status);
+    
+    // Basic finder
+    List<Availability> findAll();
+    
+    /**
+     * Find availability slots by filters.
+     * @param start date, end date, timezone, and status.
+     * @return a list of availability slots for the specified filter.
+     */
+    @Query("SELECT a FROM Availability a " +
+           "WHERE (:startDate IS NULL OR a.date >= :startDate) " +
+           "  AND (:endDate IS NULL OR a.date <= :endDate) " +
+           "  AND (:timezone IS NULL OR a.timezone = :timezone) " +
+           "  AND (:status IS NULL OR a.status = :status)")
+    List<Availability> filterAvailabilities(
+        LocalDate startDate,
+        LocalDate endDate,
+        String timezone,
+        AvailabilityStatus status
+    );
 }

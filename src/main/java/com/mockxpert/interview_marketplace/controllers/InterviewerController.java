@@ -136,5 +136,16 @@ public class InterviewerController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
+    }  
+    
+    /**
+     * Reactivate an interviewer.
+     * @param interviewerId the ID of the interviewer to reactivate.
+     * @return the updated InterviewerDto with status set to ACTIVE.
+     */
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<?> getInterviewerByUserId(@PathVariable Long userId) {
+        InterviewerDto interviewer = interviewerService.findInterviewerByUserId(userId).get();
+        return ResponseEntity.ok(interviewer);
     }
 }

@@ -19,11 +19,12 @@ public class FeedbackDto {
     @NotNull(message = "Interview ID is required")
     private Long interviewId;
 
-    @NotNull(message = "Feedback giver is required")
-    private User giver; // Changed from giverId
+    // Replace entire User with just IDs
+    @NotNull(message = "Giver ID is required")
+    private Long giverId;
 
-    @NotNull(message = "Feedback receiver is required")
-    private User receiver; // Changed from receiverId
+    @NotNull(message = "Receiver ID is required")
+    private Long receiverId;
 
     @Min(value = 1, message = "Rating must be at least 1")
     @Max(value = 10, message = "Rating must not exceed 10")
@@ -52,20 +53,20 @@ public class FeedbackDto {
 		this.interviewId = interviewId;
 	}
 
-	public User getGiver() {
-		return giver;
+	public Long getGiverId() {
+		return giverId;
 	}
 
-	public void setGiver(User giver) {
-		this.giver = giver;
+	public void setGiverId(Long giverId) {
+		this.giverId = giverId;
 	}
 
-	public User getReceiver() {
-		return receiver;
+	public Long getReceiverId() {
+		return receiverId;
 	}
 
-	public void setReceiver(User receiver) {
-		this.receiver = receiver;
+	public void setReceiverId(Long receiverId) {
+		this.receiverId = receiverId;
 	}
 
 	public int getRating() {

@@ -1,6 +1,8 @@
 package com.mockxpert.interview_marketplace.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.mockxpert.interview_marketplace.entities.Interviewee;
@@ -79,4 +81,8 @@ public interface IntervieweeRepository extends JpaRepository<Interviewee, Long> 
      * @return a list of interviewees that match the current role and field of interest.
      */
     List<Interviewee> findByCurrentJobRoleAndFieldOfInterest(String currentJobRole, String fieldOfInterest);
+    
+    @Query("SELECT i.intervieweeId FROM Interviewee i WHERE i.user.userId = :userId")
+    Long findIntervieweeIdByUserId(@Param("userId") Long userId);
+
 }

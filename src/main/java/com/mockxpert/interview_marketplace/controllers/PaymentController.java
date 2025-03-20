@@ -172,4 +172,11 @@ public class PaymentController {
         List<PaymentDto> payments = paymentService.getPaymentsForUser(userId);
         return ResponseEntity.ok(payments);
     }
+    
+    // Get total money spent by interviewee
+    @GetMapping("/interviewee/{userId}/total-spent")
+    public ResponseEntity<BigDecimal> getTotalSpentByInterviewee(@PathVariable Long userId) {
+        BigDecimal totalSpent = paymentService.getTotalSpentByInterviewee(userId);
+        return ResponseEntity.ok(totalSpent);
+    }
 }

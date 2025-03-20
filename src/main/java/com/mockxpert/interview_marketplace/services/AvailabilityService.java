@@ -3,6 +3,7 @@ package com.mockxpert.interview_marketplace.services;
 import com.mockxpert.interview_marketplace.dto.AvailabilityDto;
 import com.mockxpert.interview_marketplace.dto.NotificationDto;
 import com.mockxpert.interview_marketplace.entities.Availability;
+import com.mockxpert.interview_marketplace.entities.Availability.AvailabilityStatus;
 import com.mockxpert.interview_marketplace.entities.Interviewer;
 import com.mockxpert.interview_marketplace.exceptions.ResourceNotFoundException;
 import com.mockxpert.interview_marketplace.exceptions.BadRequestException;
@@ -14,10 +15,12 @@ import com.mockxpert.interview_marketplace.repositories.InterviewerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import java.util.stream.*;
 /**
  * Service for managing interviewer availabilities and sending notifications.
  * 
@@ -240,5 +243,23 @@ public class AvailabilityService {
 
     private boolean isOverlapping(LocalTime newStart, LocalTime newEnd, LocalTime existingStart, LocalTime existingEnd) {
         return !newStart.isAfter(existingEnd) && !existingStart.isAfter(newEnd);
+    }
+    
+    /**
+     * Returns all the availabilities based on filter
+     * 
+     * @param startDate
+     * @param endDate
+     * @param timezone
+     * @param status
+     * @return
+     */
+    public List<AvailabilityDto> filterAvailabilities(
+            LocalDate startDate,
+            LocalDate endDate,
+            String timezone,
+            AvailabilityStatus status
+    ) {
+        return availabilityRepository.filterAvailabilities(startDate, endDate, timezone, status).stream().map(AvailabilityMapper::toDto).collect(Collectors.toList());
     }
 }

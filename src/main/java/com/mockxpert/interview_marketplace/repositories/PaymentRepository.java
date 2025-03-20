@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 
 import com.mockxpert.interview_marketplace.entities.Payment;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
@@ -99,4 +100,10 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
      */
     @Query("SELECT p FROM Payment p WHERE p.booking.interviewee.user.userId = :userId OR p.booking.availability.interviewer.user.userId = :userId")
     List<Payment> findPaymentsByUserId(@Param("userId") Long userId);
+    
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p " +
+    	       "WHERE p.booking.interviewee.intervieweeId = :intervieweeId " +
+    	       "AND p.paymentStatus = 'PAID'")
+    BigDecimal getTotalSpentByInterviewee(@Param("intervieweeId") Long intervieweeId);
+
 }

@@ -180,7 +180,26 @@ public class InterviewService {
                 .collect(Collectors.toList());
     }
 
+    // Get count of upcoming interviews
+    public Long getUpcomingInterviewCount(Long userId) {
+    	long intervieweeId = intervieweeRepository.findIntervieweeIdByUserId(userId);
+        return interviewRepository.countUpcomingInterviews(intervieweeId);
+    }
 
+    // Get count of completed interviews
+    public Long getCompletedInterviewCount(Long userId) {
+    	long intervieweeId = intervieweeRepository.findIntervieweeIdByUserId(userId);
+        return interviewRepository.countCompletedInterviews(intervieweeId);
+    }
+
+    // Get list of completed interviews
+    public List<InterviewDto> getCompletedInterviews(Long userId) {
+    	long intervieweeId = intervieweeRepository.findIntervieweeIdByUserId(userId);
+        List<Interview> interviews = interviewRepository.findCompletedInterviews(intervieweeId);
+        return interviews.stream()
+                .map(InterviewMapper::toDto)
+                .collect(Collectors.toList());
+    }
     
     
 }

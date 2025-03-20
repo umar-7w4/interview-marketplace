@@ -118,5 +118,43 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
      * @return a list of upcoming interviews sorted by date.
      */
     List<Interview> findByInterviewer_InterviewerIdAndStatusOrderByDateAsc(Long interviewerId, Interview.InterviewStatus status);
- 
+    
+    // Count upcoming interviews
+    @Query("""
+           SELECT COUNT(i) 
+           FROM Interview i 
+           WHERE i.interviewee.intervieweeId = :intervieweeId
+             AND (
+               i.date > CURRENT_DATE
+               OR (i.date = CURRENT_DATE AND i.endTime > CURRENT_TIME)
+             )
+           """)
+    Long countUpcomingInterviews(@Param("intervieweeId") Long intervieweeId);
+
+    // Count completed interviews
+    @Query("""
+           SELECT COUNT(i)
+           FROM Interview i
+           WHERE i.interviewee.intervieweeId = :intervieweeId
+             AND (
+               i.date < CURRENT_DATE
+               OR (i.date = CURRENT_DATE AND i.endTime <= CURRENT_TIME)
+             )
+           """)
+    Long countCompletedInterviews(@Param("intervieweeId") Long intervieweeId);
+
+    // Fetch completed interviews (ordered by most recent)
+    @Query("""
+           SELECT i
+           FROM Interview i
+           WHERE i.interviewee.intervieweeId = :intervieweeId
+             AND (
+               i.date < CURRENT_DATE
+               OR (i.date = CURRENT_DATE AND i.endTime <= CURRENT_TIME)
+             )
+           ORDER BY i.date DESC, i.endTime DESC
+           """)
+    List<Interview> findCompletedInterviews(@Param("intervieweeId") Long intervieweeId);
+    
+    
 }

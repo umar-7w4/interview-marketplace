@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 /**
  *  
  * Entity class thats responsible for table creation for users and its fields
@@ -94,9 +96,11 @@ public class User {
     private List<Notification> notifications;
 
     @OneToMany(mappedBy = "giver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonBackReference("giverRef")
     private List<Feedback> feedbackGiven;
 
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonBackReference("receiverRef")
     private List<Feedback> feedbackReceived;
 
     @PrePersist

@@ -3,6 +3,8 @@ package com.mockxpert.interview_marketplace.entities;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 
 /**
@@ -26,16 +28,18 @@ public class Feedback {
     @JoinColumn(name = "interview_id", nullable = false)
     private Interview interview;
 
+    @JsonManagedReference("giverRef")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "giver_id", nullable = false)
     private User giver;
 
+    @JsonManagedReference("receiverRef")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id", nullable = false)
     private User receiver;
 
     @Column(nullable = false)
-    private int rating; 
+    private int rating;
     
     @Column(length = 1000)
     private String comments;

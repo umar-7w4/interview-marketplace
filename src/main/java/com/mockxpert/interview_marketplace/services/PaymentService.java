@@ -7,6 +7,7 @@ import com.mockxpert.interview_marketplace.exceptions.ResourceNotFoundException;
 import com.mockxpert.interview_marketplace.mappers.PaymentMapper;
 import com.mockxpert.interview_marketplace.repositories.BookingRepository;
 import com.mockxpert.interview_marketplace.repositories.InterviewRepository;
+import com.mockxpert.interview_marketplace.repositories.IntervieweeRepository;
 import com.mockxpert.interview_marketplace.repositories.InterviewerRepository;
 import com.mockxpert.interview_marketplace.repositories.PaymentRepository;
 import jakarta.persistence.EntityManager;
@@ -47,6 +48,9 @@ public class PaymentService {
     
     @Autowired
     private InterviewerRepository interviewerRepository;
+    
+    @Autowired
+    private IntervieweeRepository intervieweeRepository;
 
     @Autowired
     private GoogleCalendarService googleCalendarService;
@@ -317,6 +321,12 @@ public class PaymentService {
         return payments.stream()
                 .map(PaymentMapper::toDto)
                 .collect(Collectors.toList());
+    }
+    
+    // Get total money spent by interviewee
+    public BigDecimal getTotalSpentByInterviewee(Long userId) {
+    	long intervieweeId = intervieweeRepository.findIntervieweeIdByUserId(userId);
+        return paymentRepository.getTotalSpentByInterviewee(intervieweeId);
     }
 
 }

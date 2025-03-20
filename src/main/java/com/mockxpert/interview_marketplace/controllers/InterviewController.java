@@ -133,5 +133,26 @@ public class InterviewController {
         List<InterviewDto> interviews = interviewService.getUpcomingInterviewsForInterviewer(userId);
         return ResponseEntity.ok(interviews);
     }
+    
+    // Get upcoming interviews count
+    @GetMapping("/interviewee/{userId}/upcoming-count")
+    public ResponseEntity<Long> getUpcomingInterviewCount(@PathVariable Long userId) {
+        Long count = interviewService.getUpcomingInterviewCount(userId);
+        return ResponseEntity.ok(count);
+    }
+
+    // Get completed interviews count
+    @GetMapping("/interviewee/{userId}/completed-count")
+    public ResponseEntity<Long> getCompletedInterviewCount(@PathVariable Long userId) {
+        Long count = interviewService.getCompletedInterviewCount(userId);
+        return ResponseEntity.ok(count);
+    }
+
+    // Get list of completed interviews
+    @GetMapping("/interviewee/{userId}/completed")
+    public ResponseEntity<List<InterviewDto>> getCompletedInterviews(@PathVariable Long userId) {
+        List<InterviewDto> interviews = interviewService.getCompletedInterviews(userId);
+        return ResponseEntity.ok(interviews);
+    }
 
 }

@@ -1,6 +1,8 @@
 package com.mockxpert.interview_marketplace.controllers;
 
 import com.mockxpert.interview_marketplace.dto.AvailabilityDto;
+import com.mockxpert.interview_marketplace.entities.Availability;
+import com.mockxpert.interview_marketplace.entities.Availability.AvailabilityStatus;
 import com.mockxpert.interview_marketplace.exceptions.*;
 import com.mockxpert.interview_marketplace.services.AvailabilityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * REST controller responsible for handling all the HTTP API requests related to availability operations.
@@ -115,4 +120,24 @@ public class AvailabilityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+    
+    @GetMapping("/filter")
+    public ResponseEntity<List<AvailabilityDto>> filterAvailabilities(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String timezone,
+            @RequestParam(required = false) AvailabilityStatus status
+    ) {
+        LocalDate sDate = Optional.ofNullable(startDate)
+                                  .map(LocalDate::parse)
+                                  .orElse(null);
+
+        LocalDate eDate = Optional.ofNullable(endDate)
+                                  .map(LocalDate::parse)
+                                  .orElse(null);
+
+        List<AvailabilityDto> filtered = availabilityService.filterAvailabilities(sDate, eDate, timezone, status);
+        return ResponseEntity.ok(filtered);
+    }
+
 }

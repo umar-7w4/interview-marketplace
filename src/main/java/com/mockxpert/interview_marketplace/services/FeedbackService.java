@@ -52,13 +52,13 @@ public class FeedbackService {
                     .orElseThrow(() -> new ResourceNotFoundException("Interview not found with ID: " + feedbackDto.getInterviewId()));
 
             // Validate Giver and Receiver Users
-            if (feedbackDto.getGiver() == null || feedbackDto.getReceiver() == null) {
+            if (feedbackDto.getGiverId() == null || feedbackDto.getReceiverId() == null) {
                 throw new BadRequestException("Both giver and receiver must be provided.");
             }
 
-            long giverId = feedbackDto.getGiver().getUserId();
+            long giverId = feedbackDto.getGiverId();
             
-            long receiverId = feedbackDto.getReceiver().getUserId();
+            long receiverId = feedbackDto.getReceiverId();
             
             User giver = userRepository.findById(giverId)
                     .orElseThrow(() -> new ResourceNotFoundException("Giver user not found with ID: " + giverId));
@@ -202,9 +202,10 @@ public class FeedbackService {
         List<Feedback> feedbackList = feedbackRepository.findFeedbackByReceiver(userId);
 
         return feedbackList.stream()
-                .map(FeedbackMapper::toDto)
-                .collect(Collectors.toList());
+            .map(FeedbackMapper::toDto)
+            .collect(Collectors.toList());
     }
+
 
 
 }
