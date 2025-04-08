@@ -228,4 +228,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+    
+    /**
+     * Gets user record by its id.
+     * 
+     * @param userId
+     * @return
+     */
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
+      UserDto user = userService.getUserById(userId);
+      return ResponseEntity.ok(user);
+    }
 }

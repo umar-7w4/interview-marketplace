@@ -80,11 +80,9 @@ public class UserService {
         if (!userDto.getPasswordHash().equals(userDto.getConfirmPassword())) {
             throw new ValidationException("Password and confirm password do not match.");
         }
-        
-        // Create a new user in Firebase Authentication.
+
         final String firebaseUid = createFirebaseUser(userDto.getEmail(), userDto.getPasswordHash());
 
-        // Convert DTO to entity and update fields.
         final User user = UserMapper.toEntity(userDto);
         final String encryptedPassword = passwordEncoder.encode(userDto.getPasswordHash());
         user.setPassword(encryptedPassword);
@@ -93,21 +91,22 @@ public class UserService {
         user.setStatus(user.getRole() == User.Role.INTERVIEWER ? User.Status.PENDING : User.Status.ACTIVE);
         
         final User savedUser = userRepository.saveAndFlush(user);
-        
-        sendUserNotification(
-        	    savedUser.getUserId(),
-        	    "Welcome to MockXpert - Your Interview Prep Partner!",
-        	    "Hi " + savedUser.getFirstName() + ",<br><br>" +
-        	    "Thank you for signing up with <strong>MockXpert</strong>. " +
-        	    "We're excited to help you ace your interviews!<br><br>" +
-        	    "You can start booking interview sessions now.<br><br>" +
-        	    "<a href='https://mockxpert.com/dashboard'>Go to Dashboard</a><br><br>" +
-        	    "Best Regards,<br>MockXpert Team"
-        	);
+
+        String subject = "Welcome to MockXpert - Your Interview Prep Partner!";
+        String plainMessage = String.format(
+                "Hi %s,<br/><br/>" +
+                "Thank you for signing up with <strong>MockXpert</strong>. We're excited to help you ace your interviews!<br/><br/>" +
+                "You can start booking interview sessions right away by visiting your dashboard:<br/><br/>" +
+                "<a href='https://mockxpert.com/dashboard' style='padding: 10px 20px; background-color: #6366f1; color: #ffffff; text-decoration: none; border-radius: 4px;'>Go to Dashboard</a><br/><br/>" +
+                "Best Regards,<br/>" +
+                "MockXpert Team",
+                savedUser.getFirstName()
+        );
+        sendUserNotification(savedUser.getUserId(), subject, plainMessage);
 
         return UserMapper.toDto(savedUser);
     }
-
+    
     /**
      * Creates a new user in Firebase Authentication.
      * Firebase handles password storage, encryption, and authentication.
@@ -178,16 +177,13 @@ public class UserService {
         final User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found for email: " + loginRequest.getEmail()));
 
-        // Update Firebase UID if missing or different
         if (user.getFirebaseUid() == null || !user.getFirebaseUid().equals(firebaseUid)) {
             user.setFirebaseUid(firebaseUid);
         }
 
-        // Update last login timestamp
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
 
-        // Return full user details
         return new LoginResponse(
             user.getFirstName(),
             user.getLastName(),
@@ -203,7 +199,9 @@ public class UserService {
             user.getRole(),
             user.getStatus(),
             idToken,
-            refreshToken
+            refreshToken,
+            user.isEmailVerified(),
+            user.isWorkEmailVerified()
         );
     }
 
@@ -250,15 +248,16 @@ public class UserService {
         existingUser.setPreferredLanguage(userDto.getPreferredLanguage());
         existingUser.setTimezone(userDto.getTimezone());
         
-        sendUserNotification(
-        	    userId,
-        	    "Profile Updated Successfully!",
-        	    "Hi " + existingUser.getFirstName() + ",<br><br>" +
-        	    "Your profile details have been successfully updated.<br><br>" +
-        	    "If you didn't make these changes, please contact support immediately.<br><br>" +
-        	    "<a href='https://mockxpert.com/settings'>Review Your Profile</a><br><br>" +
-        	    "Best Regards,<br>MockXpert Team"
-        	);
+        String subject = "Profile Updated Successfully!";
+        String plainMessage = String.format(
+                "Hi %s,<br/><br/>Your profile details have been successfully updated. " +
+                "If you did not authorize these changes, please contact support immediately.<br/><br/>" +
+                "<a href='https://mockxpert.com/settings' style='padding: 10px 20px; background-color: #6366f1; color: #ffffff; text-decoration: none; border-radius: 4px;'>Review Your Profile</a><br/><br/>" +
+                "Best Regards,<br/>" +
+                "MockXpert Team",
+                existingUser.getFirstName()
+        );
+        sendUserNotification(userId, subject, plainMessage);
         
         return UserMapper.toDto(userRepository.saveAndFlush(existingUser));
     }
@@ -283,15 +282,16 @@ public class UserService {
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         
-        sendUserNotification(
-        	    userId,
-        	    "Your Password Has Been Changed",
-        	    "Hi " + user.getFirstName() + ",<br><br>" +
-        	    "Your password has been successfully updated. If this wasn't you, " +
-        	    "please reset your password immediately.<br><br>" +
-        	    "<a href='https://mockxpert.com/reset-password'>Reset Password</a><br><br>" +
-        	    "Best Regards,<br>MockXpert Team"
-        	);
+        String subject = "Your Password Has Been Changed";
+        String plainMessage = String.format(
+                "Hi %s,<br/><br/>Your password has been successfully updated. " +
+                "If you did not make this change, please reset your password immediately.<br/><br/>" +
+                "<a href='https://mockxpert.com/reset-password' style='padding: 10px 20px; background-color: #6366f1; color: #ffffff; text-decoration: none; border-radius: 4px;'>Reset Password</a><br/><br/>" +
+                "Best Regards,<br/>" +
+                "MockXpert Team",
+                user.getFirstName()
+        );
+        sendUserNotification(userId, subject, plainMessage);
 
         userRepository.saveAndFlush(user);
     }
@@ -310,15 +310,17 @@ public class UserService {
         user.setResetToken(resetToken);
         userRepository.saveAndFlush(user);
         
-        sendUserNotification(
-        	    user.getUserId(),
-        	    "Password Reset Request",
-        	    "Hi " + user.getFirstName() + ",<br><br>" +
-        	    "We received a request to reset your password. Click the link below to reset it:<br><br>" +
-        	    "<a href='http://localhost:3000/auth/reset-password?token=" + resetToken + "'>Reset Your Password</a><br><br>" +
-        	    "If you did not request this, please ignore this email.<br><br>" +
-        	    "Best Regards,<br>MockXpert Team"
-        	);
+        String subject = "Password Reset Request";
+        String plainMessage = String.format(
+                "Hi %s,<br/><br/>We received a request to reset your password. " +
+                "Click the link below to reset your password:<br/><br/>" +
+                "<a href='http://localhost:3000/auth/reset-password?token=%s' style='padding: 10px 20px; background-color: #6366f1; color: #ffffff; text-decoration: none; border-radius: 4px;'>Reset Your Password</a><br/><br/>" +
+                "If you did not request this, please ignore this email.<br/><br/>" +
+                "Best Regards,<br/>" +
+                "MockXpert Team",
+                user.getFirstName(), resetToken
+        );
+        sendUserNotification(user.getUserId(), subject, plainMessage);
 
         return resetToken;
     }
@@ -343,16 +345,12 @@ public class UserService {
         }
         
         try {
-            // Update password in Firebase
             UserRecord.UpdateRequest request = new UserRecord.UpdateRequest(user.getFirebaseUid())
                     .setPassword(newPassword);
             
             firebaseAuth.updateUser(request);
-
-            // Force logout by revoking all Firebase tokens
             firebaseAuth.revokeRefreshTokens(user.getFirebaseUid());
-
-            // Clear reset token after successful update
+            
             user.setResetToken(null);
             userRepository.save(user);
 
@@ -411,21 +409,78 @@ public class UserService {
     }
     
     /**
-     * Helper method to create a user notification and trigger an email.
+     * Helper method to send user-related notifications using a beautiful HTML email template.
      *
-     * @param userId  The user ID.
-     * @param subject The email subject.
-     * @param message The email content.
+     * @param userId  The recipient's user ID.
+     * @param subject The subject for the notification email.
+     * @param message The raw HTML message content to be wrapped.
      */
     private void sendUserNotification(Long userId, String subject, String message) {
+        // Wrap the raw content with our full HTML email template.
+        String htmlMessage = buildHtmlEmail(subject, message);
+        
         NotificationDto notificationDto = new NotificationDto();
         notificationDto.setUserId(userId);
         notificationDto.setSubject(subject);
-        notificationDto.setMessage(message);
+        notificationDto.setMessage(htmlMessage);
         notificationDto.setType("EMAIL");
         notificationDto.setStatus("SENT");
 
         notificationService.createNotification(notificationDto);
+    }
+    
+    /**
+     * Helper method to build a full HTML email template using the MockXpert theme.
+     *
+     * This method wraps the provided title and content in a styled email layout that uses:
+     * - A header with background color "#6366f1" and white text.
+     * - A white content container with rounded corners and subtle drop shadow.
+     * - A light gray background (#f4f4f4) for the overall email body.
+     * - A footer with muted gray text.
+     *
+     * @param headerTitle The header title (typically the subject with dynamic details).
+     * @param content     The main HTML content for the email body.
+     * @return A complete HTML string representing the email.
+     */
+    private String buildHtmlEmail(String headerTitle, String content) {
+        return String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+              "<head>" +
+                "<meta charset=\"UTF-8\">" +
+                "<title>%s</title>" +
+              "</head>" +
+              "<body style=\"margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;\">" +
+                "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%%\">" +
+                  "<tr>" +
+                    "<td align=\"center\" style=\"padding: 20px 10px;\">" +
+                      "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" " +
+                        "style=\"background-color: #ffffff; border-radius: 8px; overflow: hidden; " +
+                        "box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">" +
+                        "<tr>" +
+                          "<td align=\"center\" bgcolor=\"#6366f1\" " +
+                            "style=\"padding: 30px 0; color: #ffffff; font-size: 28px; font-weight: bold;\">" +
+                            "MockXpert" +
+                          "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                          "<td style=\"padding: 40px 30px; color: #333333;\">" +
+                            "<p style=\"margin: 0; font-size: 16px; line-height: 1.5;\">Dear User,</p>" +
+                            "<p style=\"margin: 20px 0 0 0; font-size: 16px; line-height: 1.5;\">%s</p>" +
+                          "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                          "<td align=\"center\" bgcolor=\"#f4f4f4\" " +
+                            "style=\"padding: 20px; font-size: 12px; color: #777777;\">" +
+                            "© 2025 MockXpert. All rights reserved." +
+                          "</td>" +
+                        "</tr>" +
+                      "</table>" +
+                    "</td>" +
+                  "</tr>" +
+                "</table>" +
+              "</body>" +
+            "</html>", headerTitle, content);
     }
     
     /**
@@ -449,6 +504,17 @@ public class UserService {
         return UserMapper.toDto(user);  
     }
 
+    /**
+     * Gets user record by id.
+     * 
+     * @param userId
+     * @return
+     */
+    public UserDto getUserById(Long userId) {
+    	User user = userRepository.findById(userId)
+    	          .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        return UserMapper.toDto(user);
+      }
 
 
 }

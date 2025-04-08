@@ -61,6 +61,10 @@ public class UserDto {
     private String lastLogin;
     
     private String firebaseUid;
+    
+    private boolean isEmailVerified;
+    
+    private boolean isWorkEmailVerified;
 
     public String getFirebaseUid() {
 		return firebaseUid;
@@ -198,4 +202,20 @@ public class UserDto {
 		this.workEmail = workEmail;
 	}
 
+	public boolean isEmailVerified() {
+		return isEmailVerified;
+	}
+
+	public void setEmailVerified(boolean isEmailVerified) {
+		this.isEmailVerified = isEmailVerified;
+	}
+
+	public boolean isWorkEmailVerified() {
+		return isWorkEmailVerified;
+	}
+
+	public void setWorkEmailVerified(boolean isWorkEmailVerified) {
+		this.isWorkEmailVerified = isWorkEmailVerified;
+	}
+	
 }

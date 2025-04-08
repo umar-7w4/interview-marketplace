@@ -23,7 +23,7 @@ public class StripePaymentService {
 
     private static final Logger logger = LoggerFactory.getLogger(StripePaymentService.class);
 
-    // Inject Stripe API keys from application properties
+
     @Value("${stripe.secret.key}")
     private String secretKey;
     
@@ -38,11 +38,9 @@ public class StripePaymentService {
      * @return The checkout URL that the user will be redirected to for payment.
      */
     public String createCheckoutSession(Long bookingId, double amount) {
-        // Set the Stripe API key
         Stripe.apiKey = secretKey;
 
         try {
-            // Create Stripe checkout session parameters
         	logger.info("Starting to make payment successful");
             SessionCreateParams params = SessionCreateParams.builder()
                     .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD) // Fix applied
@@ -67,11 +65,10 @@ public class StripePaymentService {
                     )
                     .build(); 
   
-            // Create the Stripe checkout session
             Session session = Session.create(params);
             paymentService.createPayment(bookingId, session.getId());
             logger.info("Stripe Checkout Session Created. Session ID: {}", session.getId());
-            return session.getUrl(); // Return the checkout URL
+            return session.getUrl(); 
 
         } catch (StripeException e) {
             logger.error("Error creating Stripe Checkout Session", e);

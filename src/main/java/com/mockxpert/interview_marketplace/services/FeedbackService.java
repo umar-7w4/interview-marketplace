@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -41,17 +42,16 @@ public class FeedbackService {
 
     /**
      * Register a new feedback.
+     * 
      * @param feedbackDto the feedback data transfer object containing registration information.
      * @return the saveAndFlushd FeedbackDto.
      */
     @Transactional
     public FeedbackDto registerFeedback(FeedbackDto feedbackDto) {
         try {
-            // Validate Interview Existence
             Interview interview = interviewRepository.findById(feedbackDto.getInterviewId())
                     .orElseThrow(() -> new ResourceNotFoundException("Interview not found with ID: " + feedbackDto.getInterviewId()));
 
-            // Validate Giver and Receiver Users
             if (feedbackDto.getGiverId() == null || feedbackDto.getReceiverId() == null) {
                 throw new BadRequestException("Both giver and receiver must be provided.");
             }
@@ -67,27 +67,23 @@ public class FeedbackService {
                     .orElseThrow(() -> new ResourceNotFoundException("Receiver user not found with ID: " + receiverId));
 
 
-            // Validate Rating
             if (feedbackDto.getRating() < 1 || feedbackDto.getRating() > 10) {
                 throw new BadRequestException("Rating must be between 1 and 10.");
             }
 
-            // Convert DTO to Entity and Save Feedback
             Feedback feedback = FeedbackMapper.toEntity(feedbackDto, interview, giver, receiver);
             Feedback savedFeedback = feedbackRepository.saveAndFlush(feedback);
 
-            // Send Email Notification (Handled Separately)
             try {
                 sendFeedbackNotification(receiver, giver, feedbackDto);
             } catch (Exception e) {
-                // Log email failure but don't block feedback creation
                 System.err.println("Failed to send feedback email: " + e.getMessage());
             }
 
             return FeedbackMapper.toDto(savedFeedback);
 
         } catch (ResourceNotFoundException | BadRequestException e) {
-            throw e; // Rethrow known exceptions for proper HTTP responses
+            throw e;
         } catch (Exception e) {
             throw new InternalServerErrorException("An unexpected error occurred while registering feedback: " + e.getMessage());
         }
@@ -96,6 +92,7 @@ public class FeedbackService {
 
     /**
      * Update feedback information.
+     * 
      * @param feedbackId the ID of the feedback to update.
      * @param feedbackDto the feedback data transfer object containing updated information.
      * @return the updated FeedbackDto.
@@ -125,6 +122,7 @@ public class FeedbackService {
 
     /**
      * Find feedback by ID.
+     * 
      * @param feedbackId the ID of the feedback to find.
      * @return the found FeedbackDto.
      */
@@ -136,6 +134,7 @@ public class FeedbackService {
 
     /**
      * Delete feedback by ID.
+     * 
      * @param feedbackId the ID of the feedback to delete.
      * @return true if the feedback was deleted successfully, false otherwise.
      */
@@ -154,6 +153,7 @@ public class FeedbackService {
 
     /**
      * Get a list of all feedback.
+     * 
      * @return a list of all Feedback entities as DTOs.
      */
     public List<FeedbackDto> findAllFeedbacks() {
@@ -163,20 +163,91 @@ public class FeedbackService {
                 .collect(Collectors.toList());
     }
     
+    /**
+     * Sends a feedback notification email using a rich HTML template.
+     *
+     * @param receiver  The user who receives the feedback.
+     * @param giver     The user who gives the feedback.
+     * @param feedbackDto The feedback details.
+     */
     private void sendFeedbackNotification(User receiver, User giver, FeedbackDto feedbackDto) {
         String subject = "You've Received Interview Feedback!";
-        String message = "<p>Dear " + receiver.getFullName() + ",</p>" +
-                "<p>You have received feedback from <strong>" + giver.getFullName() + "</strong> regarding your interview.</p>" +
-                "<p><strong>Rating:</strong> " + feedbackDto.getRating() + "/10</p>" +
-                "<p><strong>Comments:</strong> " + feedbackDto.getComments() + "</p>" +
-                "<p><strong>Positives:</strong> " + feedbackDto.getPositives() + "</p>" +
-                "<p><strong>Negatives:</strong> " + feedbackDto.getNegatives() + "</p>" +
-                "<p><strong>Improvements:</strong> " + feedbackDto.getImprovements() + "</p>" +
-                "<br><p>Best regards,</p>" +
-                "<p><strong>MockXpert Team</strong></p>";
 
-        emailService.sendNotificationEmail(receiver.getEmail(), subject, message);
+        String plainMessage = String.format(
+            "Dear %s,<br/><br/>" +
+            "You have received feedback from <strong>%s</strong> regarding your interview.<br/><br/>" +
+            "<strong>Rating:</strong> %s/10<br/>" +
+            "<strong>Comments:</strong> %s<br/>" +
+            "<strong>Positives:</strong> %s<br/>" +
+            "<strong>Negatives:</strong> %s<br/>" +
+            "<strong>Improvements:</strong> %s<br/><br/>" +
+            "Best regards,<br/>" +
+            "<strong>MockXpert Team</strong>",
+            receiver.getFullName(),
+            giver.getFullName(),
+            feedbackDto.getRating(),
+            feedbackDto.getComments(),
+            feedbackDto.getPositives(),
+            feedbackDto.getNegatives(),
+            feedbackDto.getImprovements()
+        );
+        
+        // Wrap the plain message in a full HTML email template.
+        String htmlMessage = buildHtmlEmail(subject, plainMessage);
+        
+        // Use your email service to send the final HTML notification.
+        emailService.sendNotificationEmail(receiver.getEmail(), subject, htmlMessage);
     }
+
+    /**
+     * Helper method that wraps a plain HTML content string inside a full email template
+     * following the MockXpert color palette and UI guidelines.
+     *
+     * @param headerTitle The title (subject) to display in the email header.
+     * @param content     The HTML content to display in the body of the email.
+     * @return A complete HTML string representing the email.
+     */
+    private String buildHtmlEmail(String headerTitle, String content) {
+        return String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+              "<head>" +
+                "<meta charset=\"UTF-8\">" +
+                "<title>%s</title>" +
+              "</head>" +
+              "<body style=\"margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;\">" +
+                "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%%\">" +
+                  "<tr>" +
+                    "<td align=\"center\" style=\"padding: 20px 10px;\">" +
+                      "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" " +
+                        "style=\"background-color: #ffffff; border-radius: 8px; overflow: hidden; " +
+                        "box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">" +
+                        "<tr>" +
+                          "<td align=\"center\" bgcolor=\"#6366f1\" " +
+                            "style=\"padding: 30px 0; color: #ffffff; font-size: 28px; font-weight: bold;\">" +
+                            "MockXpert" +
+                          "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                          "<td style=\"padding: 40px 30px; color: #333333;\">" +
+                            "<p style=\"margin: 0; font-size: 16px; line-height: 1.5;\">Dear User,</p>" +
+                            "<p style=\"margin: 20px 0 0 0; font-size: 16px; line-height: 1.5;\">%s</p>" +
+                          "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                          "<td align=\"center\" bgcolor=\"#f4f4f4\" " +
+                            "style=\"padding: 20px; font-size: 12px; color: #777777;\">" +
+                            "© 2025 MockXpert. All rights reserved." +
+                          "</td>" +
+                        "</tr>" +
+                      "</table>" +
+                    "</td>" +
+                  "</tr>" +
+                "</table>" +
+              "</body>" +
+            "</html>", headerTitle, content);
+    }
+
     
     /**
      * Get the average rating for an interviewer based on received feedback.
@@ -193,9 +264,12 @@ public class FeedbackService {
                 .average()
                 .orElse(0.0);
     }
-    
+
     /**
      * Get all feedback received by the user with the given userId.
+     *  
+     * @param userId
+     * @return
      */
     @Transactional(readOnly = true)
     public List<FeedbackDto> getFeedbackForUser(Long userId) {
@@ -206,6 +280,18 @@ public class FeedbackService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Finds the feedhack belonging to particular interview giveb by particular giver.
+     * 
+     * @param interviewId
+     * @param giverId
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public FeedbackDto findFeedbackByInterviewAndGiver(Long interviewId, Long giverId) {
+        Optional<Feedback> existing = feedbackRepository.findByInterviewAndGiver(interviewId, giverId);
+        return existing.map(FeedbackMapper::toDto).orElse(null);
+    }
 
 
 }

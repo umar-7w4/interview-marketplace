@@ -45,6 +45,9 @@ public class Interviewee {
 
     @Column(nullable = false)
     private String timezone;
+    
+    @Column(name ="linkedin_url")
+    private String linkedinUrl;
 
     @OneToMany(mappedBy = "interviewee", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Booking> bookings;
@@ -142,6 +145,16 @@ public class Interviewee {
 	public void setSkills(List<IntervieweeSkill> skills) {
 		this.skills = skills;
 	}
+
+	public String getLinkedinUrl() {
+		return linkedinUrl;
+	}
+
+	public void setLinkedinUrl(String linkedinUrl) {
+		this.linkedinUrl = linkedinUrl;
+	}
+	
+	
     
     
 }

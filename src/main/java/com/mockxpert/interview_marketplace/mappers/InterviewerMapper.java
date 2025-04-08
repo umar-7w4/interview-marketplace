@@ -45,6 +45,8 @@ public class InterviewerMapper {
         dto.setSkills(interviewer.getSkills().stream()
                 .map(InterviewerSkillMapper::toDto)
                 .collect(Collectors.toList()));
+        dto.setLinkedinUrl(interviewer.getLinkedinUrl());
+        dto.setProfileImage(interviewer.getProfileImage());
 
         return dto;
     }
@@ -74,6 +76,7 @@ public class InterviewerMapper {
         interviewer.setAverageRating(dto.getAverageRating());
         interviewer.setProfileCompletionStatus(dto.getProfileCompletionStatus());
         interviewer.setIsVerified(dto.getIsVerified());
+        interviewer.setLinkedinUrl(dto.getLinkedinUrl());
 
         return interviewer;
     }

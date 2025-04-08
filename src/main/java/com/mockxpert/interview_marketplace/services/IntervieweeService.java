@@ -46,19 +46,17 @@ public class IntervieweeService {
 
     /**
      * Register a new Interviewee.
+     * 
      * @param intervieweeDto the interviewee data transfer object containing registration information.
      * @return the saved Interviewee entity.
      */
     @Transactional
     public IntervieweeDto registerInterviewee(IntervieweeDto intervieweeDto) {
-        // Step 1: Fetch the User
         User user = userRepository.findById(intervieweeDto.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + intervieweeDto.getUserId()));
 
-        // Step 2: Convert IntervieweeDto to Interviewee entity
         Interviewee interviewee = IntervieweeMapper.toEntity(intervieweeDto, user, null);
 
-        // Step 3: Handle Skills
         List<IntervieweeSkill> intervieweeSkills = new ArrayList<>();
         if (intervieweeDto.getSkills() != null && !intervieweeDto.getSkills().isEmpty()) {
             for (IntervieweeSkillDto skillDto : intervieweeDto.getSkills()) {
@@ -70,10 +68,8 @@ public class IntervieweeService {
             }
         }
 
-        // Save the Interviewee
         Interviewee savedInterviewee = intervieweeRepository.save(interviewee);
 
-        // Set and Save IntervieweeSkills
         if (!intervieweeSkills.isEmpty()) {
             for (IntervieweeSkill intervieweeSkill : intervieweeSkills) {
                 intervieweeSkill.setInterviewee(savedInterviewee);
@@ -87,17 +83,17 @@ public class IntervieweeService {
 
     /**
      * Update interviewee profile information.
+     * 
      * @param intervieweeId the ID of the interviewee to update.
      * @param intervieweeDto the interviewee data transfer object containing updated information.
      * @return the updated Interviewee entity.
      */
     @Transactional
     public IntervieweeDto updateIntervieweeProfile(Long intervieweeId, IntervieweeDto intervieweeDto) {
-        // Step 1: Fetch the Interviewee
-        Interviewee interviewee = intervieweeRepository.findById(intervieweeId)
+        
+    	Interviewee interviewee = intervieweeRepository.findById(intervieweeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Interviewee not found with ID: " + intervieweeId));
 
-        // Step 2: Update Simple Fields
         if (intervieweeDto.getEducationLevel() != null) {
             interviewee.setEducationLevel(intervieweeDto.getEducationLevel());
         }
@@ -117,40 +113,37 @@ public class IntervieweeService {
         if (intervieweeDto.getResume() != null) {
             interviewee.setResume(intervieweeDto.getResume());
         }
+        
+        if(intervieweeDto.getLinkedinUrl() != null) {
+        	interviewee.setLinkedinUrl(intervieweeDto.getLinkedinUrl());
+        }
 
-        // Step 3: Handle Skills with Metadata
         if (intervieweeDto.getSkills() != null && !intervieweeDto.getSkills().isEmpty()) {
-            // Fetch and validate all skills from the database
             List<IntervieweeSkill> updatedSkills = new ArrayList<>();
             for (IntervieweeSkillDto skillDto : intervieweeDto.getSkills()) {
                 Skill skill = skillRepository.findById(skillDto.getSkillId())
                         .orElseThrow(() -> new BadRequestException("Invalid skill ID: " + skillDto.getSkillId()));
 
-                // Check if the skill already exists for the interviewee
                 IntervieweeSkill existingSkill = interviewee.getSkills().stream()
                         .filter(s -> s.getSkill().getSkillId().equals(skillDto.getSkillId()))
                         .findFirst()
                         .orElse(null);
 
                 if (existingSkill != null) {
-                    // Update existing skill
                     existingSkill.setYearsOfExperience(skillDto.getYearsOfExperience());
                     existingSkill.setProficiencyLevel(skillDto.getProficiencyLevel());
                     existingSkill.setCertified(skillDto.isCertified());
                     updatedSkills.add(existingSkill);
                 } else {
-                    // Add new skill
                     IntervieweeSkill newSkill = IntervieweeSkillMapper.toEntity(skillDto, interviewee, skill);
                     updatedSkills.add(newSkill);
                 }
             }
-
-            // Replace the interviewee's skills with the updated list
+            
             interviewee.getSkills().clear();
             interviewee.getSkills().addAll(updatedSkills);
         }
 
-        // Step 4: Save the Interviewee and Skills
         try {
             Interviewee updatedInterviewee = intervieweeRepository.saveAndFlush(interviewee);
             return IntervieweeMapper.toDto(updatedInterviewee);
@@ -162,6 +155,7 @@ public class IntervieweeService {
 
     /**
      * Find interviewee by user ID.
+     * 
      * @param userId the user ID linked to the interviewee.
      * @return an Optional containing the IntervieweeDto if found, or empty otherwise.
      */
@@ -175,6 +169,7 @@ public class IntervieweeService {
 
     /**
      * Deactivate an interviewee.
+     * 
      * @param intervieweeId the ID of the interviewee to deactivate.
      * @return true if the interviewee was successfully deactivated, false otherwise.
      */
@@ -198,6 +193,7 @@ public class IntervieweeService {
 
     /**
      * Reactivate an interviewee.
+     * 
      * @param intervieweeId the ID of the interviewee to reactivate.
      * @return true if the interviewee was successfully reactivated, false otherwise.
      */
@@ -217,5 +213,16 @@ public class IntervieweeService {
         } catch (Exception e) {
             throw new InternalServerErrorException("Failed to reactivate interviewee due to server error.");
         }
+    }
+    
+    /**
+     * Checks if the interviewee with certain user id exists or not.
+     * 
+     * @param userId
+     * @return
+     */
+    @Transactional
+    public boolean checkExistenceOfInterviewee(Long userId) {
+        return intervieweeRepository.existsByUser_UserId(userId);
     }
 }

@@ -55,6 +55,9 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
 
     }
 
+    /**
+     * Method that skips some authentication checks.
+     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         for (AntPathRequestMatcher matcher : skipAuthMatchers) {
@@ -66,11 +69,8 @@ public class FirebaseAuthenticationFilter extends OncePerRequestFilter {
     }
     
     /**
-     * 
      * Filters all the incoming HTTP Requests through the autorization header.
-     * 
      */
-    
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,

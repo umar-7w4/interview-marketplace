@@ -121,6 +121,15 @@ public class AvailabilityController {
         }
     }
     
+    /**
+     * Filters availability slots based on below parameters
+     * 
+     * @param startDate
+     * @param endDate
+     * @param timezone
+     * @param status
+     * @return
+     */
     @GetMapping("/filter")
     public ResponseEntity<List<AvailabilityDto>> filterAvailabilities(
             @RequestParam(required = false) String startDate,
@@ -128,16 +137,26 @@ public class AvailabilityController {
             @RequestParam(required = false) String timezone,
             @RequestParam(required = false) AvailabilityStatus status
     ) {
-        LocalDate sDate = Optional.ofNullable(startDate)
-                                  .map(LocalDate::parse)
-                                  .orElse(null);
-
-        LocalDate eDate = Optional.ofNullable(endDate)
-                                  .map(LocalDate::parse)
-                                  .orElse(null);
-
+        LocalDate sDate = Optional.ofNullable(startDate).map(LocalDate::parse).orElse(null);
+        LocalDate eDate = Optional.ofNullable(endDate).map(LocalDate::parse).orElse(null);
         List<AvailabilityDto> filtered = availabilityService.filterAvailabilities(sDate, eDate, timezone, status);
         return ResponseEntity.ok(filtered);
+    }
+
+    
+    /**
+     * Fetches all the availability slots based on date and interviewer
+     * 
+     * @param interviewerId
+     * @param date
+     * @return
+     */
+    @GetMapping("/{interviewerId}/availability")
+    public ResponseEntity<List<AvailabilityDto>> getAvailability(
+            @PathVariable Long interviewerId,
+            @RequestParam LocalDate date) {
+        List<AvailabilityDto> availabilities = availabilityService.getAvailabilitiesByInterviewerAndDate(interviewerId, date);
+        return ResponseEntity.ok(availabilities);
     }
 
 }

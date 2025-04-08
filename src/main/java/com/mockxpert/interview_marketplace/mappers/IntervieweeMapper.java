@@ -40,6 +40,7 @@ public class IntervieweeMapper {
         intervieweeDto.setSkills(interviewee.getSkills().stream()
                 .map(IntervieweeSkillMapper::toDto)
                 .collect(Collectors.toList()));
+        intervieweeDto.setLinkedinUrl(interviewee.getLinkedinUrl());
 
         return intervieweeDto;
     }
@@ -65,6 +66,7 @@ public class IntervieweeMapper {
         interviewee.setFieldOfInterest(intervieweeDto.getFieldOfInterest());
         interviewee.setResume(intervieweeDto.getResume());
         interviewee.setTimezone(intervieweeDto.getTimezone());
+        interviewee.setLinkedinUrl(intervieweeDto.getLinkedinUrl());
 
         return interviewee;
     }

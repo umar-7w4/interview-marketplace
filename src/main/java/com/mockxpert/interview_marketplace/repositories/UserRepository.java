@@ -22,6 +22,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Find a user by their email address.
+     * 
      * @param email the email of the user
      * @return an optional user object
      */
@@ -29,6 +30,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Find users by their role (Admin, Interviewer, Interviewee).
+     * 
      * @param role the role of the user (Admin, Interviewer, Interviewee)
      * @return a list of users with the specified role
      */
@@ -36,6 +38,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Find users by their status (active, inactive, pending).
+     * 
      * @param status the status of the user
      * @return a list of users with the specified status
      */
@@ -43,6 +46,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Find all users who have logged in after a certain date.
+     * 
      * @param lastLogin the last login date to filter users
      * @return a list of users who logged in after the specified date
      */
@@ -50,6 +54,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Check if a user exists by email.
+     * 
      * @param email the email to check
      * @return true if the user exists, otherwise false
      */
@@ -57,12 +62,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Delete a user by their email address.
+     * 
      * @param email the email of the user to delete
      */
     void deleteByEmail(String email);
 
     /**
      * Find users by preferred language.
+     * 
      * @param preferredLanguage the preferred language of the user
      * @return a list of users with the specified preferred language
      */
@@ -70,6 +77,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     /**
      * Find user by firebase uid.
+     * 
      * @param firebaseUid the firebase uid of the user
      * @return an Optional of user with the specified firebase uid
      */
@@ -77,6 +85,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     /**
      * Find user by reset token.
+     * 
      * @param reset token is generated during forgot password of the user
      * @return an Optional of user with the specified reset token
      */

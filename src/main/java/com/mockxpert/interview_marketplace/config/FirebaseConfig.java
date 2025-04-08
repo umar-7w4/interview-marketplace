@@ -16,7 +16,9 @@ import java.io.IOException;
 @Configuration
 public class FirebaseConfig {
 
-    
+    /**
+     * This method for initiating firebase authentication.
+     */
     @PostConstruct
     public void initialize() {
         try {

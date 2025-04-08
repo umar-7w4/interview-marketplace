@@ -17,10 +17,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Service class for managing all the interviewers.
@@ -42,23 +43,22 @@ public class InterviewerService {
     @Autowired
     private SkillRepository skillRepository;
     
+    private InterviewerMapper interviewerMapper;
 
     /**
      * Register a new interviewer.
+     * 
      * @param interviewerDto the interviewer data transfer object containing registration information.
      * @return the saveAndFlushd Interviewer entity.
      */
     @Transactional
     public InterviewerDto registerInterviewer(InterviewerDto interviewerDto) {
-        // Step 1: Fetch the User
         User user = userRepository.findById(interviewerDto.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + interviewerDto.getUserId()));
 
-        // Step 2: Convert DTO to Entity
         Interviewer interviewer = InterviewerMapper.toEntity(interviewerDto);
         interviewer.setUser(user);
 
-        // Step 3: Handle Skills
         List<InterviewerSkill> interviewerSkills = new ArrayList<>();
         if (interviewerDto.getSkills() != null && !interviewerDto.getSkills().isEmpty()) {
             for (InterviewerSkillDto skillDto : interviewerDto.getSkills()) {
@@ -72,10 +72,8 @@ public class InterviewerService {
             }
         }
 
-        // Save the Interviewer first
         Interviewer savedInterviewer = interviewerRepository.save(interviewer);
 
-        // Set and save InterviewerSkills
         if (!interviewerSkills.isEmpty()) {
             for (InterviewerSkill interviewerSkill : interviewerSkills) {
                 interviewerSkill.setInterviewer(savedInterviewer);
@@ -90,17 +88,16 @@ public class InterviewerService {
 
     /**
      * Update interviewer profile information.
+     * 
      * @param interviewerId the ID of the interviewer to update.
      * @param interviewerDto the interviewer data transfer object containing updated information.
      * @return the updated InterviewerDto.
      */
     @Transactional
     public InterviewerDto updateInterviewerProfile(Long interviewerId, InterviewerDto interviewerDto) {
-        // Step 1: Fetch the Interviewer
         Interviewer interviewer = interviewerRepository.findById(interviewerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found with ID: " + interviewerId));
 
-        // Step 2: Update Simple Fields
         if (interviewerDto.getBio() != null) {
             interviewer.setBio(interviewerDto.getBio());
         }
@@ -125,40 +122,40 @@ public class InterviewerService {
         if (interviewerDto.getProfileCompletionStatus() != null) {
             interviewer.setProfileCompletionStatus(interviewerDto.getProfileCompletionStatus());
         }
+        if (interviewerDto.getLinkedinUrl() != null) {
+            interviewer.setLinkedinUrl(interviewerDto.getLinkedinUrl());
+        }
+        if(interviewerDto.getProfileImage() != null) {
+        	interviewer.setProfileImage(interviewerDto.getProfileImage());
+        }
 
-        // Step 3: Handle Skills
+
         if (interviewerDto.getSkills() != null && !interviewerDto.getSkills().isEmpty()) {
             List<InterviewerSkill> updatedSkills = new ArrayList<>();
             for (InterviewerSkillDto skillDto : interviewerDto.getSkills()) {
-                // Fetch the Skill entity by skillId
                 Skill skill = skillRepository.findById(skillDto.getSkillId())
                         .orElseThrow(() -> new BadRequestException("Invalid skill ID: " + skillDto.getSkillId()));
 
-                // Check if the skill already exists for the interviewer
                 InterviewerSkill existingSkill = interviewer.getSkills().stream()
                         .filter(s -> s.getSkill().getSkillId().equals(skillDto.getSkillId()))
                         .findFirst()
                         .orElse(null);
 
                 if (existingSkill != null) {
-                    // Update existing skill
                     existingSkill.setYearsOfExperience(skillDto.getYearsOfExperience());
                     existingSkill.setProficiencyLevel(skillDto.getProficiencyLevel());
                     existingSkill.setCertified(skillDto.isCertified());
                     updatedSkills.add(existingSkill);
                 } else {
-                    // Add new skill
                     InterviewerSkill newSkill = InterviewerSkillMapper.toEntity(skillDto, interviewer, skill);
                     updatedSkills.add(newSkill);
                 }
             }
 
-            // Replace the interviewer's skills with the updated list
             interviewer.getSkills().clear();
             interviewer.getSkills().addAll(updatedSkills);
         }
 
-        // Step 4: Save the Interviewer and Skills
         try {
             Interviewer updatedInterviewer = interviewerRepository.saveAndFlush(interviewer);
             return InterviewerMapper.toDto(updatedInterviewer);
@@ -170,6 +167,7 @@ public class InterviewerService {
 
     /**
      * Find interviewer by user ID.
+     * 
      * @param userId the user ID linked to the interviewer.
      * @return an Optional containing the InterviewerDto if found, or empty otherwise.
      */
@@ -183,6 +181,7 @@ public class InterviewerService {
 
     /**
      * Verify an interviewer.
+     * 
      * @param interviewerId the ID of the interviewer to verify.
      * @param verified the verification status to be set.
      * @return the updated InterviewerDto.
@@ -223,6 +222,7 @@ public class InterviewerService {
 
     /**
      * Deactivate an interviewer.
+     * 
      * @param interviewerId the ID of the interviewer to deactivate.
      * @return the updated InterviewerDto with status set to INACTIVE.
      */
@@ -247,6 +247,7 @@ public class InterviewerService {
 
     /**
      * Reactivate an interviewer.
+     * 
      * @param interviewerId the ID of the interviewer to reactivate.
      * @return the updated InterviewerDto with status set to ACTIVE.
      */
@@ -268,5 +269,134 @@ public class InterviewerService {
             throw new InternalServerErrorException("Failed to reactivate interviewer due to server error.");
         }
     }
+    
+    /**
+     * 
+     *Fetches all the interviewers.
+     *
+     */
+    public List<InterviewerDto> getAllInterviewers() {
+        return interviewerRepository.findAll().stream()
+                .map(InterviewerMapper::toDto)
+                .collect(Collectors.toList());
+    }
 
+    /**
+     * Extended method that supports filtering by experience range and skills, and sorting by name or yearsOfExperience.
+     * 
+     * @param minExperience
+     * @param maxExperience
+     * @param currentCompany
+     * @param minSessionRate
+     * @param maxSessionRate
+     * @param minAverageRating
+     * @param maxAverageRating
+     * @param verified
+     * @param sortBy
+     * @param sortOrder
+     * @return
+     */
+    public List<InterviewerDto> getFilteredInterviewers(
+            Integer minExperience, Integer maxExperience,
+            String currentCompany,
+            Double minSessionRate, Double maxSessionRate,
+            Double minAverageRating, Double maxAverageRating,
+            Boolean verified,
+            String sortBy, String sortOrder) {
+        List<Interviewer> interviewers = interviewerRepository.findAll();
+
+        Stream<Interviewer> stream = interviewers.stream();
+
+        if (minExperience != null) {
+            stream = stream.filter(i -> i.getYearsOfExperience() >= minExperience);
+        }
+        if (maxExperience != null) {
+            stream = stream.filter(i -> i.getYearsOfExperience() <= maxExperience);
+        }
+        if (currentCompany != null && !currentCompany.isEmpty()) {
+            stream = stream.filter(i -> i.getCurrentCompany() != null &&
+                i.getCurrentCompany().toLowerCase().contains(currentCompany.toLowerCase()));
+        }
+        if (minSessionRate != null) {
+            stream = stream.filter(i -> i.getSessionRate() >= minSessionRate);
+        }
+        if (maxSessionRate != null) {
+            stream = stream.filter(i -> i.getSessionRate() <= maxSessionRate);
+        }
+        if (minAverageRating != null) {
+            stream = stream.filter(i -> i.getAverageRating() >= minAverageRating);
+        }
+        if (maxAverageRating != null) {
+            stream = stream.filter(i -> i.getAverageRating() <= maxAverageRating);
+        }
+        if (verified != null && verified) {
+            stream = stream.filter(i -> i.getIsVerified());
+        }
+
+        List<Interviewer> filtered = stream.collect(Collectors.toList());
+
+        Comparator<Interviewer> comparator;
+        switch (sortBy.toLowerCase()) {
+            case "name":
+                comparator = Comparator.comparing(i -> i.getUser().getFullName(), String.CASE_INSENSITIVE_ORDER);
+                break;
+            case "sessionrate":
+                comparator = Comparator.comparing(Interviewer::getSessionRate);
+                break;
+            case "averagerating":
+                comparator = Comparator.comparing(Interviewer::getAverageRating);
+                break;
+            case "yearsofexperience":
+            default:
+                comparator = Comparator.comparing(Interviewer::getYearsOfExperience);
+                break;
+        }
+        if ("desc".equalsIgnoreCase(sortOrder)) {
+            comparator = comparator.reversed();
+        }
+        filtered.sort(comparator);
+
+        return filtered.stream().map(InterviewerMapper::toDto).collect(Collectors.toList());
+    }
+    
+    /**
+     * Gets all skill names of a interviewer
+     * 
+     * @param interviewerId
+     * @return
+     */
+    public List<String> getSkillNamesByInterviewerId(Long interviewerId) {
+    	Interviewer interviewer = interviewerRepository.findById(interviewerId)
+                    .orElseThrow(() -> new RuntimeException("Interviewer not found with id: " + interviewerId));
+
+        return interviewer.getSkills()
+                    .stream()
+                    .map(interviewerSkill -> interviewerSkill.getSkill().getName())
+                    .collect(Collectors.toList());
+    }
+      
+    /**
+     * Gets interviewer by its id.
+     * 
+     * @param interviewerId
+     * @return
+     */
+    public InterviewerDto getInterviewerById(Long interviewerId) {
+        Interviewer interviewer = interviewerRepository.findById(interviewerId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found"));
+        return interviewerMapper.toDto(interviewer);
+    }
+      
+    /**
+     * Checks if there exists a interviewee with current userid.
+     * 
+     * @param userId
+     * @return
+     */
+    @Transactional
+    public boolean checkExistenceOfInterviewee(Long userId) {
+    	return interviewerRepository.existsByUser_UserId(userId);
+    }
+        
+        
 }

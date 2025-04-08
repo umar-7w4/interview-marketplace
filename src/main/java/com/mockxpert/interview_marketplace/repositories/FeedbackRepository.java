@@ -2,13 +2,13 @@ package com.mockxpert.interview_marketplace.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
 import com.mockxpert.interview_marketplace.entities.Feedback;
-
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 /**
  * 
  * Repository class thats reposible generating query methods related to feedback.
@@ -20,6 +20,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find all feedback for a specific interview.
+     * 
      * @param interviewId the ID of the interview.
      * @return a list of feedback associated with the given interview ID.
      */
@@ -27,6 +28,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find all feedback given by a specific user.
+     * 
      * @param userId the ID of the user who provided the feedback.
      * @return a list of feedback given by the specified user.
      */
@@ -34,6 +36,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find all feedback received by a specific user.
+     * 
      * @param userId the ID of the user who received the feedback.
      * @return a list of feedback received by the specified user.
      */
@@ -41,6 +44,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find feedback by rating.
+     * 
      * @param rating the rating given in the feedback (e.g., 1 to 5 or 1 to 10).
      * @return a list of feedback with the specified rating.
      */
@@ -48,6 +52,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find feedback by creation date.
+     * 
      * @param createdAt the date when the feedback was created.
      * @return a list of feedback created on the specified date.
      */
@@ -55,6 +60,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find feedback containing specific keywords in comments.
+     * 
      * @param keyword the keyword to search for in the feedback comments.
      * @return a list of feedback containing the specified keyword in comments.
      */
@@ -62,6 +68,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find feedback by positives containing specific keywords.
+     * 
      * @param keyword the keyword to search for in the positives.
      * @return a list of feedback where the positives contain the specified keyword.
      */
@@ -69,6 +76,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find feedback by negatives containing specific keywords.
+     * 
      * @param keyword the keyword to search for in the negatives.
      * @return a list of feedback where the negatives contain the specified keyword.
      */
@@ -76,6 +84,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find feedback by improvements containing specific keywords.
+     * 
      * @param keyword the keyword to search for in the improvements section.
      * @return a list of feedback where the improvements contain the specified keyword.
      */
@@ -83,6 +92,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Count feedback entries by rating.
+     * 
      * @param rating the rating to filter feedback entries.
      * @return the count of feedback entries with the given rating.
      */
@@ -90,6 +100,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find feedback given within a specific date range.
+     * 
      * @param startDate the start date of the range.
      * @param endDate the end date of the range.
      * @return a list of feedback created within the specified date range.
@@ -98,6 +109,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find feedback by giver ID and interview ID.
+     * 
      * @param userId the ID of the user who provided the feedback.
      * @param interviewId the ID of the interview.
      * @return a list of feedback given by the specified user for the specified interview.
@@ -106,6 +118,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     /**
      * Find feedback by receiver ID and interview ID.
+     * 
      * @param userId the ID of the user who received the feedback.
      * @param interviewId the ID of the interview.
      * @return a list of feedback received by the specified user for the specified interview.
@@ -115,7 +128,26 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     /**
      * Fetch all feedback received by a user (i.e., user is the 'receiver').
      * Ordered by createdAt DESC for newest first.
+     * 
+     * @param userId
+     * @return
      */
     @Query("SELECT f FROM Feedback f WHERE f.receiver.userId = :userId ORDER BY f.createdAt DESC")
     List<Feedback> findFeedbackByReceiver(@Param("userId") Long userId);
+    
+    /**
+     * Fetches feedback by giver
+     * 
+     * @param interviewId
+     * @param giverId
+     * @return
+     */
+    @Query("""
+    	       SELECT f 
+    	       FROM Feedback f
+    	       WHERE f.interview.interviewId = :interviewId
+    	         AND f.giver.userId = :giverId
+    	    """)
+    	    Optional<Feedback> findByInterviewAndGiver(@Param("interviewId") Long interviewId,
+    	                                               @Param("giverId") Long giverId);
 }

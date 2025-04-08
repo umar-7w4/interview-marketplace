@@ -23,6 +23,13 @@ public class SecurityConfig {
     @Autowired
     private FirebaseAuth firebaseAuth;
 
+    /**
+     * This method is responsible for authenticating the incoming calls.
+     * 
+     * @param http
+     * @return
+     * @throws Exception
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         System.out.println("Security Configuration Loaded - Securing Endpoints");

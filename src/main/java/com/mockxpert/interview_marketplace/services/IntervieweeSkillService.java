@@ -35,6 +35,12 @@ public class IntervieweeSkillService {
     @Autowired
     private SkillRepository skillRepository;
 
+    /**
+     * Adds Interviewee skill.
+     * 
+     * @param dto
+     * @return
+     */
     @Transactional
     public IntervieweeSkillDto addIntervieweeSkill(IntervieweeSkillDto dto) {
         Interviewee interviewee = intervieweeRepository.findById(dto.getIntervieweeId())
@@ -51,6 +57,13 @@ public class IntervieweeSkillService {
         }
     }
 
+    /**
+     * Updates interviewee skill.
+     * 
+     * @param intervieweeSkillId
+     * @param dto
+     * @return
+     */
     @Transactional
     public IntervieweeSkillDto updateIntervieweeSkill(Long intervieweeSkillId, IntervieweeSkillDto dto) {
         IntervieweeSkill intervieweeSkill = intervieweeSkillRepository.findById(intervieweeSkillId)
@@ -76,6 +89,7 @@ public class IntervieweeSkillService {
     
     /**
      * Retrieve all skills for a specific interviewee.
+     * 
      * @param intervieweeId the ID of the interviewee.
      * @return a list of IntervieweeSkillDto objects.
      */
@@ -92,6 +106,7 @@ public class IntervieweeSkillService {
     
     /**
      * Delete a skill for a specific interviewee.
+     * 
      * @param intervieweeSkillId the ID of the interviewee skill to delete.
      * @return true if the skill was successfully deleted, false otherwise.
      */

@@ -20,7 +20,7 @@ public class EmailService {
 
     /**
      * Base URL for verification links, configured in application.properties.
-     * Example: https://yourdomain.com/api/verification/verify-email?token=
+     * 
      */
     @Value("${app.verification.url}")
     private String verificationUrl;
@@ -42,18 +42,68 @@ public class EmailService {
      * @param otp            the OTP to be sent.
      */
     public void sendOtpEmail(String recipientEmail, String otp) {
-    	try {
-	        SimpleMailMessage message = new SimpleMailMessage();
-	        message.setFrom(defaultFromEmail); // Replace with a valid email address
-	        message.setTo(recipientEmail);
-	        message.setSubject("MockXpert Interviewer Verification Code");
-	        message.setText("Your verification code is: " + otp + "\n\n This code will expire in 15 minutes.");
-	
-	        mailSender.send(message);
-	    } catch (Exception e) {
-	        throw new RuntimeException("Failed to send email to "+ e);
-	    }
+        try {
+            String subject = "MockXpert Interviewer Verification Code";
+
+            String message = String.format("""
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <meta charset="UTF-8">
+                    <title>MockXpert OTP Verification</title>
+                  </head>
+                  <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%%">
+                      <tr>
+                        <td align="center" style="padding: 20px 10px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="600"
+                            style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <tr>
+                              <td align="center" bgcolor="#6366f1"
+                                style="padding: 30px 0; color: #ffffff; font-size: 28px; font-weight: bold;">
+                                MockXpert
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 40px 30px; color: #333333;">
+                                <p style="margin: 0; font-size: 16px; line-height: 1.5;">
+                                  Dear Interviewer,
+                                </p>
+                                <p style="margin: 20px 0 0 0; font-size: 16px; line-height: 1.5;">
+                                  Please use the following One-Time Password (OTP) to verify your email address:
+                                </p>
+                                <p style="margin: 20px 0 0 0; font-size: 24px; font-weight: bold; color: #6366f1;">
+                                  %s
+                                </p>
+                                <p style="margin: 20px 0 0 0; font-size: 16px; line-height: 1.5;">
+                                  This OTP is valid for <strong>15 minutes</strong>.
+                                </p>
+                                <p style="margin: 30px 0 0 0; font-size: 16px; line-height: 1.5;">
+                                  Best regards,<br />
+                                  The MockXpert Team
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td align="center" bgcolor="#f4f4f4"
+                                style="padding: 20px; font-size: 12px; color: #777777;">
+                                © 2025 MockXpert. All rights reserved.
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </body>
+                </html>
+                """, otp);
+
+            sendHtmlEmail(recipientEmail, subject, message);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send email to " + recipientEmail, e);
+        }
     }
+
 
     /**
      * Sends a verification email to an interviewer's work email.
@@ -62,11 +112,58 @@ public class EmailService {
      * @param token     the verification token.
      */
     public void sendVerificationEmail(String workEmail) {
-        String subject = "Congragulations your profile got verified";
-        String message = "<p>Dear Interviewer,</p>" +
-                "<p>Thank you for registering with <strong>MockXpert</strong>. We are happy to announce that your profile as Interviewer got verified.</p>" +
-                "<p>We wish you all the best and hope to serve you well.</p>" +
-                "<p>Best regards,<br>MockXpert Team</p>";
+        String subject = "Congratulations, your profile got verified!";
+        String message = """
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta charset="UTF-8">
+                <title>Congratulations, Your Profile Got Verified!</title>
+              </head>
+              <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+                <!-- Wrapper Table -->
+                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td align="center" style="padding: 20px 10px;">
+                      <!-- Main Container -->
+                      <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <!-- Header -->
+                        <tr>
+                          <td align="center" bgcolor="#6366f1" style="padding: 30px 0; color: #ffffff; font-size: 28px; font-weight: bold;">
+                            MockXpert
+                          </td>
+                        </tr>
+                        <!-- Body -->
+                        <tr>
+                          <td style="padding: 40px 30px; color: #333333;">
+                            <p style="margin: 0; font-size: 16px; line-height: 1.5;">Dear Interviewer,</p>
+                            <p style="margin: 20px 0 0 0; font-size: 16px; line-height: 1.5;">
+                              Thank you for registering with <strong>MockXpert</strong>. We are thrilled to announce that your profile as an Interviewer has been verified.
+                            </p>
+                            <p style="margin: 20px 0 0 0; font-size: 16px; line-height: 1.5;">
+                              We wish you all the best and look forward to serving you.
+                            </p>
+                            <p style="margin: 30px 0 0 0; font-size: 16px; line-height: 1.5;">
+                              Best regards,<br>
+                              The MockXpert Team
+                            </p>
+                          </td>
+                        </tr>
+                        <!-- Footer -->
+                        <tr>
+                          <td align="center" bgcolor="#f4f4f4" style="padding: 20px; font-size: 12px; color: #777777;">
+                            © 2025 MockXpert. All rights reserved.
+                          </td>
+                        </tr>
+                      </table>
+                      <!-- End Main Container -->
+                    </td>
+                  </tr>
+                </table>
+                <!-- End Wrapper Table -->
+              </body>
+            </html>
+            """;
 
         sendHtmlEmail(workEmail, subject, message);
     }
@@ -134,8 +231,7 @@ public class EmailService {
      * @return Formatted HTML email.
      */
     private String formatEmailHtml(String subject, String message) {
-        return "<html><body style='font-family: Arial, sans-serif;'>" +
-                "<h3 style='color: #007bff;'>" + subject + "</h3>" +
+        return "<html><body style='font-family: Arial, sans-serif;'>"  +
                 "<p>" + message + "</p>" +
                 "<br><p style='font-size: 12px; color: gray;'>MockXpert Team</p>" +
                 "</body></html>";

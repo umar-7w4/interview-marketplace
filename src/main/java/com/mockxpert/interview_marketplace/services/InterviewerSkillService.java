@@ -34,6 +34,12 @@ public class InterviewerSkillService {
     @Autowired
     private SkillRepository skillRepository;
 
+    /**
+     * Registers the interviewer skill
+     * 
+     * @param dto
+     * @return
+     */
     @Transactional
     public InterviewerSkillDto addInterviewerSkill(InterviewerSkillDto dto) {
         Interviewer interviewer = interviewerRepository.findById(dto.getInterviewerId())
@@ -50,6 +56,13 @@ public class InterviewerSkillService {
         }
     }
 
+    /**
+     * Updates iunterviewer skill.
+     * 
+     * @param interviewerSkillId
+     * @param dto
+     * @return
+     */
     @Transactional
     public InterviewerSkillDto updateInterviewerSkill(Long interviewerSkillId, InterviewerSkillDto dto) {
         InterviewerSkill interviewerSkill = interviewerSkillRepository.findById(interviewerSkillId)
@@ -94,7 +107,6 @@ public class InterviewerSkillService {
      * @param interviewerSkillId the ID of the interviewer skill to delete.
      * @return true if the skill was successfully deleted, false otherwise.
      */
-    
     @Transactional
     public boolean deleteInterviewerSkill(Long interviewerSkillId) {
         try {

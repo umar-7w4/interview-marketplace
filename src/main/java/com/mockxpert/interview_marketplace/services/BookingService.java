@@ -56,6 +56,7 @@ public class BookingService {
 
     /**
      * Register a new booking with Optimistic Locking.
+     * 
      * @param bookingDto the booking data transfer object containing registration information.
      * @return the saved BookingDto.
      */
@@ -68,8 +69,6 @@ public class BookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Availability not found with ID: " + bookingDto.getAvailabilityId()));
 
         System.out.println("Availability Version Before Lock: " + availability.getVersion());
-
-        // REMOVE entityManager.refresh(availability);
         entityManager.lock(availability, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
 
         boolean isSlotBooked = bookingRepository.existsByAvailability(availability);
@@ -81,6 +80,21 @@ public class BookingService {
         try {
             Booking savedBooking = bookingRepository.saveAndFlush(booking);
             System.out.println("Availability Version After Lock: " + availability.getVersion());
+
+            String bookingDate = savedBooking.getBookingDate().toString(); 
+            String intervieweeName = interviewee.getUser().getFullName();
+            String interviewerName = availability.getInterviewer().getUser().getFullName();
+
+            String subjectInterviewee = String.format("Booking Confirmed: %s with %s", bookingDate, interviewerName);
+            String messageInterviewee = String.format("Dear %s, your interview booking with %s on %s has been confirmed.",
+                                                      intervieweeName, interviewerName, bookingDate);
+            sendBookingNotification(interviewee.getUser().getUserId(), subjectInterviewee, messageInterviewee);
+
+            String subjectInterviewer = String.format("New Booking Received: %s with %s", bookingDate, intervieweeName);
+            String messageInterviewer = String.format("Dear %s, you have received a new booking for an interview with %s on %s.",
+                                                      interviewerName, intervieweeName, bookingDate);
+            sendBookingNotification(availability.getInterviewer().getUser().getUserId(), subjectInterviewer, messageInterviewer);
+
             return BookingMapper.toDto(savedBooking);
         } catch (OptimisticLockException e) {
             throw new ConflictException("The time slot was booked by another user. Please choose a different slot.");
@@ -89,10 +103,9 @@ public class BookingService {
         }
     }
 
-
-
     /**
      * Update booking information with Optimistic Locking.
+     * 
      * @param bookingId the ID of the booking to update.
      * @param bookingDto the booking data transfer object containing updated information.
      * @return the updated BookingDto.
@@ -120,6 +133,12 @@ public class BookingService {
 
         try {
             Booking updatedBooking = bookingRepository.saveAndFlush(booking);
+
+            String bookingDate = updatedBooking.getBookingDate().toString();
+            String subject = String.format("Booking Updated: %s", bookingDate);
+            String message = String.format("Your booking scheduled on %s has been updated. Please review the changes.", bookingDate);
+            sendBookingNotification(updatedBooking.getInterviewee().getUser().getUserId(), subject, message);
+
             return BookingMapper.toDto(updatedBooking);
         } catch (OptimisticLockException e) {
             throw new ConflictException("The booking was modified by another user. Please try again.");
@@ -129,7 +148,9 @@ public class BookingService {
     }
 
     /**
+     * 
      * Find a booking by ID.
+     * 
      * @param bookingId the ID of the booking to find.
      * @return the found BookingDto.
      */
@@ -141,6 +162,7 @@ public class BookingService {
 
     /**
      * Cancel a booking by ID.
+     * 
      * @param bookingId the ID of the booking to cancel.
      * @param reason the reason for cancellation.
      * @return the updated BookingDto with status set to CANCELLED.
@@ -155,20 +177,23 @@ public class BookingService {
 
         try {
             Booking updatedBooking = bookingRepository.saveAndFlush(booking);
-            
-            sendBookingNotification(booking.getInterviewee().getUser().getUserId(), "Booking Canceled",
-                    "Your booking on " + booking.getBookingDate() + " has been canceled.");
+            String bookingDate = updatedBooking.getBookingDate().toString();
 
-            sendBookingNotification(booking.getAvailability().getInterviewer().getUser().getUserId(), "Booking Canceled",
-                    "An interview scheduled on " + booking.getBookingDate() + " has been canceled.");
-            
+            String subjectInterviewee = String.format("Booking Canceled: %s", bookingDate);
+            String messageInterviewee = String.format("Dear %s, your booking on %s has been canceled. Reason: %s",
+                                                      updatedBooking.getInterviewee().getUser().getFullName(), bookingDate, reason);
+            sendBookingNotification(updatedBooking.getInterviewee().getUser().getUserId(), subjectInterviewee, messageInterviewee);
+
+            String subjectInterviewer = String.format("Booking Canceled: %s", bookingDate);
+            String messageInterviewer = String.format("Dear %s, the booking scheduled on %s has been canceled.",
+                                                      updatedBooking.getAvailability().getInterviewer().getUser().getFullName(), bookingDate);
+            sendBookingNotification(updatedBooking.getAvailability().getInterviewer().getUser().getUserId(), subjectInterviewer, messageInterviewer);
+
             List<Payment> payments = paymentRepository.findByBooking_BookingId(bookingId);
-
-            // Process refunds for all successful payments
             payments.stream()
                     .filter(payment -> payment.getPaymentStatus() == Payment.PaymentStatus.PAID)
                     .forEach(payment -> paymentService.processRefund(payment.getPaymentId()));
-            
+
             return BookingMapper.toDto(updatedBooking);
         } catch (OptimisticLockException e) {
             throw new ConflictException("The booking was modified by another user. Please try again.");
@@ -176,22 +201,73 @@ public class BookingService {
             throw new InternalServerErrorException("Failed to cancel Booking due to server error.");
         }
     }
-    
+
     /**
-     * Helper method to send booking-related notifications.
+     * Helper method to send booking-related notifications using a beautiful HTML email template.
      *
-     * @param userId  The user ID.
-     * @param subject Notification subject.
-     * @param message Notification body.
+     * @param userId        The user ID.
+     * @param subject       Notification subject.
+     * @param plainMessage  Notification body (plain text).
      */
-    private void sendBookingNotification(Long userId, String subject, String message) {
+    private void sendBookingNotification(Long userId, String subject, String plainMessage) {
+        String htmlMessage = buildHtmlEmail(subject, plainMessage);
+
         NotificationDto notificationDto = new NotificationDto();
         notificationDto.setUserId(userId);
         notificationDto.setSubject(subject);
-        notificationDto.setMessage(message);
+        notificationDto.setMessage(htmlMessage);
         notificationDto.setType("EMAIL");
         notificationDto.setStatus("SENT");
 
         notificationService.createNotification(notificationDto);
     }
+
+    /**
+     * Helper method to build a beautiful HTML email template using the MockXpert theme.
+     *
+     * @param headerTitle The header title (includes dynamic details such as dates or names).
+     * @param content     The main content/body of the email.
+     * @return A complete HTML string.
+     */
+    private String buildHtmlEmail(String headerTitle, String content) {
+        return String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+              "<head>" +
+                "<meta charset=\"UTF-8\">" +
+                "<title>%s</title>" +
+              "</head>" +
+              "<body style=\"margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;\">" +
+                "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%%\">" +
+                  "<tr>" +
+                    "<td align=\"center\" style=\"padding: 20px 10px;\">" +
+                      "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" " +
+                        "style=\"background-color: #ffffff; border-radius: 8px; overflow: hidden; " +
+                        "box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">" +
+                        "<tr>" +
+                          "<td align=\"center\" bgcolor=\"#6366f1\" " +
+                            "style=\"padding: 30px 0; color: #ffffff; font-size: 28px; font-weight: bold;\">" +
+                            "MockXpert" +
+                          "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                          "<td style=\"padding: 40px 30px; color: #333333;\">" +
+                            "<p style=\"margin: 0; font-size: 16px; line-height: 1.5;\">Dear User,</p>" +
+                            "<p style=\"margin: 20px 0 0 0; font-size: 16px; line-height: 1.5;\">%s</p>" +
+                          "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                          "<td align=\"center\" bgcolor=\"#f4f4f4\" " +
+                            "style=\"padding: 20px; font-size: 12px; color: #777777;\">" +
+                            "© 2025 MockXpert. All rights reserved." +
+                          "</td>" +
+                        "</tr>" +
+                      "</table>" +
+                    "</td>" +
+                  "</tr>" +
+                "</table>" +
+              "</body>" +
+            "</html>", headerTitle, content);
+    }
+
 }

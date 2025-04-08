@@ -129,11 +129,35 @@ public class FeedbackController {
     
     /**
      * Get all feedback for a specific user (where user is the receiver).
+     * 
+     * @param userId
+     * @return
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<FeedbackDto>> getFeedbackForUser(@PathVariable Long userId) {
         List<FeedbackDto> feedbackList = feedbackService.getFeedbackForUser(userId);
         return ResponseEntity.ok(feedbackList);
+    }
+    
+    /**
+     * Checks if the current interviewer has the feedback from the given user or not.
+     * 
+     * @param interviewId
+     * @param giverId
+     * @return
+     */
+    @GetMapping("/check")
+    public ResponseEntity<?> checkFeedback(
+            @RequestParam Long interviewId,
+            @RequestParam Long giverId
+    ) {
+        try {
+            FeedbackDto existing = feedbackService.findFeedbackByInterviewAndGiver(interviewId, giverId);
+            return ResponseEntity.ok(existing); // can be null if none
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("Failed to check feedback: " + e.getMessage());
+        }
     }
 
 }

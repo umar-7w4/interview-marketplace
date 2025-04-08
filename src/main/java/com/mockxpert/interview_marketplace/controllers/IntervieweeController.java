@@ -80,6 +80,18 @@ public class IntervieweeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Optional.empty());
         }
     }
+    
+    /**
+     * checks existence of interviewee
+     * 
+     * @param userId
+     * @return
+     */
+    @GetMapping("/user/{userId}/exists")
+    public ResponseEntity<Boolean> doesIntervieweeProfileExist(@PathVariable Long userId) {
+        boolean exists = intervieweeService.checkExistenceOfInterviewee(userId);
+        return ResponseEntity.ok(exists);
+    }
 
     /**
      * Deactivate an interviewee.
@@ -118,4 +130,5 @@ public class IntervieweeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to reactivate interviewee");
         }
     }
+   
 }

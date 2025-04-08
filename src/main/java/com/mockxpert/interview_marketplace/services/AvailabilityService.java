@@ -37,12 +37,15 @@ public class AvailabilityService {
 
     @Autowired
     private NotificationService notificationService;
+    
+    @Autowired
+    private UserService userService;
 
     /**
-     * Register a new availability and notify the interviewer.
-     *
-     * @param availabilityDto Availability data.
-     * @return Created availability.
+     * Registers availability slot of an interviewer.
+     * 
+     * @param availabilityDto
+     * @return availability
      */
     @Transactional
     public AvailabilityDto registerAvailability(AvailabilityDto availabilityDto) {
@@ -68,10 +71,14 @@ public class AvailabilityService {
         try {
             Availability savedAvailability = availabilityRepository.saveAndFlush(availability);
 
-            //  Notify the interviewer about successful availability creation
-            sendAvailabilityNotification(interviewer.getUser().getUserId(), " Availability Created",
-                    "Your availability for " + availability.getDate() + " from " +
-                            availability.getStartTime() + " to " + availability.getEndTime() + " has been successfully created.");
+            // Build subject and HTML message with dynamic details
+            String subject = String.format("Availability Created: %s | %s - %s",
+                    savedAvailability.getDate(), savedAvailability.getStartTime(), savedAvailability.getEndTime());
+            String plainMessage = String.format("Your availability for %s from %s to %s has been successfully created.",
+                    savedAvailability.getDate(), savedAvailability.getStartTime(), savedAvailability.getEndTime());
+
+            // Notify the interviewer with the beautiful HTML email UI
+            sendAvailabilityNotification(interviewer.getUser().getUserId(), subject, plainMessage);
 
             return AvailabilityMapper.toDto(savedAvailability);
         } catch (Exception e) {
@@ -80,7 +87,7 @@ public class AvailabilityService {
     }
 
     /**
-     * Update availability information and notify the interviewer.
+     * Update availability information.
      *
      * @param availabilityId  Availability ID.
      * @param availabilityDto Updated availability details.
@@ -149,9 +156,10 @@ public class AvailabilityService {
         availability.setStatus(Availability.AvailabilityStatus.BOOKED);
         availabilityRepository.save(availability);
 
-        //  Notify interviewer when slot is booked
-        sendAvailabilityNotification(availability.getInterviewer().getUser().getUserId(), "📅 Slot Booked",
-                "Your availability on " + availability.getDate() + " has been booked.");
+        String subject = String.format("Slot Booked: %s", availability.getDate());
+        String plainMessage = String.format("Your availability on %s has been booked.", availability.getDate());
+
+        sendAvailabilityNotification(availability.getInterviewer().getUser().getUserId(), subject, plainMessage);
     }
 
     /**
@@ -167,29 +175,82 @@ public class AvailabilityService {
         availability.setStatus(Availability.AvailabilityStatus.EXPIRED);
         availabilityRepository.save(availability);
 
-        //  Notify interviewer of cancellation
-        sendAvailabilityNotification(availability.getInterviewer().getUser().getUserId(), "❌ Availability Canceled",
-                "Your availability on " + availability.getDate() + " has been canceled.");
+        String subject = String.format("Availability Canceled: %s", availability.getDate());
+        String plainMessage = String.format("Your availability on %s has been canceled.", availability.getDate());
+
+        sendAvailabilityNotification(availability.getInterviewer().getUser().getUserId(), subject, plainMessage);
     }
 
     /**
-     * Helper method to send availability notifications.
+     * Helper method to send availability notifications using a beautiful HTML email template.
      *
      * @param userId  The user ID of the interviewer.
      * @param subject The subject of the notification.
-     * @param message The body of the notification.
+     * @param plainMessage The plain text message to include in the email.
      */
-    private void sendAvailabilityNotification(Long userId, String subject, String message) {
+    private void sendAvailabilityNotification(Long userId, String subject, String plainMessage) {
+        // Build the HTML email using the helper method below
+        String htmlMessage = buildHtmlEmail(subject, plainMessage);
+
         NotificationDto notificationDto = new NotificationDto();
         notificationDto.setUserId(userId);
         notificationDto.setSubject(subject);
-        notificationDto.setMessage(message);
+        notificationDto.setMessage(htmlMessage);
         notificationDto.setType("EMAIL");
         notificationDto.setStatus("SENT");
 
         notificationService.createNotification(notificationDto);
     }
-    
+
+    /**
+     * Helper method to build a beautiful HTML email template using the MockXpert theme.
+     *
+     * @param headerTitle The header title (often the subject with dynamic details).
+     * @param content     The main content/body of the email.
+     * @return A complete HTML string.
+     */
+    private String buildHtmlEmail(String headerTitle, String content) {
+        return String.format(
+            // Note: use %% to escape % signs in inline CSS
+            "<!DOCTYPE html>" +
+            "<html>" +
+              "<head>" +
+                "<meta charset=\"UTF-8\">" +
+                "<title>%s</title>" +
+              "</head>" +
+              "<body style=\"margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;\">" +
+                "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%%\">" +
+                  "<tr>" +
+                    "<td align=\"center\" style=\"padding: 20px 10px;\">" +
+                      "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" " +
+                        "style=\"background-color: #ffffff; border-radius: 8px; overflow: hidden; " +
+                        "box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">" +
+                        "<tr>" +
+                          "<td align=\"center\" bgcolor=\"#6366f1\" " +
+                            "style=\"padding: 30px 0; color: #ffffff; font-size: 28px; font-weight: bold;\">" +
+                            "MockXpert" +
+                          "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                          "<td style=\"padding: 40px 30px; color: #333333;\">" +
+                            "<p style=\"margin: 0; font-size: 16px; line-height: 1.5;\">Dear Interviewer,</p>" +
+                            "<p style=\"margin: 20px 0 0 0; font-size: 16px; line-height: 1.5;\">%s</p>" +
+                          "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                          "<td align=\"center\" bgcolor=\"#f4f4f4\" " +
+                            "style=\"padding: 20px; font-size: 12px; color: #777777;\">" +
+                            "© 2025 MockXpert. All rights reserved." +
+                          "</td>" +
+                        "</tr>" +
+                      "</table>" +
+                    "</td>" +
+                  "</tr>" +
+                "</table>" +
+              "</body>" +
+            "</html>", headerTitle, content);
+    }
+
     /**
      * Get a list of all availabilities.
      * @return a list of all Availability entities as DTOs.
@@ -242,7 +303,7 @@ public class AvailabilityService {
      */
 
     private boolean isOverlapping(LocalTime newStart, LocalTime newEnd, LocalTime existingStart, LocalTime existingEnd) {
-        return !newStart.isAfter(existingEnd) && !existingStart.isAfter(newEnd);
+        return newStart.isBefore(existingEnd) && existingStart.isBefore(newEnd);
     }
     
     /**
@@ -254,12 +315,22 @@ public class AvailabilityService {
      * @param status
      * @return
      */
-    public List<AvailabilityDto> filterAvailabilities(
-            LocalDate startDate,
-            LocalDate endDate,
-            String timezone,
-            AvailabilityStatus status
-    ) {
-        return availabilityRepository.filterAvailabilities(startDate, endDate, timezone, status).stream().map(AvailabilityMapper::toDto).collect(Collectors.toList());
+    public List<AvailabilityDto> filterAvailabilities(LocalDate startDate, LocalDate endDate, String timezone, AvailabilityStatus status) {
+        Long currentUserId = userService.getCurrentUser().getUserId();
+        List<Availability> availabilities = availabilityRepository.filterAvailabilities(startDate, endDate, timezone, status, currentUserId);
+        return availabilities.stream().map(AvailabilityMapper::toDto).collect(Collectors.toList());
+    }
+    
+    /**
+     * Fetechs all availability slots based on interviewer and date
+     * 
+     * @param interviewerId
+     * @param date
+     * @return
+     */
+    public List<AvailabilityDto> getAvailabilitiesByInterviewerAndDate(Long interviewerId, LocalDate date) {
+        List<Availability> availabilities = availabilityRepository.findByInterviewer_InterviewerIdAndDate(interviewerId, date);
+        availabilities = availabilities.stream().filter((a) -> a.getStatus() == AvailabilityStatus.AVAILABLE).collect(Collectors.toList());
+        return availabilities.stream().map(AvailabilityMapper::toDto).collect(Collectors.toList());
     }
 }

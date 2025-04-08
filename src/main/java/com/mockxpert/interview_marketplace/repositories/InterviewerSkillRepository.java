@@ -19,6 +19,7 @@ public interface InterviewerSkillRepository extends JpaRepository<InterviewerSki
 
     /**
      * Find skills by interviewer ID.
+     * 
      * @param interviewerId the ID of the interviewer.
      * @return a list of InterviewerSkill records associated with the given interviewer.
      */
@@ -26,6 +27,7 @@ public interface InterviewerSkillRepository extends JpaRepository<InterviewerSki
 
     /**
      * Find all InterviewerSkill records by skill ID.
+     * 
      * @param skillId the ID of the skill.
      * @return a list of InterviewerSkill records associated with the given skill.
      */
@@ -33,6 +35,7 @@ public interface InterviewerSkillRepository extends JpaRepository<InterviewerSki
 
     /**
      * Find an InterviewerSkill record by interviewer ID and skill ID.
+     * 
      * @param interviewerId the ID of the interviewer.
      * @param skillId the ID of the skill.
      * @return an optional InterviewerSkill record matching the given interviewer and skill IDs.
@@ -41,6 +44,7 @@ public interface InterviewerSkillRepository extends JpaRepository<InterviewerSki
 
     /**
      * Find InterviewerSkill records by proficiency level.
+     * 
      * @param proficiencyLevel the proficiency level (e.g., Beginner, Intermediate, Expert).
      * @return a list of InterviewerSkill records matching the specified proficiency level.
      */
@@ -48,6 +52,7 @@ public interface InterviewerSkillRepository extends JpaRepository<InterviewerSki
 
     /**
      * Find InterviewerSkill records by certification status.
+     * 
      * @param certified whether the skill is certified (true/false).
      * @return a list of InterviewerSkill records with the given certification status.
      */
@@ -55,6 +60,7 @@ public interface InterviewerSkillRepository extends JpaRepository<InterviewerSki
 
     /**
      * Find InterviewerSkill records by years of experience.
+     * 
      * @param yearsOfExperience the years of experience in the skill.
      * @return a list of InterviewerSkill records matching the specified years of experience.
      */
@@ -62,6 +68,7 @@ public interface InterviewerSkillRepository extends JpaRepository<InterviewerSki
 
     /**
      * Count InterviewerSkill records by skill ID.
+     * 
      * @param skillId the ID of the skill.
      * @return the count of InterviewerSkill records associated with the given skill ID.
      */
@@ -69,6 +76,7 @@ public interface InterviewerSkillRepository extends JpaRepository<InterviewerSki
 
     /**
      * Find InterviewerSkill records where proficiency level contains specific keywords.
+     * 
      * @param keyword the keyword to search for in proficiency level.
      * @return a list of InterviewerSkill records with proficiency level containing the given keyword.
      */

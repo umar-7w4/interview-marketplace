@@ -43,6 +43,8 @@ public class UserMapper {
         userDto.setFullName(user.getFullName());
         userDto.setFirebaseUid(user.getFirebaseUid());
         userDto.setWorkEmail(user.getWorkEmail());
+        userDto.setWorkEmailVerified(user.isWorkEmailVerified());
+        userDto.setEmailVerified(user.isEmailVerified());
 
         if (user.getCreatedAt() != null) {
             userDto.setCreatedAt(FORMATTER.format(user.getCreatedAt()));
@@ -80,6 +82,8 @@ public class UserMapper {
         user.setTimezone(userDto.getTimezone());
         user.setFirebaseUid(userDto.getFirebaseUid());
         user.setWorkEmail(userDto.getWorkEmail());
+        user.setWorkEmailVerified(userDto.isWorkEmailVerified());
+        user.setEmailVerified(userDto.isEmailVerified());
 
         if (userDto.getCreatedAt() != null) {
             user.setCreatedAt(LocalDateTime.parse(userDto.getCreatedAt(), FORMATTER));

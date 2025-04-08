@@ -60,11 +60,17 @@ public class Interviewer {
     @Column(name = "average_rating")
     private Double averageRating;
 
-    @Column(name = "profile_completion_status", nullable = false)
+    @Column(name = "profile_completion_status")
     private Boolean profileCompletionStatus;
+    
+    @Column(name ="linkedin_url")
+    private String linkedinUrl;
 
     @Column(name = "is_verified", nullable = false)
     private Boolean isVerified;
+    
+    @Column(name = "profile_image")
+    private String profileImage;
 
     @OneToMany(mappedBy = "interviewer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Interview> interviews;
@@ -180,6 +186,8 @@ public class Interviewer {
 	public void setProfileCompletionStatus(Boolean profileCompletionStatus) {
 		this.profileCompletionStatus = profileCompletionStatus;
 	}
+	
+	
 
 	public Boolean getIsVerified() {
 		return isVerified;
@@ -220,6 +228,24 @@ public class Interviewer {
 	public void setSkills(List<InterviewerSkill> skills) {
 		this.skills = skills;
 	}
-    
 
+	public String getLinkedinUrl() {
+		return linkedinUrl;
+	}
+
+	public void setLinkedinUrl(String linkedinUrl) {
+		this.linkedinUrl = linkedinUrl;
+	}
+
+	public String getProfileImage() {
+		return profileImage;
+	}
+
+	public void setProfileImage(String profileImage) {
+		this.profileImage = profileImage;
+	}
+	
+	
+	
+	
 }

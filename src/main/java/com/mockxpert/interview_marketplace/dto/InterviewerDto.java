@@ -41,9 +41,12 @@ public class InterviewerDto {
 
     private Boolean profileCompletionStatus;
     
+    private String linkedinUrl;
 
     @NotNull(message = "Verification status is required")
     private Boolean isVerified;
+    
+    private String profileImage;
 
     private List<InterviewerSkillDto> skills;
 
@@ -158,6 +161,24 @@ public class InterviewerDto {
 	public void setSkills(List<InterviewerSkillDto> skills) {
 		this.skills = skills;
 	}
+
+	public String getLinkedinUrl() {
+		return linkedinUrl;
+	}
+
+	public void setLinkedinUrl(String linkedinUrl) {
+		this.linkedinUrl = linkedinUrl;
+	}
+
+	public String getProfileImage() {
+		return profileImage;
+	}
+
+	public void setProfileImage(String profileImage) {
+		this.profileImage = profileImage;
+	}
+	
+	
 
     
 }

@@ -3,6 +3,8 @@ package com.mockxpert.interview_marketplace.services;
 import com.mockxpert.interview_marketplace.dto.NotificationDto;
 import com.mockxpert.interview_marketplace.dto.PaymentDto;
 import com.mockxpert.interview_marketplace.entities.*;
+import com.mockxpert.interview_marketplace.entities.Availability.AvailabilityStatus;
+import com.mockxpert.interview_marketplace.entities.Booking.PaymentStatus;
 import com.mockxpert.interview_marketplace.exceptions.ResourceNotFoundException;
 import com.mockxpert.interview_marketplace.mappers.PaymentMapper;
 import com.mockxpert.interview_marketplace.repositories.BookingRepository;
@@ -11,6 +13,8 @@ import com.mockxpert.interview_marketplace.repositories.IntervieweeRepository;
 import com.mockxpert.interview_marketplace.repositories.InterviewerRepository;
 import com.mockxpert.interview_marketplace.repositories.PaymentRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,7 +111,7 @@ public class PaymentService {
      * @param sessionId The Stripe session ID confirming the successful transaction.
      * @return The updated PaymentDto after processing.
      */
-    @Transactional
+    @Transactional    
     public PaymentDto processSuccessfulPayment(String sessionId) {
         Payment payment = paymentRepository.findByTransactionId(sessionId);
         if (payment == null) {
@@ -119,32 +123,45 @@ public class PaymentService {
             return PaymentMapper.toDto(payment);
         }
 
-        // Mark payment as PAID.
         payment.setPaymentStatus(Payment.PaymentStatus.PAID);
         paymentRepository.save(payment);
 
         Booking booking = payment.getBooking();
-        
-        sendPaymentNotification(booking.getInterviewee().getUser().getUserId(), "Payment Successful",
-                "Your payment for booking on " + booking.getBookingDate() + " has been received.");
+        booking.setPaymentStatus(PaymentStatus.PAID);
+        booking.getAvailability().setStatus(AvailabilityStatus.BOOKED);
 
-        sendPaymentNotification(booking.getAvailability().getInterviewer().getUser().getUserId(), "Booking Confirmed",
-                "Your interview session on " + booking.getBookingDate() + " has been confirmed after payment.");
+        String bookingDate = booking.getBookingDate().toString(); 
+        String intervieweeName = booking.getInterviewee().getUser().getFullName();
+        String interviewerName = booking.getAvailability().getInterviewer().getUser().getFullName();
 
+        String subjectInterviewee = String.format("Payment Successful: Your Booking on %s is Confirmed", bookingDate);
+        String messageInterviewee = String.format(
+                "Dear %s,<br/><br/>Your payment for your booking on %s has been successfully processed. " +
+                "Your interview with %s is now confirmed. We look forward to a great session!",
+                intervieweeName, bookingDate, interviewerName);
+        sendPaymentNotification(booking.getInterviewee().getUser().getUserId(), subjectInterviewee, messageInterviewee);
+
+        String subjectInterviewer = String.format("Booking Confirmed: Interview Scheduled on %s", bookingDate);
+        String messageInterviewer = String.format(
+                "Dear %s,<br/><br/>A new booking has been confirmed for your interview session on %s with %s. " +
+                "Please prepare for your upcoming interview.",
+                interviewerName, bookingDate, intervieweeName);
         
+        sendPaymentNotification(booking.getAvailability().getInterviewer().getUser().getUserId(), subjectInterviewer, messageInterviewer);
+
         if (interviewRepository.existsByBooking_BookingId(booking.getBookingId())) {
             logger.warn("Interview already scheduled for Booking ID: {}", booking.getBookingId());
             return PaymentMapper.toDto(payment);
         }
 
-        // Use the dedicated meeting account's refresh token to obtain an access token.
         if (dedicatedGoogleRefreshToken == null || dedicatedGoogleRefreshToken.isEmpty()) {
             throw new RuntimeException("Dedicated Google refresh token is not configured.");
         }
-
         String accessToken = googleOAuthService.getAccessTokenFromRefreshToken(dedicatedGoogleRefreshToken);
 
-        // Create the interview record.
+        String interviewerFirstName = booking.getAvailability().getInterviewer().getUser().getFirstName();
+        String intervieweeFirstName = booking.getInterviewee().getUser().getFirstName();
+
         Interview interview = new Interview();
         interview.setBooking(booking);
         interview.setInterviewee(booking.getInterviewee());
@@ -154,17 +171,15 @@ public class PaymentService {
         interview.setDuration(Duration.ofMinutes(60));
         interview.setStatus(Interview.InterviewStatus.BOOKED);
         interview.setTimezone(booking.getAvailability().getTimezone());
+        interview.setTitle("Mock Interview between " + interviewerFirstName + " and " + intervieweeFirstName);
 
         try {
-            // Retrieve email addresses.
             String intervieweeEmail = booking.getInterviewee().getUser().getEmail();
             String interviewerEmail = booking.getAvailability().getInterviewer().getUser().getEmail();
 
-            // Calculate start and end times.
             LocalDateTime startTime = booking.getBookingDate().atTime(booking.getAvailability().getStartTime());
             LocalDateTime endTime = booking.getBookingDate().atTime(booking.getAvailability().getEndTime());
 
-            // Schedule the Google Meet event using the dedicated account.
             String meetLink = googleCalendarService.createGoogleMeetEvent(
                     accessToken,
                     "Mock Interview",
@@ -275,21 +290,86 @@ public class PaymentService {
         payment.setPaymentStatus(Payment.PaymentStatus.REFUNDED);
         paymentRepository.save(payment);
 
-        // Notify interviewee about the refund
-        sendPaymentNotification(payment.getBooking().getInterviewee().getUser().getUserId(), "Refund Processed",
-                "Your payment for booking on " + payment.getBooking().getBookingDate() + " has been refunded.");
+        String bookingDate = payment.getBooking().getBookingDate().toString();
+        String intervieweeName = payment.getBooking().getInterviewee().getUser().getFullName();
+        String subject = String.format("Refund Processed: Booking on %s", bookingDate);
+        String message = String.format(
+                "Dear %s,<br/><br/>Your payment for your booking on %s has been refunded. " +
+                "If you have any questions, please contact our support team.<br/><br/>Best regards,<br/>MockXpert Team",
+                intervieweeName, bookingDate);
+        sendPaymentNotification(payment.getBooking().getInterviewee().getUser().getUserId(), subject, message);
     }
     
-    private void sendPaymentNotification(Long userId, String subject, String message) {
+    /**
+     * Helper method to send payment-related notifications using a beautiful HTML email template.
+     *
+     * @param userId       The recipient's user ID.
+     * @param subject      The subject for the notification email.
+     * @param plainMessage The plain text message content, which will be wrapped in a styled HTML template.
+     */
+    private void sendPaymentNotification(Long userId, String subject, String plainMessage) {
+        // Build the full HTML email message using the helper method.
+        String htmlMessage = buildHtmlEmail(subject, plainMessage);
+
         NotificationDto notificationDto = new NotificationDto();
         notificationDto.setUserId(userId);
         notificationDto.setSubject(subject);
-        notificationDto.setMessage(message);
+        notificationDto.setMessage(htmlMessage);
         notificationDto.setType("EMAIL");
         notificationDto.setStatus("SENT");
 
         notificationService.createNotification(notificationDto);
     }
+    
+    
+    /**
+     * Helper method to construct a full HTML email template (using the MockXpert theme) that wraps the content.
+     *
+     * @param headerTitle The header title to show in the email (typically the subject).
+     * @param content     The HTML content (with dynamic data) for the email body.
+     * @return A complete HTML string representing the email.
+     */
+    private String buildHtmlEmail(String headerTitle, String content) {
+        return String.format(
+            "<!DOCTYPE html>" +
+            "<html>" +
+              "<head>" +
+                "<meta charset=\"UTF-8\">" +
+                "<title>%s</title>" +
+              "</head>" +
+              "<body style=\"margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;\">" +
+                "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%%\">" +
+                  "<tr>" +
+                    "<td align=\"center\" style=\"padding: 20px 10px;\">" +
+                      "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" " +
+                        "style=\"background-color: #ffffff; border-radius: 8px; overflow: hidden; " +
+                        "box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">" +
+                        "<tr>" +
+                          "<td align=\"center\" bgcolor=\"#6366f1\" " +
+                            "style=\"padding: 30px 0; color: #ffffff; font-size: 28px; font-weight: bold;\">" +
+                            "MockXpert" +
+                          "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                          "<td style=\"padding: 40px 30px; color: #333333;\">" +
+                            "<p style=\"margin: 0; font-size: 16px; line-height: 1.5;\">Dear User,</p>" +
+                            "<p style=\"margin: 20px 0 0 0; font-size: 16px; line-height: 1.5;\">%s</p>" +
+                          "</td>" +
+                        "</tr>" +
+                        "<tr>" +
+                          "<td align=\"center\" bgcolor=\"#f4f4f4\" " +
+                            "style=\"padding: 20px; font-size: 12px; color: #777777;\">" +
+                            "© 2025 MockXpert. All rights reserved." +
+                          "</td>" +
+                        "</tr>" +
+                      "</table>" +
+                    "</td>" +
+                  "</tr>" +
+                "</table>" +
+              "</body>" +
+            "</html>", headerTitle, content);
+    }
+    
     
     /**
      * Get the total earnings for an interviewer.
@@ -323,7 +403,12 @@ public class PaymentService {
                 .collect(Collectors.toList());
     }
     
-    // Get total money spent by interviewee
+    /**
+     * Get total money spent by interviewee
+     * 
+     * @param userId
+     * @return
+     */
     public BigDecimal getTotalSpentByInterviewee(Long userId) {
     	long intervieweeId = intervieweeRepository.findIntervieweeIdByUserId(userId);
         return paymentRepository.getTotalSpentByInterviewee(intervieweeId);

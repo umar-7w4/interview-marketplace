@@ -25,6 +25,7 @@ public class SkillService {
 
     /**
      * Register a new skill.
+     * 
      * @param skillDto the skill data transfer object containing registration information.
      * @return the saveAndFlushd Skill entity.
      */
@@ -45,6 +46,7 @@ public class SkillService {
 
     /**
      * Update skill information.
+     * 
      * @param skillId the ID of the skill to update.
      * @param skillDto the skill data transfer object containing updated information.
      * @return the updated Skill entity.
@@ -75,6 +77,7 @@ public class SkillService {
 
     /**
      * Find a skill by its ID.
+     * 
      * @param skillId the skill ID to look up.
      * @return the found Skill entity as a DTO.
      */
@@ -86,6 +89,7 @@ public class SkillService {
 
     /**
      * Delete a skill by its ID.
+     * 
      * @param skillId the ID of the skill to delete.
      * @return true if the skill was deleted successfully, false otherwise.
      */
@@ -104,6 +108,7 @@ public class SkillService {
 
     /**
      * Get a list of all skills.
+     * 
      * @return a list of all Skill entities as DTOs.
      */
     public List<SkillDto> findAllSkills() {

@@ -34,11 +34,10 @@ public class InterviewerVerificationController {
      *
      * @return ResponseEntity with status and message.
      */
-    @PostMapping("/sendOtp/{interviewerId}")
-    public ResponseEntity<String> sendVerificationOtp(@PathVariable Long interviewerId) {
-        System.out.println("OTP Starting for interviewer ID: " + interviewerId);
+    @PostMapping("/sendOtp/{userId}")
+    public ResponseEntity<String> sendVerificationOtp(@PathVariable Long userId) {
         
-        verificationService.sendVerificationOtp(interviewerId);
+        verificationService.sendVerificationOtp(userId);
         
         return ResponseEntity.ok("OTP sent successfully");
     }
@@ -54,12 +53,11 @@ public class InterviewerVerificationController {
      * @param request the request payload containing the OTP.
      * @return ResponseEntity with status and message.
      */
-    @PostMapping("/verifyOtp/{interviewerId}")
-    public ResponseEntity<String> verifyOtp(@PathVariable Long interviewerId, @RequestBody VerifyOtpRequest request) {
-        System.out.println("Verifying OTP for interviewer ID: " + interviewerId);
+    @PostMapping("/verifyOtp/{userId}")
+    public ResponseEntity<String> verifyOtp(@PathVariable Long userId, @RequestBody VerifyOtpRequest request) {
         
         try {
-            verificationService.verifyOtp(interviewerId, request.getOtp());
+            verificationService.verifyOtp(userId, request.getOtp());
             return ResponseEntity.ok("OTP verified successfully");
         } catch (InvalidOtpException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -73,11 +71,10 @@ public class InterviewerVerificationController {
      *
      * @return ResponseEntity with status and message.
      */
-    @PostMapping("/resendOtp/{interviewerId}")
-    public ResponseEntity<String> resendOtp(@PathVariable Long interviewerId) {
-        System.out.println("Resending OTP for interviewer ID: " + interviewerId);
+    @PostMapping("/resendOtp/{userId}")
+    public ResponseEntity<String> resendOtp(@PathVariable Long userId) {
         
-        verificationService.resendOtp(interviewerId);
+        verificationService.resendOtp(userId);
         return ResponseEntity.ok("OTP resent successfully");
     }
 

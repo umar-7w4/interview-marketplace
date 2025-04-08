@@ -19,6 +19,7 @@ public interface InterviewerRepository extends JpaRepository<Interviewer, Long> 
 
     /**
      * Find an interviewer by user ID.
+     * 
      * @param userId the ID of the user.
      * @return an optional containing the interviewer if found, otherwise empty.
      */
@@ -26,6 +27,7 @@ public interface InterviewerRepository extends JpaRepository<Interviewer, Long> 
 
     /**
      * Find all interviewers with a specific status.
+     * 
      * @param status the status to filter interviewers (e.g., verified, not verified).
      * @return a list of interviewers matching the specified status.
      */
@@ -33,6 +35,7 @@ public interface InterviewerRepository extends JpaRepository<Interviewer, Long> 
 
     /**
      * Find interviewers by the company they work at.
+     * 
      * @param company the company name to filter interviewers.
      * @return a list of interviewers working at the specified company.
      */
@@ -40,6 +43,7 @@ public interface InterviewerRepository extends JpaRepository<Interviewer, Long> 
 
     /**
      * Find interviewers by years of experience.
+     * 
      * @param yearsOfExperience the number of years of experience to filter interviewers.
      * @return a list of interviewers with the specified years of experience.
      */
@@ -47,6 +51,7 @@ public interface InterviewerRepository extends JpaRepository<Interviewer, Long> 
 
     /**
      * Find interviewers by skill name.
+     * 
      * @param skillName the name of the skill to filter interviewers.
      * @return a list of interviewers having the specified skill.
      */
@@ -54,6 +59,7 @@ public interface InterviewerRepository extends JpaRepository<Interviewer, Long> 
 
     /**
      * Find interviewers who speak a specific language.
+     * 
      * @param language the language to filter interviewers by.
      * @return a list of interviewers who speak the specified language.
      */
@@ -61,6 +67,7 @@ public interface InterviewerRepository extends JpaRepository<Interviewer, Long> 
 
     /**
      * Find all interviewers within a specified session rate range.
+     * 
      * @param minRate the minimum session rate.
      * @param maxRate the maximum session rate.
      * @return a list of interviewers whose session rate falls within the specified range.
@@ -69,6 +76,7 @@ public interface InterviewerRepository extends JpaRepository<Interviewer, Long> 
 
     /**
      * Count the total number of interviewers with a specific status.
+     * 
      * @param status the status to filter interviewers.
      * @return the count of interviewers with the specified status.
      */
@@ -76,14 +84,25 @@ public interface InterviewerRepository extends JpaRepository<Interviewer, Long> 
 
     /**
      * Find all verified interviewers.
+     * 
      * @return a list of interviewers who have been verified.
      */
     List<Interviewer> findByIsVerifiedTrue();
 
     /**
      * Find interviewers who have completed their profile.
+     * 
      * @param profileCompletionStatus the profile completion status to filter interviewers.
      * @return a list of interviewers with the specified profile completion status.
      */
     List<Interviewer> findByProfileCompletionStatus(Boolean profileCompletionStatus);
+    
+    /**
+     * Checks if the interviewer record exists or not.
+     * 
+     * @param userId
+     * @return
+     */
+    boolean existsByUser_UserId(Long userId);
+
 }

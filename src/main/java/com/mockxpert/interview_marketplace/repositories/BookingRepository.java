@@ -24,6 +24,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 	
     /**
      * Checks if the availability exists or not.
+     * 
      * @param availability entity object.
      * @return a boolean value that tells if availability exists or not.
      */
@@ -31,6 +32,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Find booking associated with the booking id.
+     * 
      * @param booking id is the ID of the Booking.
      * @return an optional booking for the specified booking ID.
      */
@@ -39,6 +41,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Find all bookings for a specific interviewee.
+     * 
      * @param intervieweeId the ID of the interviewee.
      * @return a list of bookings associated with the interviewee.
      */
@@ -46,6 +49,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Find all bookings for a specific availability.
+     * 
      * @param availabilityId the ID of the availability.
      * @return a list of bookings associated with the availability.
      */
@@ -53,6 +57,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Find all bookings on a specific date.
+     * 
      * @param bookingDate the date on which the bookings were made.
      * @return a list of bookings created on the specified date.
      */
@@ -60,6 +65,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Find bookings by payment status.
+     * 
      * @param paymentStatus the payment status (e.g., confirmed, pending, cancelled).
      * @return a list of bookings with the specified payment status.
      */
@@ -67,6 +73,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Find bookings by cancellation reason containing a keyword.
+     * 
      * @param keyword the keyword to search in the cancellation reason.
      * @return a list of bookings with the cancellation reason containing the given keyword.
      */
@@ -74,6 +81,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Find bookings by notes containing specific keywords.
+     * 
      * @param notesKeyword the keyword to search in the notes.
      * @return a list of bookings with notes containing the specified keyword.
      */
@@ -81,6 +89,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Count bookings by payment status.
+     * 
      * @param paymentStatus the payment status to filter bookings.
      * @return the count of bookings with the given payment status.
      */
@@ -88,6 +97,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Find all bookings associated with a specific interview.
+     * 
      * @param interviewId the ID of the interview.
      * @return an optional booking for the specified interview ID.
      */
@@ -95,6 +105,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Find all bookings between two dates.
+     * 
      * @param startDate the start date of the range.
      * @param endDate the end date of the range.
      * @return a list of bookings made within the specified date range.
@@ -103,6 +114,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Find all confirmed bookings for a specific interviewee.
+     * 
      * @param intervieweeId the ID of the interviewee.
      * @param paymentStatus the payment status (e.g., confirmed).
      * @return a list of confirmed bookings for the interviewee.
@@ -111,6 +123,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /**
      * Find all bookings with a specific total price.
+     * 
      * @param totalPrice the total price of the booking.
      * @return a list of bookings with the specified total price.
      */

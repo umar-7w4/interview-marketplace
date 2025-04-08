@@ -1,7 +1,9 @@
 package com.mockxpert.interview_marketplace.controllers;
 
 import com.mockxpert.interview_marketplace.dto.InterviewerDto;
+import com.mockxpert.interview_marketplace.entities.Interviewer;
 import com.mockxpert.interview_marketplace.exceptions.*;
+import com.mockxpert.interview_marketplace.repositories.InterviewerRepository;
 import com.mockxpert.interview_marketplace.services.InterviewerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,6 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -23,6 +29,9 @@ public class InterviewerController {
 
     @Autowired
     private InterviewerService interviewerService;
+    
+    @Autowired
+    private InterviewerRepository interviewerRepository;
 
     public InterviewerController() {
         System.out.println("InterviewerController Initialized");
@@ -147,5 +156,105 @@ public class InterviewerController {
     public ResponseEntity<?> getInterviewerByUserId(@PathVariable Long userId) {
         InterviewerDto interviewer = interviewerService.findInterviewerByUserId(userId).get();
         return ResponseEntity.ok(interviewer);
+    }
+    
+    /**
+     * Gets user id of the current interviewer.
+     * 
+     * @param interviewerId
+     * @return
+     */
+    @GetMapping("/{interviewerId}/user-id")
+    public ResponseEntity<?> getUserIdForInterviewer(@PathVariable Long interviewerId) {
+        Interviewer interviewer = interviewerRepository.findById(interviewerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Interviewer not found"));
+        // interviewer.getUser() is the user entity
+        Long userId = interviewer.getUser().getUserId();
+        Map<String, Long> resp = Collections.singletonMap("userId", userId);
+        return ResponseEntity.ok(resp);
+    }
+    
+    /**
+     * 
+     * Fetches all the interviews.
+     */
+    @GetMapping
+    public ResponseEntity<List<InterviewerDto>> getAllInterviewers() {
+        List<InterviewerDto> interviewers = interviewerService.getAllInterviewers();
+        return ResponseEntity.ok(interviewers);
+    }
+    
+    /**
+     * Fetches interviewers based on the current applied filters
+     * 
+     * @param minExperience
+     * @param maxExperience
+     * @param currentCompany
+     * @param minSessionRate
+     * @param maxSessionRate
+     * @param minAverageRating
+     * @param maxAverageRating
+     * @param verified
+     * @param sortBy
+     * @param sortOrder
+     * @return
+     */
+    @GetMapping("/filter")
+    public ResponseEntity<List<InterviewerDto>> getFilteredInterviewers(
+            @RequestParam(required = false) Integer minExperience,
+            @RequestParam(required = false) Integer maxExperience,
+            @RequestParam(required = false) String currentCompany,
+            @RequestParam(required = false) Double minSessionRate,
+            @RequestParam(required = false) Double maxSessionRate,
+            @RequestParam(required = false) Double minAverageRating,
+            @RequestParam(required = false) Double maxAverageRating,
+            @RequestParam(required = false) Boolean verified,
+            @RequestParam(defaultValue = "yearsOfExperience") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortOrder) {
+
+        List<InterviewerDto> dtos = interviewerService.getFilteredInterviewers(
+                minExperience, maxExperience,
+                currentCompany,
+                minSessionRate, maxSessionRate,
+                minAverageRating, maxAverageRating,
+                verified,
+                sortBy, sortOrder);
+        return ResponseEntity.ok(dtos);
+    }
+    
+    /**
+     * Fetches all skill names of current interviewer.
+     * 
+     * @param interviewerId
+     * @return string
+     */
+    @GetMapping("/{interviewerId}/skills")
+    public ResponseEntity<List<String>> getSkillNames(@PathVariable Long interviewerId) {
+        List<String> skillNames = interviewerService.getSkillNamesByInterviewerId(interviewerId);
+        return ResponseEntity.ok(skillNames);
+    }
+    
+    /**
+     * Gets interviewer record by its id.
+     * 
+     * @param interviewerId
+     * @return InterviewerDto
+     */
+    @GetMapping("/{interviewerId}")
+    public ResponseEntity<InterviewerDto> getInterviewerById(@PathVariable Long interviewerId) {
+        InterviewerDto interviewerDto = interviewerService.getInterviewerById(interviewerId);
+        return ResponseEntity.ok(interviewerDto);
+    }
+    
+    /**
+     * Checks if current user has the interviewer profile created or not.
+     * 
+     * @param userId
+     * @return boolean
+     */
+    @GetMapping("/user/{userId}/exists")
+    public ResponseEntity<Boolean> doesInterviewerProfileExist(@PathVariable Long userId) {
+        boolean exists = interviewerService.checkExistenceOfInterviewee(userId);
+        return ResponseEntity.ok(exists);
     }
 }

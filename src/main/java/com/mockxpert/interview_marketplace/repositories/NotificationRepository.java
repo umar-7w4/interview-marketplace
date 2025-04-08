@@ -19,6 +19,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Find all notifications for a specific user.
+     * 
      * @param userId the ID of the user.
      * @return a list of notifications for the specified user.
      */
@@ -26,6 +27,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Find all notifications by status.
+     * 
      * @param status the status of the notification (e.g., PENDING, SENT, FAILED).
      * @return a list of notifications with the specified status.
      */
@@ -33,6 +35,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Find notifications by type.
+     * 
      * @param type the type of the notification (e.g., EMAIL).
      * @return a list of notifications of the specified type.
      */
@@ -40,6 +43,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Find all unread notifications for a specific user.
+     * 
      * @param userId the ID of the user.
      * @param isRead whether the notification has been read or not.
      * @return a list of unread notifications for the specified user.
@@ -48,6 +52,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Find notifications scheduled to be sent before a specific time.
+     * 
      * @param scheduledSendTime the time before which notifications are scheduled to be sent.
      * @return a list of notifications scheduled to be sent before the specified time.
      */
@@ -55,6 +60,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Count notifications by user ID and status.
+     * 
      * @param userId the ID of the user.
      * @param status the status of the notifications.
      * @return the count of notifications for the specified user with the given status.
@@ -63,6 +69,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     /**
      * Find notifications by user ID, type, and status.
+     * 
      * @param userId the ID of the user.
      * @param type the type of the notification.
      * @param status the status of the notification.

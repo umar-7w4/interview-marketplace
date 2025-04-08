@@ -5,13 +5,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.mockxpert.interview_marketplace.entities.Availability;
 import com.mockxpert.interview_marketplace.entities.Booking;
 import com.mockxpert.interview_marketplace.entities.Interview;
+import com.mockxpert.interview_marketplace.entities.Availability.AvailabilityStatus;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 /**
  * 
  * Repository class thats reposible generating query methods related to interview.
@@ -28,8 +33,10 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
      * @return true if an interview exists for the booking.
      */
     boolean existsByBooking_BookingId(Long bookingId);
+    
     /**
      * Find interviews by interviewer ID.
+     * 
      * @param interviewerId the ID of the interviewer
      * @return a list of interviews conducted by the specified interviewer
      */
@@ -37,6 +44,7 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
     /**
      * Find interviews by interviewee ID.
+     * 
      * @param intervieweeId the ID of the interviewee
      * @return a list of interviews attended by the specified interviewee
      */
@@ -44,6 +52,7 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
     /**
      * Find an interview by booking ID.
+     * 
      * @param bookingId the ID of the booking
      * @return an optional containing the interview with the specified booking ID, if found
      */
@@ -51,29 +60,15 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
     /**
      * Find all interviews for a given status (e.g., booked, completed, cancelled).
+     * 
      * @param status the status of the interviews to find
      * @return a list of interviews with the specified status
      */
     List<Interview> findByStatus(String status);
 
     /**
-     * Find interviews for an interviewer with a specific time slot.
-     * @param interviewerId the ID of the interviewer
-     * @param timeSlot the time slot of the interview
-     * @return an optional containing the interview for the given interviewer and time slot, if found
-     */
-    //Optional<Interview> findByInterviewer_InterviewerIdAndTimeSlot(Long interviewerId, String timeSlot);
-
-    /**
-     * Find upcoming interviews for an interviewee.
-     * @param intervieweeId the ID of the interviewee
-     * @param status the status of the interviews to find (e.g., booked)
-     * @return a list of upcoming interviews for the specified interviewee
-     */
-    //List<Interview> findByInterviewee_IntervieweeIdAndStatusOrderByTimeSlotAsc(Long intervieweeId, String status);
-
-    /**
      * Find interviews by timezone.
+     * 
      * @param timezone the timezone of the interviews to find
      * @return a list of interviews in the specified timezone
      */
@@ -81,6 +76,7 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
     /**
      * Find interviews by a specific start and end time.
+     * 
      * @param startTime the start time of the range
      * @param endTime the end time of the range
      * @return a list of interviews between the specified start and end times
@@ -89,6 +85,7 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
     /**
      * Count total interviews for an interviewer.
+     * 
      * @param interviewerId the ID of the interviewer
      * @return the total number of interviews conducted by the specified interviewer
      */
@@ -96,6 +93,7 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
     /**
      * Count total interviews for an interviewee.
+     * 
      * @param intervieweeId the ID of the interviewee
      * @return the total number of interviews attended by the specified interviewee
      */
@@ -110,6 +108,18 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
      */
     long countByInterviewer_InterviewerIdAndStatus(Long interviewerId, Interview.InterviewStatus status);
 
+
+    /**
+     * Feteches all the upcoming interviewes for the interviewer.
+     * 
+     * @param interviewerId
+     * @param status
+     * @param date
+     * @return
+     */
+    List<Interview> findByInterviewer_InterviewerIdAndStatusAndDateAfterOrderByDateAsc(
+    	    Long interviewerId, Interview.InterviewStatus status, LocalDateTime date);
+    
     /**
      * Find all upcoming interviews for an interviewer, sorted by date.
      *
@@ -117,9 +127,30 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
      * @param status        the interview status (e.g., BOOKED).
      * @return a list of upcoming interviews sorted by date.
      */
-    List<Interview> findByInterviewer_InterviewerIdAndStatusOrderByDateAsc(Long interviewerId, Interview.InterviewStatus status);
+    @Query("SELECT i FROM Interview i WHERE i.interviewer.interviewerId = :interviewerId AND i.status = :status AND i.date >= CURRENT_TIMESTAMP ORDER BY i.date ASC")
+    List<Interview> findByInterviewer_InterviewerIdAndStatusOrderByDateAsc(
+        @Param("interviewerId") Long interviewerId,
+        @Param("status") Interview.InterviewStatus status
+    );
     
-    // Count upcoming interviews
+    /**
+     * find all upcoming interv iewes for an interviewee, sorted by date.
+     * 
+     * @param intervieweeId
+     * @param status
+     * @return
+     */
+    @Query("SELECT i FROM Interview i WHERE i.interviewee.intervieweeId = :intervieweeId AND i.status = :status AND i.date >= CURRENT_TIMESTAMP ORDER BY i.date ASC")
+    List<Interview> findByInterviewee_IntervieweeIdAndStatusOrderByDateAsc(
+        @Param("intervieweeId") Long intervieweeId,
+        @Param("status") Interview.InterviewStatus status
+    );
+    
+    /**
+     * 
+     * @param intervieweeId
+     * @return
+     */
     @Query("""
            SELECT COUNT(i) 
            FROM Interview i 
@@ -131,7 +162,11 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
            """)
     Long countUpcomingInterviews(@Param("intervieweeId") Long intervieweeId);
 
-    // Count completed interviews
+    /**
+     * 
+     * @param intervieweeId
+     * @return
+     */
     @Query("""
            SELECT COUNT(i)
            FROM Interview i
@@ -143,7 +178,12 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
            """)
     Long countCompletedInterviews(@Param("intervieweeId") Long intervieweeId);
 
-    // Fetch completed interviews (ordered by most recent)
+    /**
+     * 
+     * 
+     * @param intervieweeId
+     * @return
+     */
     @Query("""
            SELECT i
            FROM Interview i
@@ -156,5 +196,71 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
            """)
     List<Interview> findCompletedInterviews(@Param("intervieweeId") Long intervieweeId);
     
+    /**
+     * Fetches the interviews by the date and the user.
+     * 
+     * @param date
+     * @param userId
+     * @return
+     */
+    @Query("""
+            SELECT i
+            FROM Interview i
+            WHERE i.date = :date
+              AND (
+                i.interviewer.user.userId = :userId
+                OR i.interviewee.user.userId = :userId
+              )
+            """)
+     List<Interview> findByDateAndUser(@Param("date") LocalDate date,
+                                       @Param("userId") Long userId);
     
+    /**
+     * Fetches the interviewes between the date range by user.
+     * 
+     * @param startDate
+     * @param endDate
+     * @param userId
+     * @return
+     */
+    @Query("""
+            SELECT i
+            FROM Interview i
+            WHERE i.date BETWEEN :startDate AND :endDate
+              AND (
+                i.interviewer.user.userId = :userId
+                OR i.interviewee.user.userId = :userId
+              )
+            """)
+     List<Interview> findByDateRangeAndUser(@Param("startDate") LocalDate startDate,
+                                            @Param("endDate") LocalDate endDate,
+                                            @Param("userId") Long userId);
+    
+    /**
+     * Fetches the interviews for the particular status and before certain end time.
+     * 
+     * @param status
+     * @param endTime
+     * @return
+     */
+    @Query("SELECT i FROM Interview i WHERE i.status = :status OR i.endTime < :endTime")
+    List<Interview> findByStatusAndEndTimeBefore(@Param("status") Interview.InterviewStatus status,
+                                                 @Param("endTime") LocalTime endTime);
+    
+    /**
+     * Fetches all the past interviews
+     * 
+     * @param dbUserId
+     * @return
+     */
+    @Query("""
+    	    SELECT i
+    	    FROM Interview i
+    	    WHERE
+    	        i.date < CURRENT_DATE
+    	        OR (i.date = CURRENT_DATE AND i.endTime <= CURRENT_TIME)
+    	    ORDER BY i.date DESC, i.endTime DESC
+    	""")
+    List<Interview> findPastInterviews(@Param("dbUserId") Long dbUserId);
+
 }

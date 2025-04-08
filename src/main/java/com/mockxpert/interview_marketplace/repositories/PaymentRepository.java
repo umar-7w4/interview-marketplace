@@ -21,6 +21,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     /**
      * Find payments by booking ID.
+     * 
      * @param bookingId the ID of the booking.
      * @return a list of payments associated with the given booking ID.
      */
@@ -28,6 +29,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     /**
      * Find payments by transaction ID.
+     * 
      * @param transactionId the transaction ID from the payment gateway.
      * @return the payment associated with the given transaction ID.
      */
@@ -35,6 +37,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     /**
      * Find payments by payment date.
+     * 
      * @param paymentDate the date when the payment was made.
      * @return a list of payments made on the specified date.
      */
@@ -42,6 +45,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     /**
      * Find payments by payment status.
+     * 
      * @param paymentStatus the status of the payment (e.g., paid, failed, refunded).
      * @return a list of payments with the specified status.
      */
@@ -49,6 +53,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     /**
      * Find payments by currency type.
+     * 
      * @param currency the currency used for the payment (e.g., USD, EUR).
      * @return a list of payments made in the specified currency.
      */
@@ -56,6 +61,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     /**
      * Find payments by payment method.
+     * 
      * @param paymentMethod the method used for the payment (e.g., credit card, PayPal).
      * @return a list of payments made using the specified method.
      */
@@ -63,6 +69,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     /**
      * Count payments by status.
+     * 
      * @param paymentStatus the status of the payment.
      * @return the count of payments with the given status.
      */
@@ -70,6 +77,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     /**
      * Find payments made within a specific date range.
+     * 
      * @param startDate the start date of the range.
      * @param endDate the end date of the range.
      * @return a list of payments made within the specified date range.
@@ -78,6 +86,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     /**
      * Find payments by booking ID and payment status.
+     * 
      * @param bookingId the ID of the booking.
      * @param paymentStatus the status of the payment.
      * @return a list of payments for the specified booking ID and status.
@@ -86,6 +95,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     /**
      * Find payments by refund amount greater than a specified value.
+     * 
      * @param refundAmount the minimum refund amount.
      * @return a list of payments where the refund amount is greater than the specified value.
      */
@@ -101,6 +111,12 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT p FROM Payment p WHERE p.booking.interviewee.user.userId = :userId OR p.booking.availability.interviewer.user.userId = :userId")
     List<Payment> findPaymentsByUserId(@Param("userId") Long userId);
     
+    /**
+     * Fetches the total spent of a candidate on interviews.
+     * 
+     * @param intervieweeId
+     * @return
+     */
     @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Payment p " +
     	       "WHERE p.booking.interviewee.intervieweeId = :intervieweeId " +
     	       "AND p.paymentStatus = 'PAID'")

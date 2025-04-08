@@ -26,10 +26,12 @@ public class LoginResponse {
     private User.Status status;
     private String idToken; 
     private String refreshToken;
+    private boolean isEmailVerified;
+    private boolean isWorkEmailVerified;
 
 	public LoginResponse(String firstName, String lastName, String fullName, String email, String workEmail,
 			String phoneNumber, String profilePictureUrl, String preferredLanguage, String timezone, String createdAt,
-			String lastLogin, User.Role role, User.Status status, String idToken, String refreshToken) {
+			String lastLogin, User.Role role, User.Status status, String idToken, String refreshToken, boolean isEmailVerified, boolean isWorkEmailVerified) {
 		super();
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -46,6 +48,8 @@ public class LoginResponse {
 		this.status = status;
 		this.idToken = idToken;
 		this.refreshToken = refreshToken;
+		this.isEmailVerified = isEmailVerified;
+		this.isWorkEmailVerified = isWorkEmailVerified;
 	}
 
 	public String getIdToken() {
@@ -166,6 +170,22 @@ public class LoginResponse {
 
 	public void setStatus(User.Status status) {
 		this.status = status;
+	}
+
+	public boolean isEmailVerified() {
+		return isEmailVerified;
+	}
+
+	public void setEmailVerified(boolean isEmailVerified) {
+		this.isEmailVerified = isEmailVerified;
+	}
+
+	public boolean isWorkEmailVerified() {
+		return isWorkEmailVerified;
+	}
+
+	public void setWorkEmailVerified(boolean isWorkEmailVerified) {
+		this.isWorkEmailVerified = isWorkEmailVerified;
 	}
 	
 	

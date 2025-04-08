@@ -82,7 +82,22 @@ public interface IntervieweeRepository extends JpaRepository<Interviewee, Long> 
      */
     List<Interviewee> findByCurrentJobRoleAndFieldOfInterest(String currentJobRole, String fieldOfInterest);
     
+    /**
+     * Fetches the interviewee by user.
+     * 
+     * @param userId
+     * @return
+     */
     @Query("SELECT i.intervieweeId FROM Interviewee i WHERE i.user.userId = :userId")
     Long findIntervieweeIdByUserId(@Param("userId") Long userId);
+    
+    /**
+     * Checks whether we have a interviewee profile created for current user.
+     * 
+     * @param userId
+     * @return
+     */
+    boolean existsByUser_UserId(Long userId);
+
 
 }

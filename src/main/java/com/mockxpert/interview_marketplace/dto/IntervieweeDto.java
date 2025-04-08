@@ -30,6 +30,8 @@ public class IntervieweeDto {
 
     @NotBlank(message = "Timezone is required")
     private String timezone;
+    
+    private String linkedinUrl;
 
     private List<IntervieweeSkillDto> skills;
 
@@ -105,6 +107,15 @@ public class IntervieweeDto {
 		this.skills = skills;
 	}
 
+	public String getLinkedinUrl() {
+		return linkedinUrl;
+	}
+
+	public void setLinkedinUrl(String linkedinUrl) {
+		this.linkedinUrl = linkedinUrl;
+	}
+
+	
     
     
 }

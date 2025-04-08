@@ -12,11 +12,9 @@ import com.mockxpert.interview_marketplace.dto.FirebaseTokenResponse;
 @Service
 public class FirebaseTokenService {
 
-    // Your Firebase API key (make sure it's set correctly in your application.properties)
     @Value("${firebase.api.key}")
     private String firebaseApiKey;
 
-    // Firebase secure token endpoint URL
     private static final String FIREBASE_TOKEN_URL = "https://securetoken.googleapis.com/v1/token?key=";
 
     /**
@@ -28,19 +26,15 @@ public class FirebaseTokenService {
     public FirebaseTokenResponse refreshIdToken(String refreshToken) {
         RestTemplate restTemplate = new RestTemplate();
 
-        // Build the request body for Firebase refresh
         MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
         requestBody.add("grant_type", "refresh_token");
         requestBody.add("refresh_token", refreshToken);
 
-        // Set headers
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        // Create the HTTP entity
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
 
-        // Call the Firebase secure token endpoint
         ResponseEntity<FirebaseTokenResponse> responseEntity = restTemplate.exchange(
                 FIREBASE_TOKEN_URL + firebaseApiKey,
                 HttpMethod.POST,

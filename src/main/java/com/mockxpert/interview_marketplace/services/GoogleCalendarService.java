@@ -27,7 +27,7 @@ public class GoogleCalendarService {
     private static final String APPLICATION_NAME = "MockXpert";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
-    // The dedicated meeting account's email (configured in application.properties)
+
     @Value("${meeting.google.account.email}")
     private String meetingAccountEmail;
 
@@ -51,18 +51,15 @@ public class GoogleCalendarService {
                                         LocalDateTime startTime, LocalDateTime endTime)
                                         throws IOException, GeneralSecurityException {
 
-        // Initialize the Google Calendar API service using the dedicated account's access token.
         Calendar service = new Calendar.Builder(GoogleNetHttpTransport.newTrustedTransport(),
                 JSON_FACTORY, request -> request.getHeaders().setAuthorization("Bearer " + accessToken))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
 
-        // Create the event with the provided details.
         Event event = new Event()
                 .setSummary(title)
                 .setDescription(description);
 
-        // Set start and end times.
         event.setStart(new EventDateTime()
                 .setDateTime(new DateTime(startTime.atZone(ZoneOffset.UTC).toInstant().toEpochMilli()))
                 .setTimeZone("UTC"));
@@ -70,16 +67,13 @@ public class GoogleCalendarService {
                 .setDateTime(new DateTime(endTime.atZone(ZoneOffset.UTC).toInstant().toEpochMilli()))
                 .setTimeZone("UTC"));
 
-        // Set the dedicated meeting account as the organizer.
         event.setOrganizer(new Event.Organizer().setEmail(meetingAccountEmail));
 
-        // Add attendees: the interviewee and the interviewer.
         event.setAttendees(Arrays.asList(
                 new EventAttendee().setEmail(interviewerEmail),
                 new EventAttendee().setEmail(intervieweeEmail)
         ));
 
-        // Enable Google Meet conferencing.
         ConferenceData conferenceData = new ConferenceData();
         ConferenceSolutionKey conferenceSolutionKey = new ConferenceSolutionKey().setType("hangoutsMeet");
         CreateConferenceRequest createConferenceRequest = new CreateConferenceRequest()
@@ -88,17 +82,15 @@ public class GoogleCalendarService {
         conferenceData.setCreateRequest(createConferenceRequest);
         event.setConferenceData(conferenceData);
 
-        // Enable email notifications.
         Event.Reminders reminders = new Event.Reminders()
                 .setUseDefault(false)
                 .setOverrides(Arrays.asList(
-                        new EventReminder().setMethod("email").setMinutes(1440), // 1 day before
-                        new EventReminder().setMethod("email").setMinutes(60),   // 1 hour before
-                        new EventReminder().setMethod("popup").setMinutes(10)    // 10 minutes before
+                        new EventReminder().setMethod("email").setMinutes(1440),
+                        new EventReminder().setMethod("email").setMinutes(60),   
+                        new EventReminder().setMethod("popup").setMinutes(10)    
                 ));
         event.setReminders(reminders);
 
-        // Insert the event into the dedicated account's primary calendar and send updates.
         event = service.events().insert("primary", event)
                 .setConferenceDataVersion(1)
                 .setSendUpdates("all")

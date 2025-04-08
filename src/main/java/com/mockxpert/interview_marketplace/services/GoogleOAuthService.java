@@ -21,7 +21,6 @@ public class GoogleOAuthService {
 
     private static final String GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
-    // The dedicated meeting account's OAuth credentials from application.properties.
     @Value("${google.client.id}")
     private String clientId;
 

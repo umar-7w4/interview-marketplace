@@ -19,6 +19,7 @@ public interface IntervieweeSkillRepository extends JpaRepository<IntervieweeSki
 
     /**
      * Find all skills associated with a specific interviewee.
+     * 
      * @param intervieweeId the interviewee ID to filter skills.
      * @return a list of IntervieweeSkill records for the specified interviewee.
      */
@@ -26,6 +27,7 @@ public interface IntervieweeSkillRepository extends JpaRepository<IntervieweeSki
 
     /**
      * Find all interviewees with a specific skill.
+     * 
      * @param skillId the skill ID to filter interviewees.
      * @return a list of IntervieweeSkill records with the specified skill ID.
      */
@@ -33,6 +35,7 @@ public interface IntervieweeSkillRepository extends JpaRepository<IntervieweeSki
 
     /**
      * Find skills by interviewee and proficiency level.
+     * 
      * @param intervieweeId the interviewee ID to filter skills.
      * @param proficiencyLevel the level of proficiency for the skills.
      * @return a list of IntervieweeSkill records for the specified interviewee and proficiency level.
@@ -41,6 +44,7 @@ public interface IntervieweeSkillRepository extends JpaRepository<IntervieweeSki
 
     /**
      * Find skills by interviewee and certification status.
+     * 
      * @param intervieweeId the interviewee ID to filter skills.
      * @param certified the certification status (true/false).
      * @return a list of IntervieweeSkill records for the specified interviewee and certification status.
@@ -49,6 +53,7 @@ public interface IntervieweeSkillRepository extends JpaRepository<IntervieweeSki
 
     /**
      * Find interviewees with a specific skill and proficiency level.
+     * 
      * @param skillId the skill ID to filter interviewees.
      * @param proficiencyLevel the level of proficiency.
      * @return a list of IntervieweeSkill records matching the skill ID and proficiency level.
@@ -57,6 +62,7 @@ public interface IntervieweeSkillRepository extends JpaRepository<IntervieweeSki
 
     /**
      * Count interviewees with a specific skill.
+     * 
      * @param skillId the skill ID to count interviewees.
      * @return the count of IntervieweeSkill records for the specified skill ID.
      */
@@ -64,6 +70,7 @@ public interface IntervieweeSkillRepository extends JpaRepository<IntervieweeSki
 
     /**
      * Find interviewees with a specific certification status.
+     * 
      * @param certified the certification status (true/false) to filter interviewees.
      * @return a list of IntervieweeSkill records with the specified certification status.
      */
@@ -71,6 +78,7 @@ public interface IntervieweeSkillRepository extends JpaRepository<IntervieweeSki
 
     /**
      * Find interviewee skills by years of experience.
+     * 
      * @param intervieweeId the interviewee ID to filter skills.
      * @param yearsOfExperience the years of experience to filter skills.
      * @return a list of IntervieweeSkill records for the specified interviewee and years of experience.
@@ -79,6 +87,7 @@ public interface IntervieweeSkillRepository extends JpaRepository<IntervieweeSki
 
     /**
      * Find skills with a specific proficiency level across all interviewees.
+     * 
      * @param proficiencyLevel the level of proficiency to filter skills.
      * @return a list of IntervieweeSkill records with the specified proficiency level.
      */
@@ -86,6 +95,7 @@ public interface IntervieweeSkillRepository extends JpaRepository<IntervieweeSki
 
     /**
      * Find interviewee skill by interviewee ID and skill ID.
+     * 
      * @param intervieweeId the interviewee ID to filter.
      * @param skillId the skill ID to filter.
      * @return an optional IntervieweeSkill record for the specified interviewee and skill.

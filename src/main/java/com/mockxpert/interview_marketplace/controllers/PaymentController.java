@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import java.math.BigDecimal;
@@ -62,7 +63,7 @@ public class PaymentController {
      * @return Confirmation message.
      */
     @GetMapping("/success")
-    public ResponseEntity<?> paymentSuccess(@RequestParam("session_id") String sessionId) {
+    public ResponseEntity<?> paymentSuccess(@RequestParam("session_id") String sessionId, HttpServletResponse response) {
         try {
             logger.info("Hitting the payment success");
 
@@ -71,6 +72,8 @@ public class PaymentController {
 
             logger.info("Payment successful. Transaction ID: {} | Booking ID: {}", 
                         payment.getTransactionId(), payment.getBookingId());
+            
+            response.sendRedirect("http://localhost:3000/payment-success");
 
             return ResponseEntity.ok("Payment Successful! Your interview has been scheduled.");
 
@@ -173,7 +176,12 @@ public class PaymentController {
         return ResponseEntity.ok(payments);
     }
     
-    // Get total money spent by interviewee
+    /**
+     * Get total money spent by interviewee.
+     * 
+     * @param userId
+     * @return
+     */
     @GetMapping("/interviewee/{userId}/total-spent")
     public ResponseEntity<BigDecimal> getTotalSpentByInterviewee(@PathVariable Long userId) {
         BigDecimal totalSpent = paymentService.getTotalSpentByInterviewee(userId);

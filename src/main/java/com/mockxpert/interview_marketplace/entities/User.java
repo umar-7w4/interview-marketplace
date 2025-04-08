@@ -63,9 +63,14 @@ public class User {
     @Column(name = "work_email", nullable = true)
     private String workEmail;
     
-    
     @Column(name = "firebase_uid", unique = true, nullable = false)
     private String firebaseUid;
+    
+    @Column(name = "is_email_verified")
+    private boolean isEmailVerified;
+    
+    @Column(name = "is_workEmail_verified")
+    private boolean isWorkEmailVerified;
 
     public String getFirebaseUid() {
 		return firebaseUid;
@@ -287,5 +292,23 @@ public class User {
 	public void setWorkEmail(String workEmail) {
 		this.workEmail = workEmail;
 	}
+
+	public boolean isEmailVerified() {
+		return isEmailVerified;
+	}
+
+	public void setEmailVerified(boolean isEmailVerified) {
+		this.isEmailVerified = isEmailVerified;
+	}
+
+	public boolean isWorkEmailVerified() {
+		return isWorkEmailVerified;
+	}
+
+	public void setWorkEmailVerified(boolean isWorkEmailVerified) {
+		this.isWorkEmailVerified = isWorkEmailVerified;
+	}
+
+	
     
 }

@@ -18,6 +18,7 @@ public interface SkillRepository extends JpaRepository<Skill, Long> {
 
     /**
      * Find skill by name.
+     * 
      * @param name the name of the skill.
      * @return a skill with the specified name.
      */
@@ -25,6 +26,7 @@ public interface SkillRepository extends JpaRepository<Skill, Long> {
 
     /**
      * Find skills by description containing a keyword.
+     * 
      * @param keyword the keyword to search within the skill description.
      * @return a list of skills that contain the keyword in their description.
      */
@@ -32,6 +34,7 @@ public interface SkillRepository extends JpaRepository<Skill, Long> {
 
     /**
      * Find skills by their IDs.
+     * 
      * @param ids the list of skill IDs.
      * @return a list of skills with the specified IDs.
      */
@@ -39,6 +42,7 @@ public interface SkillRepository extends JpaRepository<Skill, Long> {
 
     /**
      * Count skills by name.
+     * 
      * @param name the name of the skill to count.
      * @return the count of skills with the specified name.
      */
@@ -46,6 +50,7 @@ public interface SkillRepository extends JpaRepository<Skill, Long> {
 
     /**
      * Find skills by a partial match of their name.
+     * 
      * @param partialName the partial name to match.
      * @return a list of skills that match the partial name.
      */
@@ -53,6 +58,7 @@ public interface SkillRepository extends JpaRepository<Skill, Long> {
 
     /**
      * Find skills with no associated description.
+     * 
      * @return a list of skills with no description.
      */
     List<Skill> findByDescriptionIsNull();
