@@ -36,6 +36,9 @@ public class InterviewService {
 
     @Autowired
     private BookingRepository bookingRepository;
+    
+    @Autowired
+    private UserService userService;
 
     /**
      * Register a new interview.
@@ -375,6 +378,8 @@ public class InterviewService {
                 return true;
             })
             .collect(Collectors.toList());
+        
+        filtered = filtered.stream().filter((interview) -> interview.getInterviewee().getUser().getUserId() == userService.getCurrentUser().getUserId()).collect(Collectors.toList());
 
         return filtered.stream()
                 .map(InterviewMapper::toDto)

@@ -12,6 +12,11 @@ import com.mockxpert.interview_marketplace.exceptions.InternalServerErrorExcepti
 import com.mockxpert.interview_marketplace.mappers.AvailabilityMapper;
 import com.mockxpert.interview_marketplace.repositories.AvailabilityRepository;
 import com.mockxpert.interview_marketplace.repositories.InterviewerRepository;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +45,9 @@ public class AvailabilityService {
     
     @Autowired
     private UserService userService;
+    
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Registers availability slot of an interviewer.
@@ -317,10 +325,36 @@ public class AvailabilityService {
      */
     public List<AvailabilityDto> filterAvailabilities(LocalDate startDate, LocalDate endDate, String timezone, AvailabilityStatus status) {
         Long currentUserId = userService.getCurrentUser().getUserId();
-        List<Availability> availabilities = availabilityRepository.filterAvailabilities(startDate, endDate, timezone, status, currentUserId);
-        return availabilities.stream().map(AvailabilityMapper::toDto).collect(Collectors.toList());
+        StringBuilder sb = new StringBuilder("SELECT a FROM Availability a WHERE a.interviewer.user.userId = :userId");
+        if (startDate != null) {
+            sb.append(" AND a.date >= :startDate");
+        }
+        if (endDate != null) {
+            sb.append(" AND a.date <= :endDate");
+        }
+        if (timezone != null) {
+            sb.append(" AND a.timezone = :timezone");
+        }
+        if (status != null) {
+            sb.append(" AND a.status = :status");
+        }
+        TypedQuery<Availability> query = entityManager.createQuery(sb.toString(), Availability.class);
+        query.setParameter("userId", currentUserId);
+        if (startDate != null) {
+            query.setParameter("startDate", startDate);
+        }
+        if (endDate != null) {
+            query.setParameter("endDate", endDate);
+        }
+        if (timezone != null) {
+            query.setParameter("timezone", timezone);
+        }
+        if (status != null) {
+            query.setParameter("status", status);
+        }
+        return query.getResultList().stream().map(AvailabilityMapper::toDto).collect(Collectors.toList());
     }
-    
+
     /**
      * Fetechs all availability slots based on interviewer and date
      * 

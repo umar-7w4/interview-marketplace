@@ -178,6 +178,9 @@ public class InterviewerDto {
 		this.profileImage = profileImage;
 	}
 	
+	public String toString() {
+		return userId+" "+bio+" "+profileImage;
+	}
 	
 
     

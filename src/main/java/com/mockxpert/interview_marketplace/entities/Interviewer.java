@@ -245,7 +245,9 @@ public class Interviewer {
 		this.profileImage = profileImage;
 	}
 	
-	
+	public String toString() {
+		return user.getUserId()+" "+bio+" "+profileImage+" User entity";
+	}
 	
 	
 }

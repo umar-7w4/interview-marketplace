@@ -465,7 +465,6 @@ public class UserService {
                         "</tr>" +
                         "<tr>" +
                           "<td style=\"padding: 40px 30px; color: #333333;\">" +
-                            "<p style=\"margin: 0; font-size: 16px; line-height: 1.5;\">Dear User,</p>" +
                             "<p style=\"margin: 20px 0 0 0; font-size: 16px; line-height: 1.5;\">%s</p>" +
                           "</td>" +
                         "</tr>" +
@@ -515,6 +514,12 @@ public class UserService {
     	          .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
         return UserMapper.toDto(user);
       }
+    
+    public User getUserByUserId(Long userId) {
+    	User user = userRepository.findByUserId(userId)
+  	          .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+    	return user;
+    }
 
 
 }

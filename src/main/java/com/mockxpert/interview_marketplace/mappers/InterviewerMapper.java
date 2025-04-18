@@ -5,9 +5,13 @@ import com.mockxpert.interview_marketplace.dto.InterviewerSkillDto;
 import com.mockxpert.interview_marketplace.entities.Interviewer;
 import com.mockxpert.interview_marketplace.entities.InterviewerSkill;
 import com.mockxpert.interview_marketplace.entities.Skill;
+import com.mockxpert.interview_marketplace.entities.User;
+import com.mockxpert.interview_marketplace.repositories.UserRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Mapper class that converts Data Transfer Object to interviewer entity object.
@@ -16,7 +20,7 @@ import java.util.stream.Collectors;
  */
 
 public class InterviewerMapper {
-
+	
     /**
      * Converts Interviewer entity to InterviewerDto.
      *
@@ -77,6 +81,7 @@ public class InterviewerMapper {
         interviewer.setProfileCompletionStatus(dto.getProfileCompletionStatus());
         interviewer.setIsVerified(dto.getIsVerified());
         interviewer.setLinkedinUrl(dto.getLinkedinUrl());
+        interviewer.setProfileImage(dto.getProfileImage());
 
         return interviewer;
     }

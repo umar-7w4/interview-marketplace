@@ -136,17 +136,21 @@ public interface AvailabilityRepository extends JpaRepository<Availability, Long
      * @param start date, end date, timezone, and status.
      * @return a list of availability slots for the specified filter.
      */
-    @Query("SELECT a FROM Availability a " +
-            "WHERE (:startDate IS NULL OR a.date >= :startDate) " +
-            "  AND (:endDate IS NULL OR a.date <= :endDate) " +
-            "  AND (:timezone IS NULL OR a.timezone = :timezone) " +
-            "  AND (:status IS NULL OR a.status = :status) " +
-            "  AND a.interviewer.user.userId = :userId")
-     List<Availability> filterAvailabilities(
-         @Param("startDate") LocalDate startDate,
-         @Param("endDate") LocalDate endDate,
-         @Param("timezone") String timezone,
-         @Param("status") AvailabilityStatus status,
-         @Param("userId") Long userId
-     );
+    @Query("""
+    	    SELECT a
+    	    FROM Availability a
+    	    WHERE (:startDate IS NULL OR a.date >= :startDate)
+    	      AND (:endDate   IS NULL OR a.date <= :endDate)
+    	      AND (:timezone  IS NULL OR a.timezone = :timezone)
+    	      AND (:status    IS NULL OR a.status = :status)
+    	      AND a.interviewer.user.userId = :userId
+    	""")
+    	List<Availability> filterAvailabilities(
+    	    @Param("startDate") LocalDate startDate,
+    	    @Param("endDate") LocalDate endDate,
+    	    @Param("timezone") String timezone,
+    	    @Param("status") AvailabilityStatus status,
+    	    @Param("userId") Long userId
+    	);
+
 }

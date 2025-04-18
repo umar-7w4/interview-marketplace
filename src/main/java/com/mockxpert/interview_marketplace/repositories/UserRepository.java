@@ -90,4 +90,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return an Optional of user with the specified reset token
      */
     Optional<User> findByResetToken(String resetToken);
+    
+    /**
+     *Fetching user record by its id
+     * 
+     * @param email
+     * @return
+     */
+    Optional<User> findByUserId(Long userId);
 }

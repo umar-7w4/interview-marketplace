@@ -243,7 +243,11 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
      * @param endTime
      * @return
      */
-    @Query("SELECT i FROM Interview i WHERE i.status = :status OR i.endTime < :endTime")
+    @Query(value = "SELECT * FROM interviews i " +
+            "WHERE status = 'BOOKED' " +
+            "AND end_time < CAST(CURRENT_TIMESTAMP AS time) " +
+            "AND date < CURRENT_TIMESTAMP", 
+    nativeQuery = true)
     List<Interview> findByStatusAndEndTimeBefore(@Param("status") Interview.InterviewStatus status,
                                                  @Param("endTime") LocalTime endTime);
     
